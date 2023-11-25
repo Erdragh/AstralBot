@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.9.20"
     application
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.jk1.dependency-license-report") version "2.5"
 }
 
 application.mainClass = "dev.erdragh.erdbot.BotKt"
@@ -42,4 +43,12 @@ tasks.test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+arrayOf(tasks.distZip, tasks.distTar, tasks.jar, tasks.shadowJar).forEach {
+    val task = it.get()
+    task.dependsOn(tasks.named("generateLicenseReport"))
+    task.from("build/reports/") {
+        include("**/*")
+    }
 }
