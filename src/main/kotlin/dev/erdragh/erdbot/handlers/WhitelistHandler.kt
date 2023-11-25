@@ -1,4 +1,4 @@
-package dev.erdragh.erdbot
+package dev.erdragh.erdbot.handlers
 
 import net.dv8tion.jda.api.entities.User
 import org.jetbrains.exposed.sql.*

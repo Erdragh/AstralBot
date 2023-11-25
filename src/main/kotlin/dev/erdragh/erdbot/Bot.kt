@@ -1,5 +1,6 @@
 package dev.erdragh.erdbot
 
+import dev.erdragh.erdbot.commands.CommandHandlingListener
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger
@@ -17,5 +18,5 @@ fun main() {
         .addEventListeners(CommandHandlingListener)
         .build().awaitReady()
 
-    LOGGER.info("ErdBot fully started")
+    LOGGER.info("ErdBot fully started, running JDA {}", api)
 }

@@ -1,5 +1,6 @@
-package dev.erdragh.erdbot
+package dev.erdragh.erdbot.handlers
 
+import dev.erdragh.erdbot.LOGGER
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
@@ -42,11 +43,11 @@ object FAQHandler {
                             if (!path.isDirectory() && path.extension == "md") {
                                 when (event.kind()) {
                                     StandardWatchEventKinds.ENTRY_CREATE -> {
-                                        this.availableFAQIDs.add(path.nameWithoutExtension)
+                                        availableFAQIDs.add(path.nameWithoutExtension)
                                     }
 
                                     StandardWatchEventKinds.ENTRY_DELETE -> {
-                                        this.availableFAQIDs.remove(path.nameWithoutExtension)
+                                        availableFAQIDs.remove(path.nameWithoutExtension)
                                     }
                                 }
                             }
