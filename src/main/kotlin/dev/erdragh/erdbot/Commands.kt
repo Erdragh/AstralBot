@@ -1,5 +1,6 @@
 package dev.erdragh.erdbot
 
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.UserSnowflake
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
@@ -120,7 +121,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
             if (discordID != null) {
                 val guild = event.guild
                 if (guild != null) {
-                    var found: Boolean = false
+                    var found = false
                     guild.loadMembers {
                         if (it.idLong == discordID) {
                             event.hook.setEphemeral(true)
@@ -147,7 +148,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                         .queue()
                 }
             }
-        } else if (discordUser is User) {
+        } else if (discordUser is Member) {
             val minecraftID = WhitelistHandler.checkWhitelist(discordUser.idLong)
             if (minecraftID != null) {
                 val minecraftUser = "Erdragh" // TODO: Get using actual minecraftID from server instance
@@ -159,9 +160,9 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                     ).queue()
                     return
                 }
-                event.hook.setEphemeral(true)
-                    .sendMessageFormat("Discord username %s not linked to any Minecraft username", discordUser).queue()
             }
+            event.hook.setEphemeral(true)
+                .sendMessageFormat("Discord username %s not linked to any Minecraft username", discordUser).queue()
         } else {
             event.hook.setEphemeral(true)
                 .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
