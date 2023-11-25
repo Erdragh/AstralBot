@@ -55,7 +55,7 @@ object WhitelistHandler {
     }
 
     fun checkWhitelist(discordID: Long): UUID? {
-        var result: UUID? = null;
+        var result: UUID? = null
         transaction {
             val query = WhitelistedUser.select { WhitelistedUser.discordID eq discordID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
