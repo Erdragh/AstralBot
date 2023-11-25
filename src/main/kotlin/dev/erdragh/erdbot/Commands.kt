@@ -11,7 +11,6 @@ import java.util.*
 
 val commands = arrayOf(
     RefreshCommandsCommand,
-    EchoCommand,
     FaQCommand,
     LinkCommand,
     UnlinkCommand,
@@ -33,20 +32,14 @@ object RefreshCommandsCommand : HandledSlashCommand {
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
-        event.guild?.updateCommands()?.addCommands(commands.map { it.command })?.queue {
-            if (event.guild == null) event.hook.setEphemeral(true).sendMessage("Failed to fetch Guild to refresh")
-                .queue()
-            else event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
+        val guild = event.guild
+        if (guild == null) {
+            event.hook.setEphemeral(true).sendMessage("Failed to fetch Guild to refresh").queue()
+            return
         }
-    }
-}
-
-object EchoCommand : HandledSlashCommand {
-    override val command: SlashCommandData = Commands.slash("echo", "Repeats a Message")
-        .addOption(OptionType.STRING, "message", "the message to repeat", true)
-
-    override fun handle(event: SlashCommandInteractionEvent) {
-        event.reply("Echo Echo echo echo ... ${event.getOption("message")!!.asString}").queue()
+        guild.updateCommands().addCommands(commands.map { it.command }).queue {
+            event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
+        }
     }
 }
 
@@ -78,11 +71,17 @@ object LinkCommand : HandledSlashCommand {
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
         val linkCode = event.getOption("code")?.asString
-        val minecraftUser = UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a") // TODO: Get actual user ID via minecraft server
+        val minecraftUser =
+            UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a") // TODO: Get actual user ID via minecraft server
 
-        WhitelistHandler.whitelist(event.user, minecraftUser)
+        try {
+            WhitelistHandler.whitelist(event.user, minecraftUser)
+            event.hook.setEphemeral(true)
+                .sendMessageFormat("Linked Discord user %s to Minecraft username %s", minecraftUser).queue()
+        } catch (e: Exception) {
+            event.hook.setEphemeral(true).sendMessageFormat("Failed to link: %s", e.localizedMessage).queue()
+        }
 
-        event.hook.setEphemeral(true).sendMessageFormat("Linked Discord user {} to Minecraft username {}", minecraftUser).queue()
     }
 }
 
@@ -94,7 +93,7 @@ object UnlinkCommand : HandledSlashCommand {
         event.deferReply(true).queue()
         WhitelistHandler.unWhitelist(event.user)
 
-        event.hook.setEphemeral(true).sendMessageFormat("Unlinked Discord user {}", event.user).queue()
+        event.hook.setEphemeral(true).sendMessageFormat("Unlinked Discord user %s", event.user).queue()
     }
 }
 
@@ -116,17 +115,37 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
             event.hook.setEphemeral(true)
                 .sendMessage("You need to specify either a Discord user or a Minecraft Username, not both").queue()
         } else if (minecraftName != null) {
-            val discordID = WhitelistHandler.checkWhitelist(UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a")) // TODO: Get actual minecraft user from server
+            val discordID =
+                WhitelistHandler.checkWhitelist(UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a")) // TODO: Get actual minecraft user from server
             if (discordID != null) {
-                val user = event.guild?.getMember(UserSnowflake.fromId(discordID))
-                if (user != null) {
+                val guild = event.guild
+                if (guild != null) {
+                    var found: Boolean = false
+                    guild.loadMembers {
+                        if (it.idLong == discordID) {
+                            event.hook.setEphemeral(true)
+                                .sendMessageFormat("Minecraft username %s linked to Discord user %s", minecraftName, it)
+                                .queue()
+                            found = true
+                        }
+                    }.onError {
+                        event.hook.setEphemeral(true)
+                            .sendMessageFormat("Something went wrong: %s", it.localizedMessage)
+                            .queue()
+                    }.onSuccess {
+                        if (!found) {
+                            event.hook.setEphemeral(true)
+                                .sendMessageFormat(
+                                    "Minecraft username %s not linked to any Discord User",
+                                    minecraftName
+                                ).queue()
+                        }
+                    }
+                } else {
                     event.hook.setEphemeral(true)
-                        .sendMessageFormat("Minecraft username {} linked to Discord user {}", minecraftName, user)
+                        .sendMessage("Something went wrong")
                         .queue()
-                    return
                 }
-                event.hook.setEphemeral(true)
-                    .sendMessageFormat("Minecraft username {} not linked to any Discord User", minecraftName).queue()
             }
         } else if (discordUser is User) {
             val minecraftID = WhitelistHandler.checkWhitelist(discordUser.idLong)
@@ -134,14 +153,14 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 val minecraftUser = "Erdragh" // TODO: Get using actual minecraftID from server instance
                 if (minecraftUser != null) {
                     event.hook.setEphemeral(true).sendMessageFormat(
-                        "Discord user {} linked to Minecraft username {}",
+                        "Discord user %s linked to Minecraft username %s",
                         discordUser,
                         minecraftUser
                     ).queue()
                     return
                 }
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Discord username {} not linked to any Minecraft username", discordUser).queue()
+                    .sendMessageFormat("Discord username %s not linked to any Minecraft username", discordUser).queue()
             }
         } else {
             event.hook.setEphemeral(true)
@@ -150,6 +169,6 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
     }
 
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
-        TODO("Not yet implemented")
+        event.replyChoiceStrings(arrayOf("Erdragh").filter { it.startsWith(event.focusedOption.value) }).queue()
     }
 }

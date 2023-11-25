@@ -13,7 +13,7 @@ fun main() {
         .createLight(env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.GUILD_MESSAGES)
+            GatewayIntent.GUILD_MEMBERS)
         .addEventListeners(CommandHandlingListener)
         .build().awaitReady()
 

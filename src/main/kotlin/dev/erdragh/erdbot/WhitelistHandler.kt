@@ -46,20 +46,20 @@ object WhitelistHandler {
     }
 
     fun checkWhitelist(minecraftID: UUID): Long? {
-        var query: Query? = null
+        var result: Long? = null
         transaction {
-            query = WhitelistedUser.select { WhitelistedUser.minecraftID eq minecraftID }
+            val query = WhitelistedUser.select { WhitelistedUser.minecraftID eq minecraftID }
+            result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.discordID]
         }
-        if (query?.empty() == true) return null
-        return query?.iterator()?.next()?.get(WhitelistedUser.discordID)
+        return result
     }
 
     fun checkWhitelist(discordID: Long): UUID? {
-        var query: Query? = null
+        var result: UUID? = null;
         transaction {
-            query = WhitelistedUser.select { WhitelistedUser.discordID eq discordID }
+            val query = WhitelistedUser.select { WhitelistedUser.discordID eq discordID }
+            result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
         }
-        if (query?.empty() == true) return null
-        return query?.iterator()?.next()?.get(WhitelistedUser.minecraftID)
+        return result
     }
 }
