@@ -43,9 +43,8 @@ object FaQCommand : HandledSlashCommand, AutocompleteCommand {
     }
 
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
-        val suggestions = FAQHandler.suggestFAQIds()
-        if (suggestions != null && event.focusedOption.name == "id") {
-            event.replyChoiceStrings(suggestions).queue()
+        if (event.focusedOption.name == "id") {
+            event.replyChoiceStrings(FAQHandler.suggestFAQIds(event.focusedOption.value)).queue()
         }
     }
 }
