@@ -19,13 +19,21 @@ object LinkCommand : HandledSlashCommand {
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
         val linkCode = event.getOption(OPTION_CODE)?.asString
-        val minecraftUser =
-            UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a") // TODO: Get actual user ID via minecraft server
+        val minecraftID =
+            UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a") // TODO: Get actual user Data via minecraft server
 
         try {
-            WhitelistHandler.whitelist(event.user, minecraftUser)
-            event.hook.setEphemeral(true)
-                .sendMessageFormat("Linked %s to MC: %s", event.member, minecraftUser).queue()
+            if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
+                event.hook.setEphemeral(true)
+                    .sendMessageFormat("Minecraft username %s already linked", "Erdragh").queue()
+            } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
+                event.hook.setEphemeral(true)
+                    .sendMessageFormat("%s already linked", event.member).queue()
+            } else {
+                WhitelistHandler.whitelist(event.user, minecraftID)
+                event.hook.setEphemeral(true)
+                    .sendMessageFormat("Linked %s to Minecraft username %s", event.member, "Erdragh").queue()
+            }
         } catch (e: Exception) {
             event.hook.setEphemeral(true).sendMessageFormat("Failed to link: %s", e.localizedMessage).queue()
         }
@@ -54,6 +62,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
         .addOption(OptionType.MENTIONABLE, OPTION_DC, "Discord User", false)
 
     private fun handleMinecraftToDiscord(event: SlashCommandInteractionEvent, minecraftName: String) {
+        val notFound = "Minecraft username %s is not linked to any Discord User"
         val discordID =
             WhitelistHandler.checkWhitelist(UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a")) // TODO: Get actual minecraft user from server
         if (discordID != null) {
@@ -75,7 +84,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                     if (!found) {
                         event.hook.setEphemeral(true)
                             .sendMessageFormat(
-                                "Minecraft username %s is not linked to any Discord User",
+                                notFound,
                                 minecraftName
                             ).queue()
                     }
@@ -85,6 +94,12 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                     .sendMessage("Something went wrong")
                     .queue()
             }
+        } else {
+            event.hook.setEphemeral(true)
+                .sendMessageFormat(
+                    notFound,
+                    minecraftName
+                ).queue()
         }
     }
 
