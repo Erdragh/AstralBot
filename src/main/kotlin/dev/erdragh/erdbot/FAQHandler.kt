@@ -57,7 +57,6 @@ object FAQHandler {
                 } catch (_: InterruptedException) {
                     // Do Nothing. If this thread is interrupted it means it should just stop
                 }
-                println("Thread done")
             })
             watcherThread?.start()
         }

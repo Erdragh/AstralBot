@@ -16,5 +16,6 @@ fun main() {
             GatewayIntent.GUILD_MESSAGES)
         .addEventListeners(CommandHandlingListener)
         .build().awaitReady()
+
     LOGGER.info("ErdBot fully started")
 }

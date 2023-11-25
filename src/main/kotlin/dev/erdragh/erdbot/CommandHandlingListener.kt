@@ -14,7 +14,6 @@ object CommandHandlingListener : ListenerAdapter() {
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        LOGGER.info("Slash")
         val usedCommand = commands.find { it.command.name == event.name }
         if (usedCommand != null) {
             usedCommand.handle(event)
@@ -24,7 +23,6 @@ object CommandHandlingListener : ListenerAdapter() {
     }
 
     override fun onCommandAutoCompleteInteraction(event: CommandAutoCompleteInteractionEvent) {
-        LOGGER.info("Complete")
         val usedCommand = commands.find { it is AutocompleteCommand && it.command.name == event.name } as AutocompleteCommand?
         usedCommand?.autocomplete(event)
     }
