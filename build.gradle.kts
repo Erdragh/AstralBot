@@ -11,6 +11,8 @@ group = "dev.erdragh"
 version = "1.0-SNAPSHOT"
 val jdaVersion: String by project
 val exposedVersion: String by project
+val sqliteJDBCVersion: String by project
+val logbackVersion: String by project
 
 repositories {
     mavenCentral()
@@ -18,8 +20,8 @@ repositories {
 
 dependencies {
 //    testImplementation(kotlin("test"))
-    implementation("net.dv8tion:JDA:${jdaVersion}")
-    implementation("ch.qos.logback:logback-classic:1.2.9")
+    implementation("net.dv8tion:JDA:$jdaVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
@@ -31,7 +33,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-json:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-money:$exposedVersion")
 
-    implementation("org.xerial:sqlite-jdbc:3.30.1")
+    implementation("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
 }
 
 tasks.test {
