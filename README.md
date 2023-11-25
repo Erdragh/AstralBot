@@ -2,7 +2,7 @@
 it's still very much WIP.
 
 # AstralBot
-![build workflow](https://img.shields.io/github/actions/workflow/status/Erdragh/AstralBot/build.yml?style=for-the-badge)
+[![build workflow](https://img.shields.io/github/actions/workflow/status/Erdragh/AstralBot/build.yml?style=for-the-badge)](https://github.com/Erdragh/AstralBot/actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/Juuxel/Adorn.svg?style=for-the-badge)](LICENSE)
 ![Environment](https://img.shields.io/badge/environment-server-4caf50?style=for-the-badge)
 
