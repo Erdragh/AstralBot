@@ -45,7 +45,7 @@ kotlin {
     jvmToolchain(17)
 }
 
-arrayOf(tasks.distZip, tasks.distTar, tasks.jar, tasks.shadowJar).forEach {
+arrayOf(tasks.distZip, tasks.distTar, tasks.jar, tasks.shadowJar, tasks.shadowDistTar, tasks.shadowDistZip).forEach {
     val task = it.get()
     task.dependsOn(tasks.named("generateLicenseReport"))
     task.from("build/reports/") {
