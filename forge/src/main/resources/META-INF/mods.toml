@@ -1,0 +1,27 @@
+modLoader = "kotlinforforge"
+loaderVersion = "[4.6,)"
+license = "MIT License"
+issueTrackerURL = "https://github.com/Erdragh/AstralBot/issues"
+
+[[mods]]
+modId = "astralbot"
+version = "${version}"
+displayName = "AstralBot"
+displayURL = "https://modrinth.com/mod/astralbot"
+logoFile = "icon.png"
+authors = "Erdragh"
+description = "Discord Bot and Minecraft Mod in one bundle."
+
+[[dependencies.astralbot]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.astralbot]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20,)"
+ordering = "NONE"
+side = "BOTH"

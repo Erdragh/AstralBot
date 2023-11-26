@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "astralbot",
+  "version": "${version}",
+  "name": "AstralBot",
+  "description": "Discord Bot and Minecraft mod in one bundle.",
+  "authors": [
+    "Erdragh"
+  ],
+  "contact": {
+    "website": "https://modrinth.com/mod/astralbot",
+    "repo": "https://github.com/Erdragh/AstralBot",
+    "issues": "https://github.com/Erdragh/AstralBot/issues"
+  },
+  "license": "MIT Licence",
+  "icon": "icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "dev.erdragh.erdbot.BotMod",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": [
+    "astralbot-common.mixins.json",
+    "astralbot.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.20",
+    "java": ">=17",
+    "fabric-language-kotlin": ">=1.9.0"
+  }
+}

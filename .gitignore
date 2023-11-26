@@ -1,5 +1,5 @@
-.gradle
-build/
+**/.gradle
+**/build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -44,3 +44,6 @@ bin/
 # runtime usage
 whitelist.db
 faq
+
+# Minecraft
+**/run
