@@ -1,6 +1,6 @@
-package dev.erdragh.erdbot
+package dev.erdragh.astralbot
 
-import dev.erdragh.erdbot.commands.CommandHandlingListener
+import dev.erdragh.astralbot.commands.CommandHandlingListener
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.Logger

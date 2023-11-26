@@ -1,6 +1,6 @@
-package dev.erdragh.erdbot.commands
+package dev.erdragh.astralbot.commands
 
-import dev.erdragh.erdbot.handlers.WhitelistHandler
+import dev.erdragh.astralbot.handlers.WhitelistHandler
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent

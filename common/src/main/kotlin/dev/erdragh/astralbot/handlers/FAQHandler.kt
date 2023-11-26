@@ -1,6 +1,6 @@
-package dev.erdragh.erdbot.handlers
+package dev.erdragh.astralbot.handlers
 
-import dev.erdragh.erdbot.LOGGER
+import dev.erdragh.astralbot.LOGGER
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path

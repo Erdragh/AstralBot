@@ -1,6 +1,6 @@
-package dev.erdragh.erdbot.commands
+package dev.erdragh.astralbot.commands
 
-import dev.erdragh.erdbot.handlers.FAQHandler
+import dev.erdragh.astralbot.handlers.FAQHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType

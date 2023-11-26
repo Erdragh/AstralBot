@@ -1,7 +1,7 @@
-package dev.erdragh.erdbot.fabric
+package dev.erdragh.astralbot.fabric
 
-import dev.erdragh.erdbot.LOGGER
-import dev.erdragh.erdbot.main
+import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.main
 import net.fabricmc.api.ModInitializer
 
 object BotMod : ModInitializer {

@@ -1,7 +1,7 @@
-package dev.erdragh.erdbot.forge
+package dev.erdragh.astralbot.forge
 
-import dev.erdragh.erdbot.LOGGER
-import dev.erdragh.erdbot.main
+import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.main
 import net.minecraftforge.fml.common.Mod
 
 @Mod("astralbot")
