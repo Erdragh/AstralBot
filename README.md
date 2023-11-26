@@ -1,5 +1,5 @@
 **DISCLAIMER**: Much of the below stated is not yet implemented. Don't use this project yet,
-it's still very much WIP.
+it's still very much WIP, it's not even a Minecraft mod yet.
 
 # AstralBot
 [![build workflow](https://img.shields.io/github/actions/workflow/status/Erdragh/AstralBot/build.yml?style=for-the-badge)](https://github.com/Erdragh/AstralBot/actions/workflows/build.yml)
