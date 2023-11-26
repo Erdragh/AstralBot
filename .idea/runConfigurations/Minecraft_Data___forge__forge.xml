@@ -9,7 +9,7 @@
       <option enabled="true" name="Make"/>
     </method>
     <envs>
-      <env name="MOD_CLASSES" value="main%%/home/erdragh/Coding/Minecraft/ErdBot/forge/build/resources/main:main%%/home/erdragh/Coding/Minecraft/ErdBot/forge/build/classes/java/main"/><env name="MCP_MAPPINGS" value="loom.stub"/>
+      <env name="MOD_CLASSES" value="main%%/home/erdragh/Coding/Minecraft/ErdBot/forge/build/resources/main:main%%/home/erdragh/Coding/Minecraft/ErdBot/forge/build/classes/java/main:main%%/home/erdragh/Coding/Minecraft/ErdBot/forge/build/classes/kotlin/main"/><env name="MCP_MAPPINGS" value="loom.stub"/>
     </envs>
     <shortenClasspath name="ARGS_FILE"/>
   <classpathModifications/></configuration>

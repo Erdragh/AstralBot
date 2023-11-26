@@ -4,37 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ef69bca2-75ba-4f32-a7d3-3ecab96ea614" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/common/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/common/src/main/resources/astralbot-common.mixins.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fabric/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fabric/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fabric/src/main/kotlin/dev/erdragh/erdbot/BotMod.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fabric/src/main/resources/astralbot.mixins.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fabric/src/main/resources/fabric.mod.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forge/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forge/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forge/src/main/kotlin/dev/erdragh/erdbot/BotMod.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forge/src/main/resources/META-INF/mods.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forge/src/main/resources/astralbot.mixins.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+    <list default="true" id="47d426f6-bfc8-42a4-89b9-0e9bcc12c2f6" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/forge/src/main/kotlin/dev/erdragh/erdbot/forge/BotMod.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/forge/src/main/resources/pack.mcmeta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/kotlinc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/Bot.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/Bot.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/commands/CommandHandlingListener.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/commands/CommandHandlingListener.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/commands/Commands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/commands/Commands.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/commands/LinkingCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/commands/LinkingCommands.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/handlers/FAQHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/handlers/FAQHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/dev/erdragh/erdbot/handlers/WhitelistHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/kotlin/dev/erdragh/erdbot/handlers/WhitelistHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Client___forge__forge.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Client___forge__forge.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Data___forge__forge.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Data___forge__forge.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Server___forge__forge.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Minecraft_Server___forge__forge.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fabric/src/main/kotlin/dev/erdragh/erdbot/BotMod.kt" beforeDir="false" afterPath="$PROJECT_DIR$/fabric/src/main/kotlin/dev/erdragh/erdbot/fabric/BotMod.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fabric/src/main/resources/fabric.mod.json" beforeDir="false" afterPath="$PROJECT_DIR$/fabric/src/main/resources/fabric.mod.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forge/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/forge/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forge/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/forge/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forge/src/main/kotlin/dev/erdragh/erdbot/BotMod.kt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,6 +34,9 @@
         <task path="$PROJECT_DIR$">
           <activation />
         </task>
+        <task path="$PROJECT_DIR$/forge">
+          <activation />
+        </task>
         <task path="$PROJECT_DIR$/fabric">
           <activation />
         </task>
@@ -64,13 +49,6 @@
       </state>
     </system>
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Kotlin Object" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -81,7 +59,7 @@
   "customColor": "",
   "associatedIndex": 3
 }]]></component>
-  <component name="ProjectId" id="2YiuI2uJONcII06zcqju133YsNl" />
+  <component name="ProjectId" id="2Yj6f7jyNRCxZ7qQh43Vsct2bjH" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -98,20 +76,70 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="Application.Minecraft Client (:forge)" />
+  <component name="RunManager" selected="Gradle.ErdBot:forge [runClient]">
+    <configuration name="ErdBot:fabric [runClient]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/fabric" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="runClient" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ErdBot:forge [runClient]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/forge" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="runClient" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.ErdBot:forge [runClient]" />
+        <item itemvalue="Gradle.ErdBot:fabric [runClient]" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="ef69bca2-75ba-4f32-a7d3-3ecab96ea614" name="Changes" comment="" />
-      <created>1701020638181</created>
+      <changelist id="47d426f6-bfc8-42a4-89b9-0e9bcc12c2f6" name="Changes" comment="" />
+      <created>1701026742643</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1701020638181</updated>
-      <workItem from="1701020639672" duration="4994000" />
+      <updated>1701026742643</updated>
+      <workItem from="1701026744094" duration="391000" />
     </task>
     <servers />
   </component>

@@ -18,7 +18,7 @@
   "entrypoints": {
     "main": [
       {
-        "value": "dev.erdragh.erdbot.BotMod",
+        "value": "dev.erdragh.erdbot.fabric.BotMod",
         "adapter": "kotlin"
       }
     ]

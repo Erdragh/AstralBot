@@ -1,4 +1,4 @@
-package dev.erdragh.erdbot
+package dev.erdragh.erdbot.fabric
 
 import net.fabricmc.api.ModInitializer
 

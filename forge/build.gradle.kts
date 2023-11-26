@@ -1,4 +1,5 @@
 architectury {
+    platformSetupLoomIde()
     forge()
 }
 
@@ -33,9 +34,10 @@ dependencies {
 
     val minecraftVersion: String by project
     val forgeVersion: String by project
+    val kotlinForgeVersion: String by project
 
     forge(group = "net.minecraftforge", name = "forge", version = "$minecraftVersion-$forgeVersion")
     // Adds KFF as dependency and Kotlin libs (use the variant matching your mod loader)
     // FORGE
-    implementation("thedarkcolour:kotlinforforge:4.6.1")
+    implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
 }
