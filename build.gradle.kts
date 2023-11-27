@@ -67,6 +67,9 @@ subprojects {
             exclude(module = "opus-java")
         }
 
+        if (!isCommon) {
+        }
+
         implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
         implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
         implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -116,7 +119,7 @@ subprojects {
                 configurations = listOf(shadowCommon)
 
                 exclude(".cache/**") //Remove datagen cache from jar.
-                exclude("**/adastra/datagen/**") //Remove data gen code from jar.
+                exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
             }
 
             "remapJar"(RemapJarTask::class) {

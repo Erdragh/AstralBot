@@ -40,4 +40,15 @@ dependencies {
     // Adds KFF as dependency and Kotlin libs (use the variant matching your mod loader)
     // FORGE
     implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
+
+    val jdaVersion: String by project
+
+    forgeRuntimeLibrary("net.dv8tion:JDA:$jdaVersion") {
+        exclude(module = "opus-java")
+        exclude(group = "org.jetbrains.kotlin")
+    }
+
+    include("net.dv8tion:JDA:$jdaVersion") {
+        exclude(module = "opus-java")
+    }
 }
