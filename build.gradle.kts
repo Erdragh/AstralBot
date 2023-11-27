@@ -62,7 +62,6 @@ subprojects {
         val jdaVersion: String by project
         val exposedVersion: String by project
         val sqliteJDBCVersion: String by project
-        val logbackVersion: String by project
 
         implementation("net.dv8tion:JDA:$jdaVersion") {
             exclude(module = "opus-java")
