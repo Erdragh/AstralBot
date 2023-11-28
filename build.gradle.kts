@@ -65,6 +65,7 @@ subprojects {
 
         implementation("net.dv8tion:JDA:$jdaVersion") {
             exclude(module = "opus-java")
+            exclude(group = "org.jetbrains.kotlin")
         }
 
         if (!isCommon) {
