@@ -45,6 +45,11 @@ subprojects {
         }
     }
 
+    // Bot dependencies
+    val jdaVersion: String by project
+    val exposedVersion: String by project
+    val sqliteJDBCVersion: String by project
+
     dependencies {
         // Minecraft Mod dependencies
         "minecraft"("::$minecraftVersion")
@@ -57,11 +62,6 @@ subprojects {
 
             parchment(create(group = "org.parchmentmc.data", name = "parchment-$minecraftVersion", version = parchmentVersion))
         })
-
-        // Bot dependencies
-        val jdaVersion: String by project
-        val exposedVersion: String by project
-        val sqliteJDBCVersion: String by project
 
         implementation("net.dv8tion:JDA:$jdaVersion") {
             exclude(module = "opus-java")
@@ -112,6 +112,13 @@ subprojects {
         val shadowCommon by configurations.creating {
             isCanBeConsumed = false
             isCanBeResolved = true
+        }
+
+        dependencies {
+            "include"("net.dv8tion:JDA:$jdaVersion") {
+                exclude(module = "opus-java")
+                exclude(group = "org.jetbrains.kotlin")
+            }
         }
 
         tasks {

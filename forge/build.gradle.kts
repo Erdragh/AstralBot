@@ -46,9 +46,4 @@ dependencies {
         exclude(module = "opus-java")
         exclude(group = "org.jetbrains.kotlin")
     }
-
-    include("net.dv8tion:JDA:$jdaVersion") {
-        exclude(module = "opus-java")
-        exclude(group = "org.jetbrains.kotlin")
-    }
 }
