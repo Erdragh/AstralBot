@@ -22,8 +22,12 @@ object LinkCommand : HandledSlashCommand {
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
         val linkCode = event.getOption(OPTION_CODE)?.asString
-        val minecraftID =
-            UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a") // TODO: Get actual user Data via minecraft server
+        val minecraftID = minecraftHandler?.byName("Erdragh")?.id
+
+        if (minecraftID == null) {
+            event.hook.setEphemeral(true).sendMessage("Couldn't find minecraft account to link").queue()
+            return
+        }
 
         try {
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
@@ -65,8 +69,10 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     private fun handleMinecraftToDiscord(event: SlashCommandInteractionEvent, minecraftName: String) {
         val notFound = "Minecraft username %s is not linked to any Discord User"
-        val minecraftID = minecraftHandler?.nameToUUID(minecraftName)
-        val discordID = if (minecraftID != null) WhitelistHandler.checkWhitelist(minecraftID) else null
+
+        val minecraftProfile = minecraftHandler?.byName(minecraftName)
+
+        val discordID = if (minecraftProfile != null) WhitelistHandler.checkWhitelist(minecraftProfile.id) else null
         if (discordID != null) {
             val guild = event.guild
             if (guild != null) {
@@ -74,7 +80,11 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 guild.loadMembers {
                     if (it.idLong == discordID) {
                         event.hook.setEphemeral(true)
-                            .sendMessageFormat("Minecraft username %s is linked to %s", minecraftName, it).queue()
+                            .sendMessageFormat(
+                                "Minecraft username %s is linked to %s",
+                                minecraftProfile?.name ?: minecraftName,
+                                it
+                            ).queue()
                         found = true
                     }
                 }.onError {
@@ -83,8 +93,8 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 }.onSuccess {
                     if (!found) {
                         event.hook.setEphemeral(true).sendMessageFormat(
-                                notFound, minecraftName
-                            ).queue()
+                            notFound, minecraftProfile?.name ?: minecraftName
+                        ).queue()
                     }
                 }
             } else {
@@ -92,18 +102,18 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
             }
         } else {
             event.hook.setEphemeral(true).sendMessageFormat(
-                    notFound, minecraftName
-                ).queue()
+                notFound, minecraftProfile?.name ?: minecraftName
+            ).queue()
         }
     }
 
     private fun handleDiscordToMinecraft(event: SlashCommandInteractionEvent, discordUser: Member) {
         val minecraftID = WhitelistHandler.checkWhitelist(discordUser.idLong)
         if (minecraftID != null) {
-            val minecraftUser = minecraftHandler?.uuidToName(minecraftID)
+            val minecraftUser = minecraftHandler?.byUUID(minecraftID)
             if (minecraftUser != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
-                    "%s is linked to Minecraft username %s", discordUser, minecraftUser
+                    "%s is linked to Minecraft username %s", discordUser, minecraftUser.name
                 ).queue()
                 return
             }
@@ -136,7 +146,8 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (event.focusedOption.name == OPTION_MC) {
             val minecraftUsers = minecraftHandler?.getOnlinePlayers()?.map(GameProfile::getName)
-            event.replyChoiceStrings(minecraftUsers?.filter { it.startsWith(event.focusedOption.value) } ?: listOf()).queue()
+            event.replyChoiceStrings(minecraftUsers?.filter { it.startsWith(event.focusedOption.value) } ?: listOf())
+                .queue()
         }
     }
 }
