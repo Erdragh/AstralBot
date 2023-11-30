@@ -1,18 +1,16 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
-import net.minecraft.client.Minecraft
+import net.minecraft.server.MinecraftServer
 import java.util.UUID
 
-object MinecraftHandler {
-    fun getOnlinePlayers(): Collection<GameProfile>? {
-        val server = Minecraft.getInstance().currentServer;
-
-        return server?.players?.sample
+class MinecraftHandler(private val server: MinecraftServer) {
+    fun getOnlinePlayers(): Collection<GameProfile> {
+        return server.playerList.players.map { it.gameProfile }
     }
 
     fun uuidToName(id: UUID): String? {
-        val onlinePlayer = getOnlinePlayers()?.find { it.id.equals(id) }
+        val onlinePlayer = server.playerList.getPlayer(id)?.gameProfile
         return if (onlinePlayer != null) {
             onlinePlayer.name
         } else {
@@ -21,7 +19,7 @@ object MinecraftHandler {
     }
 
     fun nameToUUID(name: String): UUID? {
-        val onlinePlayer = getOnlinePlayers()?.find { it.name.equals(name) }
+        val onlinePlayer = server.playerList.getPlayerByName(name)?.gameProfile
         return if (onlinePlayer != null) {
             onlinePlayer.id
         } else {

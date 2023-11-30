@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.commands
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.handlers.MinecraftHandler
 import dev.erdragh.astralbot.handlers.WhitelistHandler
+import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -64,7 +65,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     private fun handleMinecraftToDiscord(event: SlashCommandInteractionEvent, minecraftName: String) {
         val notFound = "Minecraft username %s is not linked to any Discord User"
-        val minecraftID = MinecraftHandler.nameToUUID(minecraftName)
+        val minecraftID = minecraftHandler?.nameToUUID(minecraftName)
         val discordID = if (minecraftID != null) WhitelistHandler.checkWhitelist(minecraftID) else null
         if (discordID != null) {
             val guild = event.guild
@@ -99,7 +100,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
     private fun handleDiscordToMinecraft(event: SlashCommandInteractionEvent, discordUser: Member) {
         val minecraftID = WhitelistHandler.checkWhitelist(discordUser.idLong)
         if (minecraftID != null) {
-            val minecraftUser = MinecraftHandler.uuidToName(minecraftID)
+            val minecraftUser = minecraftHandler?.uuidToName(minecraftID)
             if (minecraftUser != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
                     "%s is linked to Minecraft username %s", discordUser, minecraftUser
@@ -134,7 +135,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (event.focusedOption.name == OPTION_MC) {
-            val minecraftUsers = MinecraftHandler.getOnlinePlayers()?.map(GameProfile::getName)
+            val minecraftUsers = minecraftHandler?.getOnlinePlayers()?.map(GameProfile::getName)
             event.replyChoiceStrings(minecraftUsers?.filter { it.startsWith(event.focusedOption.value) } ?: listOf()).queue()
         }
     }
