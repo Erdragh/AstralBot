@@ -17,6 +17,9 @@ object FAQHandler {
 
     init {
         LOGGER.info("FAQHandler loading")
+        if (!faqDirectory.exists() && !faqDirectory.mkdir()) {
+            LOGGER.error("Couldn't create FAQ directory")
+        }
         if (!faqDirectory.exists() || !faqDirectory.isDirectory) {
             LOGGER.error("FAQ directory not specified as directory: ${faqDirectory.absolutePath}")
         } else {
