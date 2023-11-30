@@ -1,5 +1,7 @@
 package dev.erdragh.astralbot.commands
 
+import com.mojang.authlib.GameProfile
+import dev.erdragh.astralbot.handlers.MinecraftHandler
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
@@ -24,11 +26,10 @@ object LinkCommand : HandledSlashCommand {
 
         try {
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
-                event.hook.setEphemeral(true)
-                    .sendMessageFormat("Minecraft username %s already linked", "Erdragh").queue()
+                event.hook.setEphemeral(true).sendMessageFormat("Minecraft username %s already linked", "Erdragh")
+                    .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
-                event.hook.setEphemeral(true)
-                    .sendMessageFormat("%s already linked", event.member).queue()
+                event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
                 event.hook.setEphemeral(true)
@@ -63,8 +64,8 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     private fun handleMinecraftToDiscord(event: SlashCommandInteractionEvent, minecraftName: String) {
         val notFound = "Minecraft username %s is not linked to any Discord User"
-        val discordID =
-            WhitelistHandler.checkWhitelist(UUID.fromString("decdaa2b-c56e-49e8-862d-bbdd89a15b0a")) // TODO: Get actual minecraft user from server
+        val minecraftID = MinecraftHandler.nameToUUID(minecraftName)
+        val discordID = if (minecraftID != null) WhitelistHandler.checkWhitelist(minecraftID) else null
         if (discordID != null) {
             val guild = event.guild
             if (guild != null) {
@@ -72,33 +73,25 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 guild.loadMembers {
                     if (it.idLong == discordID) {
                         event.hook.setEphemeral(true)
-                            .sendMessageFormat("Minecraft username %s is linked to %s", minecraftName, it)
-                            .queue()
+                            .sendMessageFormat("Minecraft username %s is linked to %s", minecraftName, it).queue()
                         found = true
                     }
                 }.onError {
-                    event.hook.setEphemeral(true)
-                        .sendMessageFormat("Something went wrong: %s", it.localizedMessage)
+                    event.hook.setEphemeral(true).sendMessageFormat("Something went wrong: %s", it.localizedMessage)
                         .queue()
                 }.onSuccess {
                     if (!found) {
-                        event.hook.setEphemeral(true)
-                            .sendMessageFormat(
-                                notFound,
-                                minecraftName
+                        event.hook.setEphemeral(true).sendMessageFormat(
+                                notFound, minecraftName
                             ).queue()
                     }
                 }
             } else {
-                event.hook.setEphemeral(true)
-                    .sendMessage("Something went wrong")
-                    .queue()
+                event.hook.setEphemeral(true).sendMessage("Something went wrong").queue()
             }
         } else {
-            event.hook.setEphemeral(true)
-                .sendMessageFormat(
-                    notFound,
-                    minecraftName
+            event.hook.setEphemeral(true).sendMessageFormat(
+                    notFound, minecraftName
                 ).queue()
         }
     }
@@ -106,18 +99,15 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
     private fun handleDiscordToMinecraft(event: SlashCommandInteractionEvent, discordUser: Member) {
         val minecraftID = WhitelistHandler.checkWhitelist(discordUser.idLong)
         if (minecraftID != null) {
-            val minecraftUser = "Erdragh" // TODO: Get using actual minecraftID from server instance
+            val minecraftUser = MinecraftHandler.uuidToName(minecraftID)
             if (minecraftUser != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
-                    "%s is linked to Minecraft username %s",
-                    discordUser,
-                    minecraftUser
+                    "%s is linked to Minecraft username %s", discordUser, minecraftUser
                 ).queue()
                 return
             }
         }
-        event.hook.setEphemeral(true)
-            .sendMessageFormat("%s not linked to any Minecraft username", discordUser).queue()
+        event.hook.setEphemeral(true).sendMessageFormat("%s not linked to any Minecraft username", discordUser).queue()
     }
 
     override fun handle(event: SlashCommandInteractionEvent) {
@@ -144,8 +134,8 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (event.focusedOption.name == OPTION_MC) {
-            // TODO: Suggest currently online users
-            event.replyChoiceStrings(arrayOf("Erdragh").filter { it.startsWith(event.focusedOption.value) }).queue()
+            val minecraftUsers = MinecraftHandler.getOnlinePlayers()?.map(GameProfile::getName)
+            event.replyChoiceStrings(minecraftUsers?.filter { it.startsWith(event.focusedOption.value) } ?: listOf()).queue()
         }
     }
 }
