@@ -68,9 +68,6 @@ subprojects {
             exclude(group = "org.jetbrains.kotlin")
         }
 
-        if (!isCommon) {
-        }
-
         implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
         implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
         implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -115,7 +112,7 @@ subprojects {
         }
 
         dependencies {
-            "include"("net.dv8tion:JDA:$jdaVersion") {
+            "shadow"("net.dv8tion:JDA:$jdaVersion") {
                 exclude(module = "opus-java")
                 exclude(group = "org.jetbrains.kotlin")
             }
@@ -124,7 +121,9 @@ subprojects {
         tasks {
             "shadowJar"(ShadowJar::class) {
                 archiveClassifier.set("dev-shadow")
-                configurations = listOf(shadowCommon)
+                configurations = listOf(shadowCommon, project.configurations.findByName("shadow"))
+
+                relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
