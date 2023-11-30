@@ -66,6 +66,7 @@ subprojects {
         implementation("net.dv8tion:JDA:$jdaVersion") {
             exclude(module = "opus-java")
             exclude(group = "org.jetbrains.kotlin")
+            exclude(group = "org.slf4j")
         }
 
         implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -115,6 +116,7 @@ subprojects {
             "shadow"("net.dv8tion:JDA:$jdaVersion") {
                 exclude(module = "opus-java")
                 exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "org.slf4j")
             }
         }
 
@@ -127,6 +129,7 @@ subprojects {
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
+                exclude("**/org/slf4j/**")
             }
 
             "remapJar"(RemapJarTask::class) {

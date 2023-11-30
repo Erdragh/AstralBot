@@ -45,5 +45,6 @@ dependencies {
     forgeRuntimeLibrary("net.dv8tion:JDA:$jdaVersion") {
         exclude(module = "opus-java")
         exclude(group = "org.jetbrains.kotlin")
+        exclude(group = "org.slf4j")
     }
 }
