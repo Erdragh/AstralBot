@@ -113,7 +113,7 @@ subprojects {
         }
 
         dependencies {
-            "shadow"("net.dv8tion:JDA:$jdaVersion") {
+            shadowCommon("net.dv8tion:JDA:$jdaVersion") {
                 exclude(module = "opus-java")
                 exclude(group = "org.jetbrains.kotlin")
                 exclude(group = "org.slf4j")
@@ -123,7 +123,7 @@ subprojects {
         tasks {
             "shadowJar"(ShadowJar::class) {
                 archiveClassifier.set("dev-shadow")
-                configurations = listOf(shadowCommon, project.configurations.findByName("shadow"))
+                configurations = listOf(shadowCommon)
 
                 relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
