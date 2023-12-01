@@ -38,15 +38,15 @@ jobs:
       - name: gradle clean build
         run: ./gradlew clean build
 
-      - name: Capture Fabric Artifacts
-        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
-        uses: actions/upload-artifact@v3
-        with:
-          name: Fabric Artifacts
-          path: fabric/build/libs
-      - name: Capture Forge Artifacts
-        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
-        uses: actions/upload-artifact@v3
-        with:
-          name: Forge Artifacts
-          path: forge/build/libs
+#      - name: Capture Fabric Artifacts
+#        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: Fabric Artifacts
+#          path: fabric/build/libs
+#      - name: Capture Forge Artifacts
+#        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: Forge Artifacts
+#          path: forge/build/libs
