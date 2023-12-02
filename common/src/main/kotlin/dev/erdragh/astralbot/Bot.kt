@@ -9,14 +9,20 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 const val MODID = "astralbot"
 val LOGGER: Logger = LoggerFactory.getLogger(MODID)
 var minecraftHandler: MinecraftHandler? = null
 var jda: JDA? = null
+lateinit var baseDirectory: File
 
 fun startAstralbot(server: MinecraftServer) {
     minecraftHandler = MinecraftHandler(server)
+    baseDirectory = File(server.serverDirectory, MODID)
+    baseDirectory.mkdir()
     FAQHandler.start()
     val env = System.getenv()
     if (!env.containsKey("DISCORD_TOKEN")) {

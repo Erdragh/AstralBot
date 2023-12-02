@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.mixins;
 import com.mojang.authlib.GameProfile;
 import dev.erdragh.astralbot.handlers.WhitelistHandler;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.commands.TellRawCommand;
 import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +21,6 @@ public class PlayerListMixin {
 
   @Inject(method = "canPlayerLogin", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;translatable(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;"), cancellable = true)
   private void astralbot$returnWhiteListMessage(SocketAddress socketAddress, GameProfile gameProfile, CallbackInfoReturnable<Component> cir) {
-    cir.setReturnValue(Component.literal("Whitelist yourself using /link with code " + WhitelistHandler.INSTANCE.getWhitelistCode(gameProfile.getId())));
+    cir.setReturnValue(WhitelistHandler.INSTANCE.writeWhitelistMessage(gameProfile));
   }
 }

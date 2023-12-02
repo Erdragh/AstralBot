@@ -1,13 +1,14 @@
 package dev.erdragh.astralbot.handlers
 
 import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.baseDirectory
 import java.io.File
 import java.nio.file.StandardWatchEventKinds
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 
 object FAQHandler {
-    private val faqDirectory = File("faq")
+    private val faqDirectory = File(baseDirectory, "faq")
     private val availableFAQIDs = HashSet<String>()
     private var watcher: FileWatcher? = null
 
