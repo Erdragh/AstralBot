@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 object CommandHandlingListener : ListenerAdapter() {
-
     override fun onGuildJoin(event: GuildJoinEvent) {
         event.guild.updateCommands().addCommands(
             commands.map { it.command }

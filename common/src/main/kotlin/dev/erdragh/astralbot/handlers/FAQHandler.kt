@@ -2,20 +2,16 @@ package dev.erdragh.astralbot.handlers
 
 import dev.erdragh.astralbot.LOGGER
 import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchKey
 import kotlin.io.path.extension
-import kotlin.io.path.isDirectory
 import kotlin.io.path.nameWithoutExtension
 
 object FAQHandler {
     private val faqDirectory = File("faq")
-    private val availableFAQIDs = ArrayList<String>()
-    private var watcherThread: Thread? = null
+    private val availableFAQIDs = HashSet<String>()
+    private lateinit var watcher: FileWatcher
 
-    init {
+    fun start() {
         LOGGER.info("FAQHandler loading")
         if (!faqDirectory.exists() && !faqDirectory.mkdir()) {
             LOGGER.error("Couldn't create FAQ directory")
@@ -26,43 +22,23 @@ object FAQHandler {
             val findMarkdownRegex = Regex(".+\\.md$")
             val faqFiles = faqDirectory.listFiles { it -> !it.isDirectory }?.filter { it.name.matches(findMarkdownRegex) }?.map { it.nameWithoutExtension }
             faqFiles?.forEach(availableFAQIDs::add)
-            watcherThread = (Thread {
-                val watcher = FileSystems.getDefault().newWatchService()
 
-                val faqDirectoryPath = faqDirectory.toPath()
-                faqDirectoryPath.register(
-                    watcher,
-                    StandardWatchEventKinds.ENTRY_CREATE,
-                    StandardWatchEventKinds.ENTRY_DELETE
-                )
-
-                try {
-                    var key: WatchKey = watcher.take()
-                    while (!Thread.currentThread().isInterrupted) {
-                        for (event in key.pollEvents()) {
-                            val ctx = event.context()
-                            val path = event.context() as Path
-                            LOGGER.debug("Handling File Event: {} for {}", event.kind(), ctx)
-                            if (!path.isDirectory() && path.extension == "md") {
-                                when (event.kind()) {
-                                    StandardWatchEventKinds.ENTRY_CREATE -> {
-                                        availableFAQIDs.add(path.nameWithoutExtension)
-                                    }
-
-                                    StandardWatchEventKinds.ENTRY_DELETE -> {
-                                        availableFAQIDs.remove(path.nameWithoutExtension)
-                                    }
-                                }
-                            }
-                        }
-                        key.reset()
-                        key = watcher.take()
+            watcher = FileWatcher(faqDirectory.toPath()) {
+                LOGGER.info("Event Handling: {}", it.kind())
+                val fileName = it.context().nameWithoutExtension
+                val extension = it.context().extension
+                if (extension == "md") when (it.kind()) {
+                    StandardWatchEventKinds.ENTRY_CREATE -> {
+                        availableFAQIDs.add(fileName)
                     }
-                } catch (_: InterruptedException) {
-                    // Do Nothing. If this thread is interrupted it means it should just stop
+                    StandardWatchEventKinds.ENTRY_DELETE -> {
+                        availableFAQIDs.remove(fileName)
+                    }
                 }
-            })
-            watcherThread?.start()
+            }
+            watcher.startWatching()
+
+            LOGGER.info("FAQHandler loaded")
         }
     }
 
@@ -80,8 +56,9 @@ object FAQHandler {
         return availableFAQIDs.filter { it.startsWith(slug, true) }
     }
 
-    fun shutdownWatcher() {
-        watcherThread?.interrupt()
+    fun stop() {
+        LOGGER.info("Shutting down FileSystem Watcher")
+        watcher.stopWatching()
     }
 }
 

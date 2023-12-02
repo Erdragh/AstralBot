@@ -1,19 +1,21 @@
 package dev.erdragh.astralbot.fabric
 
 import dev.erdragh.astralbot.LOGGER
-import dev.erdragh.astralbot.setupAstralbot
+import dev.erdragh.astralbot.startAstralbot
+import dev.erdragh.astralbot.stopAstralbot
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import java.util.concurrent.atomic.AtomicBoolean
 
 object BotMod : ModInitializer {
-    private val LOADED = AtomicBoolean(false)
     override fun onInitialize() {
-        ServerWorldEvents.LOAD.register { server, _ ->
-            if (!LOADED.getAndSet(true)) {
-                LOGGER.info("Starting AstralBot on Fabric")
-                setupAstralbot(server)
-            }
+        ServerLifecycleEvents.SERVER_STARTED.register {
+            LOGGER.info("Starting AstralBot on Fabric")
+            startAstralbot(it)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPING.register {
+            stopAstralbot()
         }
     }
 }
