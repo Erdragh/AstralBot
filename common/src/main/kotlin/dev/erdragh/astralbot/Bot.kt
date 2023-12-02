@@ -41,8 +41,11 @@ fun startAstralbot(server: MinecraftServer) {
 
 fun stopAstralbot() {
     LOGGER.info("Shutting down AstralBot")
+    LOGGER.info("JDA: {}", jda)
     FAQHandler.stop()
-    jda?.shutdown()
+    LOGGER.info("Shutting JDA")
+    jda?.shutdownNow()
+    LOGGER.info("After shutdownNow")
     jda?.awaitShutdown()
     LOGGER.info("Shut down AstralBot")
 }

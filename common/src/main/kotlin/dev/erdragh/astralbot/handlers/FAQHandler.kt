@@ -9,7 +9,7 @@ import kotlin.io.path.nameWithoutExtension
 object FAQHandler {
     private val faqDirectory = File("faq")
     private val availableFAQIDs = HashSet<String>()
-    private lateinit var watcher: FileWatcher
+    private var watcher: FileWatcher? = null
 
     fun start() {
         LOGGER.info("FAQHandler loading")
@@ -36,7 +36,7 @@ object FAQHandler {
                     }
                 }
             }
-            watcher.startWatching()
+            watcher?.startWatching()
 
             LOGGER.info("FAQHandler loaded")
         }
@@ -58,7 +58,7 @@ object FAQHandler {
 
     fun stop() {
         LOGGER.info("Shutting down FileSystem Watcher")
-        watcher.stopWatching()
+        watcher?.stopWatching()
     }
 }
 
