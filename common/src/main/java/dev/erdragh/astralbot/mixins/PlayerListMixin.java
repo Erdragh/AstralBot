@@ -15,11 +15,11 @@ import java.net.SocketAddress;
 public class PlayerListMixin {
   @Inject(method = "isWhiteListed", at = @At("RETURN"), cancellable = true)
   void astralbot$isWhiteListed(GameProfile profile, CallbackInfoReturnable<Boolean> cir) {
-    cir.setReturnValue(Boolean.TRUE.equals(cir.getReturnValue()) || WhitelistHandler.INSTANCE.checkWhitelist(profile.getId()) != null);
+    cir.setReturnValue(Boolean.TRUE.equals(cir.getReturnValue()) || WhitelistHandler.INSTANCE.handleLoginAttempt(profile.getId()));
   }
 
   @Inject(method = "canPlayerLogin", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;translatable(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;"), cancellable = true)
   private void astralbot$returnWhiteListMessage(SocketAddress socketAddress, GameProfile gameProfile, CallbackInfoReturnable<Component> cir) {
-    cir.setReturnValue(Component.literal("Whitelist yourself using /link"));
+    cir.setReturnValue(Component.literal("Whitelist yourself using /link with code " + WhitelistHandler.INSTANCE.getWhitelistCode(gameProfile.getId())));
   }
 }

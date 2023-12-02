@@ -22,23 +22,26 @@ object LinkCommand : HandledSlashCommand {
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
         val linkCode = event.getOption(OPTION_CODE)?.asString
-        val minecraftID = minecraftHandler?.byName("Erdragh")?.id
+        val linkCodeInt = linkCode?.toDoubleOrNull()?.toInt()
+        val minecraftID = if (linkCodeInt != null) WhitelistHandler.getPlayerFromCode(linkCodeInt) else null
 
         if (minecraftID == null) {
             event.hook.setEphemeral(true).sendMessage("Couldn't find minecraft account to link").queue()
             return
         }
 
+        val minecraftUser = minecraftHandler?.byUUID(minecraftID)
+
         try {
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
-                event.hook.setEphemeral(true).sendMessageFormat("Minecraft username %s already linked", "Erdragh")
+                event.hook.setEphemeral(true).sendMessageFormat("Minecraft username %s already linked", minecraftUser?.name)
                     .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
                 event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Linked %s to Minecraft username %s", event.member, "Erdragh").queue()
+                    .sendMessageFormat("Linked %s to Minecraft username %s", event.member, minecraftUser?.name).queue()
             }
         } catch (e: Exception) {
             event.hook.setEphemeral(true).sendMessageFormat("Failed to link: %s", e.localizedMessage).queue()

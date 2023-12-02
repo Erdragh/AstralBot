@@ -1,16 +1,25 @@
 package dev.erdragh.astralbot.handlers
 
+import com.mojang.authlib.GameProfile
 import net.dv8tion.jda.api.entities.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.Connection
-import java.util.UUID
+import java.util.*
+import java.util.Random
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
+import kotlin.random.asKotlinRandom
+import kotlin.random.nextInt
 
 object WhitelistHandler {
     // See: https://github.com/JetBrains/Exposed/wiki/
     private val db = Database.connect("jdbc:sqlite:whitelist.db", "org.sqlite.JDBC")
+
+    private val loginCodes = HashMap<Int, UUID>()
+    private val loginRandom = Random().asKotlinRandom()
 
     private object WhitelistedUser : Table() {
         val discordID: Column<Long> = long("discordID")
@@ -35,6 +44,7 @@ object WhitelistHandler {
                 it[minecraftID] = id
             }
         }
+        loginCodes.remove(getWhitelistCode(id))
     }
 
     fun unWhitelist(user: User) {
@@ -61,5 +71,24 @@ object WhitelistHandler {
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
         }
         return result
+    }
+
+    fun handleLoginAttempt(minecraftID: UUID): Boolean {
+        val isWhitelisted = checkWhitelist(minecraftID) != null
+        if (!loginCodes.containsValue(minecraftID)) {
+            val loginCodeRange = 10000..99999
+            var whitelistCode = loginRandom.nextInt(loginCodeRange)
+            while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
+            loginCodes[whitelistCode] = minecraftID
+        }
+        return isWhitelisted
+    }
+
+    fun getWhitelistCode(minecraftID: UUID): Int? {
+        return loginCodes.entries.find { it.value == minecraftID }?.key
+    }
+
+    fun getPlayerFromCode(code: Int): UUID? {
+        return loginCodes[code]
     }
 }
