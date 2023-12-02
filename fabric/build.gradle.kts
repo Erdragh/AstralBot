@@ -21,10 +21,13 @@ dependencies {
     val fabricApiVersion: String by project
     val modMenuVersion: String by project
     val fabricKotlinVersion: String by project
+    val forgeConfigAPIVersion: String by project
 
     modImplementation(group = "net.fabricmc", name = "fabric-loader", version = fabricLoaderVersion)
     modApi(group = "net.fabricmc.fabric-api", name = "fabric-api", version = "$fabricApiVersion+$minecraftVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
 
     modApi(group = "com.terraformersmc", name = "modmenu", version = modMenuVersion)
+
+    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
 }

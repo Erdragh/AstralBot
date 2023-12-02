@@ -1,14 +1,19 @@
 package dev.erdragh.astralbot.fabric
 
 import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.MODID
+import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
+import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import java.util.concurrent.atomic.AtomicBoolean
+import net.minecraftforge.fml.config.ModConfig
 
 object BotMod : ModInitializer {
     override fun onInitialize() {
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+
         ServerLifecycleEvents.SERVER_STARTED.register {
             LOGGER.info("Starting AstralBot on Fabric")
             startAstralbot(it)

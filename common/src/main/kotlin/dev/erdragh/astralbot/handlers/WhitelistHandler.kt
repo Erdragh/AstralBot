@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import dev.erdragh.astralbot.config.AstralBotConfig
 import net.dv8tion.jda.api.entities.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -73,15 +74,26 @@ object WhitelistHandler {
         return result
     }
 
-    fun handleLoginAttempt(minecraftID: UUID): Boolean {
+    fun handleLoginAttempt(minecraftID: UUID, defaultWhitelisted: Boolean): Boolean {
         val isWhitelisted = checkWhitelist(minecraftID) != null
-        if (!loginCodes.containsValue(minecraftID)) {
+        val hasToBeWhitelistedByLink =
+            (!isWhitelisted && AstralBotConfig.REQUIRE_LINK_FOR_WHITELIST.get()) || (!isWhitelisted && !defaultWhitelisted)
+        // Generates a link code only if the user doesn't have one and has to go through linking to get one
+        if (!loginCodes.containsValue(minecraftID) && hasToBeWhitelistedByLink) {
             val loginCodeRange = 10000..99999
             var whitelistCode = loginRandom.nextInt(loginCodeRange)
-            while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
+            // The following line could be vulnerably to a DOS attack
+            // I accept the possibility of a login code possibly getting overwritten
+            // so this DOS won't cause an infinite loop. Such a DOS may still cause
+            // Players to not be able to whitelist.
+            // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
             loginCodes[whitelistCode] = minecraftID
         }
-        return isWhitelisted
+        return if (AstralBotConfig.REQUIRE_LINK_FOR_WHITELIST.get()) {
+            isWhitelisted && defaultWhitelisted
+        } else {
+            isWhitelisted || defaultWhitelisted
+        }
     }
 
     fun getWhitelistCode(minecraftID: UUID): Int? {

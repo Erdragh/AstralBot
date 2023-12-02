@@ -43,6 +43,11 @@ subprojects {
             name = "Kotlin for Forge"
             setUrl("https://thedarkcolour.github.io/KotlinForForge/")
         }
+        // Forge Config API port
+        maven {
+            name = "Fuzs Mod Resources"
+            setUrl("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
+        }
     }
 
     // Bot dependencies

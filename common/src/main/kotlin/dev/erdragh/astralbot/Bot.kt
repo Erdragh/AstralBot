@@ -10,7 +10,8 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-val LOGGER: Logger = LoggerFactory.getLogger("AstralBot")
+const val MODID = "astralbot"
+val LOGGER: Logger = LoggerFactory.getLogger(MODID)
 var minecraftHandler: MinecraftHandler? = null
 var jda: JDA? = null
 
