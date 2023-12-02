@@ -1,6 +1,8 @@
 package dev.erdragh.astralbot.commands
 
 import dev.erdragh.astralbot.handlers.FAQHandler
+import dev.erdragh.astralbot.handlers.MinecraftHandler
+import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -12,7 +14,8 @@ val commands = arrayOf(
     FAQCommand,
     LinkCommand,
     UnlinkCommand,
-    LinkCheckCommand
+    LinkCheckCommand,
+    ListCommand
 )
 
 interface HandledSlashCommand {
@@ -59,6 +62,22 @@ object FAQCommand : HandledSlashCommand, AutocompleteCommand {
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (event.focusedOption.name == OPTION_ID) {
             event.replyChoiceStrings(FAQHandler.suggestFAQIds(event.focusedOption.value)).queue()
+        }
+    }
+}
+
+object ListCommand : HandledSlashCommand {
+    override val command: SlashCommandData = Commands.slash("list", "Lists currently online players")
+
+    override fun handle(event: SlashCommandInteractionEvent) {
+        event.deferReply(false).queue()
+
+        val list = minecraftHandler?.getOnlinePlayers()?.map { "- ${it.name}\n" }
+
+        if (!list.isNullOrEmpty()) {
+            event.hook.sendMessage("The following players are currently online:\n${list.joinToString()}").queue()
+        } else {
+            event.hook.sendMessage("There are no players online currently").queue()
         }
     }
 }
