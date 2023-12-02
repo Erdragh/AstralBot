@@ -50,6 +50,15 @@ subprojects {
     val exposedVersion: String by project
     val sqliteJDBCVersion: String by project
 
+    val botDependencies = arrayOf(
+        "net.dv8tion:JDA:$jdaVersion",
+        "org.jetbrains.exposed:exposed-core:$exposedVersion",
+        "org.jetbrains.exposed:exposed-dao:$exposedVersion",
+        "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
+        "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
+        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
+    )
+
     dependencies {
         // Minecraft Mod dependencies
         "minecraft"("::$minecraftVersion")
@@ -63,19 +72,13 @@ subprojects {
             parchment(create(group = "org.parchmentmc.data", name = "parchment-$minecraftVersion", version = parchmentVersion))
         })
 
-        implementation("net.dv8tion:JDA:$jdaVersion") {
-            exclude(module = "opus-java")
-            exclude(group = "org.jetbrains.kotlin")
-            exclude(group = "org.slf4j")
+        botDependencies.forEach {
+            implementation(it) {
+                exclude(module = "opus-java")
+                exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "org.slf4j")
+            }
         }
-
-        implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-        implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-        implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-
-        implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
-
-        implementation("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
     }
 
     java {
@@ -109,10 +112,13 @@ subprojects {
         }
 
         dependencies {
-            shadowCommon("net.dv8tion:JDA:$jdaVersion") {
-                exclude(module = "opus-java")
-                exclude(group = "org.jetbrains.kotlin")
-                exclude(group = "org.slf4j")
+            botDependencies.forEach {
+                shadowCommon(it) {
+                    exclude(module = "opus-java")
+                    exclude(group = "org.jetbrains.kotlin")
+                    exclude(group = "org.jetbrains.kotlinx")
+                    exclude(group = "org.slf4j")
+                }
             }
         }
 
