@@ -2,8 +2,10 @@ package dev.erdragh.astralbot.forge
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
+import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.server.ServerStartedEvent
 import net.minecraftforge.event.server.ServerStoppingEvent
 import net.minecraftforge.fml.ModLoadingContext
@@ -17,6 +19,7 @@ object BotMod {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
+        FORGE_BUS.addListener(::onChatMessage)
     }
 
     private fun onServerStart(event: ServerStartedEvent) {
@@ -26,5 +29,9 @@ object BotMod {
 
     private fun onServerStop(event: ServerStoppingEvent) {
         stopAstralbot()
+    }
+
+    private fun onChatMessage(event: ServerChatEvent) {
+        minecraftHandler?.sendChatToDiscord(event.player, event.message.string)
     }
 }

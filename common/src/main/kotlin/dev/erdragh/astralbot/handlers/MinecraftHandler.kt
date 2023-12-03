@@ -1,7 +1,12 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.minecraft.network.chat.ChatType
+import net.minecraft.network.chat.PlayerChatMessage
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerPlayer
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -10,7 +15,9 @@ import kotlin.jvm.optionals.getOrNull
  * methods for fetching [GameProfile]s
  * @author Erdragh
  */
-class MinecraftHandler(private val server: MinecraftServer) {
+class MinecraftHandler(private val server: MinecraftServer, private val api: JDA?) {
+    private var channel: TextChannel? = null
+
     /**
      * Fetches all currently online players' [GameProfile]s
      * @return a [Collection] of all currently online players'
@@ -44,5 +51,11 @@ class MinecraftHandler(private val server: MinecraftServer) {
      */
     fun byName(name: String): GameProfile? {
         return server.profileCache?.get(name)?.getOrNull()
+    }
+
+    fun sendChatToDiscord(player: ServerPlayer, message: String) {
+        if (channel == null) channel = api?.getTextChannelsByName("chat", true)?.get(0)
+        channel?.sendMessage("<${player.name.string}> $message")?.setSuppressedNotifications(true)
+            ?.setSuppressEmbeds(true)?.queue()
     }
 }

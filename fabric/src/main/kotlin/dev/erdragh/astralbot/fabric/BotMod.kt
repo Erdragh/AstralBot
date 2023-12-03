@@ -1,13 +1,11 @@
 package dev.erdragh.astralbot.fabric
 
-import dev.erdragh.astralbot.LOGGER
-import dev.erdragh.astralbot.MODID
+import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.startAstralbot
-import dev.erdragh.astralbot.stopAstralbot
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.minecraftforge.fml.config.ModConfig
 
 object BotMod : ModInitializer {
@@ -21,6 +19,10 @@ object BotMod : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STOPPING.register {
             stopAstralbot()
+        }
+
+        ServerMessageEvents.CHAT_MESSAGE.register { message, player, _ ->
+            minecraftHandler?.sendChatToDiscord(player, message.signedContent())
         }
     }
 }

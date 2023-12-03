@@ -18,7 +18,12 @@ var jda: JDA? = null
 lateinit var baseDirectory: File
 
 fun startAstralbot(server: MinecraftServer) {
-    minecraftHandler = MinecraftHandler(server)
+    val env = System.getenv()
+    if (!env.containsKey("DISCORD_TOKEN")) {
+        LOGGER.warn("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
+        return
+    }
+
     baseDirectory = File(server.serverDirectory, MODID)
     if (baseDirectory.mkdir()) {
         LOGGER.debug("Created $MODID directory")
@@ -26,18 +31,14 @@ fun startAstralbot(server: MinecraftServer) {
 
     FAQHandler.start()
 
-    val env = System.getenv()
-    if (!env.containsKey("DISCORD_TOKEN")) {
-        LOGGER.warn("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
-        return
-    }
-
     jda = JDABuilder.createLight(
             env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MEMBERS
         ).addEventListeners(CommandHandlingListener).build()
+
+    minecraftHandler = MinecraftHandler(server, jda)
 
     // This makes sure that the extra parallel tasks from this
     // mod/bot combo get shut down even if the Server Shutdown
