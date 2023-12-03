@@ -4,10 +4,24 @@ import dev.erdragh.astralbot.LOGGER
 import kotlinx.coroutines.*
 import java.nio.file.*
 
+/**
+ * Abstraction around Java's [WatchService] API that makes it easy to
+ * set up a handler for file changes in a non-blocking manner.
+ *
+ * @param directoryPath the [Path] which will be watched for file changes
+ * @param handler the function that gets called when an Event gets triggered
+ * @author Erdragh
+ */
 class FileWatcher(private val directoryPath: Path, private val handler: (event: WatchEvent<Path>) -> Unit) {
+    // These two references are needed to be able to stop
+    // the activities running in parallel to the main thread
     private var job: Job? = null
     private var watchService: WatchService? = null
 
+    /**
+     * Starts the file system watcher in parallel using Kotlin's coroutines
+     * and the [Dispatchers.IO] scope.
+     */
     fun startWatching() {
         job = GlobalScope.launch(Dispatchers.IO) {
             watchService = FileSystems.getDefault().newWatchService()
@@ -40,6 +54,10 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
         }
     }
 
+    /**
+     * Stops the file system watcher by closing the [watchService]
+     * and cancelling the [job] running in parallel
+     */
     fun stopWatching() {
         watchService?.close()
         job?.cancel()
