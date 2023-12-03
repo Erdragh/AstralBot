@@ -23,12 +23,15 @@ fun startAstralbot(server: MinecraftServer) {
     if (baseDirectory.mkdir()) {
         LOGGER.debug("Created $MODID directory")
     }
+
     FAQHandler.start()
+
     val env = System.getenv()
     if (!env.containsKey("DISCORD_TOKEN")) {
-        LOGGER.info("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
+        LOGGER.warn("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
         return
     }
+
     jda = JDABuilder.createLight(
             env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
@@ -36,8 +39,9 @@ fun startAstralbot(server: MinecraftServer) {
             GatewayIntent.GUILD_MEMBERS
         ).addEventListeners(CommandHandlingListener).build()
 
-    LOGGER.info("AstralBot fully started")
-
+    // This makes sure that the extra parallel tasks from this
+    // mod/bot combo get shut down even if the Server Shutdown
+    // Event never gets triggered.
     Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
             stopAstralbot()
@@ -47,11 +51,8 @@ fun startAstralbot(server: MinecraftServer) {
 
 fun stopAstralbot() {
     LOGGER.info("Shutting down AstralBot")
-    LOGGER.info("JDA: {}", jda)
     FAQHandler.stop()
-    LOGGER.info("Shutting JDA")
     jda?.shutdownNow()
-    LOGGER.info("After shutdownNow")
     jda?.awaitShutdown()
     LOGGER.info("Shut down AstralBot")
 }
