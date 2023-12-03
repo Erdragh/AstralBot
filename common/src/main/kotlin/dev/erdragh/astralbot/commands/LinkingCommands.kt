@@ -129,19 +129,21 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
         val minecraftName = event.getOption(OPTION_MC)?.asString
         val discordUser = event.getOption(OPTION_DC)?.asMentionable
 
-        if (minecraftName == null && discordUser == null) {
-            event.hook.setEphemeral(true)
-                .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
-        } else if (minecraftName != null && discordUser != null) {
-            event.hook.setEphemeral(true)
-                .sendMessage("You need to specify either a Discord user or a Minecraft Username, not both").queue()
-        } else if (minecraftName != null) {
-            handleMinecraftToDiscord(event, minecraftName)
-        } else if (discordUser is Member) {
-            handleDiscordToMinecraft(event, discordUser)
-        } else {
-            event.hook.setEphemeral(true)
-                .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
+        when {
+            minecraftName != null && discordUser != null -> {
+                event.hook.setEphemeral(true)
+                    .sendMessage("You need to specify either a Discord user or a Minecraft Username, not both").queue()
+            }
+            minecraftName != null -> {
+                handleMinecraftToDiscord(event, minecraftName)
+            }
+            discordUser is Member -> {
+                handleDiscordToMinecraft(event, discordUser)
+            }
+            else -> {
+                event.hook.setEphemeral(true)
+                    .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
+            }
         }
     }
 

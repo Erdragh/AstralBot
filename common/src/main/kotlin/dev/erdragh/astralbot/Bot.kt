@@ -20,22 +20,21 @@ lateinit var baseDirectory: File
 fun startAstralbot(server: MinecraftServer) {
     minecraftHandler = MinecraftHandler(server)
     baseDirectory = File(server.serverDirectory, MODID)
-    baseDirectory.mkdir()
+    if (baseDirectory.mkdir()) {
+        LOGGER.debug("Created $MODID directory")
+    }
     FAQHandler.start()
     val env = System.getenv()
     if (!env.containsKey("DISCORD_TOKEN")) {
         LOGGER.info("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
         return
     }
-    jda = JDABuilder
-        .createLight(
+    jda = JDABuilder.createLight(
             env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MEMBERS
-        )
-        .addEventListeners(CommandHandlingListener)
-        .build()
+        ).addEventListeners(CommandHandlingListener).build()
 
     LOGGER.info("AstralBot fully started")
 

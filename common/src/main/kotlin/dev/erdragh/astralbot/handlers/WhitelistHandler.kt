@@ -130,7 +130,7 @@ object WhitelistHandler {
             .replace("{{USER}}", user.name)
             .replace("{{CODE}}", getWhitelistCode(user.id).toString())
             .split("{{DISCORD}}")
-        if (template.isEmpty() || template[0].isEmpty()) throw IllegalStateException("Whitelist template empty")
+        require(template.isNotEmpty() && template[0].isNotEmpty()) { "Discord Template empty" }
         val discordLink = AstralBotConfig.DISCORD_LINK.get()
         val component = Component.empty()
         for (i in template.indices) {

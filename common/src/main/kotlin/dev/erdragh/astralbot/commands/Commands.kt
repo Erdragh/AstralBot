@@ -22,7 +22,7 @@ interface HandledSlashCommand {
     fun handle(event: SlashCommandInteractionEvent)
 }
 
-interface AutocompleteCommand {
+fun interface AutocompleteCommand {
     fun autocomplete(event: CommandAutoCompleteInteractionEvent)
 }
 
