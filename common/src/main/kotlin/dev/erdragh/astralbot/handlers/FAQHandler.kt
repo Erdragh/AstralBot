@@ -21,7 +21,9 @@ object FAQHandler {
             LOGGER.error("FAQ directory not specified as directory: ${faqDirectory.absolutePath}")
         } else {
             val findMarkdownRegex = Regex(".+\\.md$")
-            val faqFiles = faqDirectory.listFiles { it -> !it.isDirectory }?.filter { it.name.matches(findMarkdownRegex) }?.map { it.nameWithoutExtension }
+            val faqFiles =
+                faqDirectory.listFiles { it -> !it.isDirectory }?.filter { it.name.matches(findMarkdownRegex) }
+                    ?.map { it.nameWithoutExtension }
             faqFiles?.forEach(availableFAQIDs::add)
 
             watcher = FileWatcher(faqDirectory.toPath()) {
@@ -32,6 +34,7 @@ object FAQHandler {
                     StandardWatchEventKinds.ENTRY_CREATE -> {
                         availableFAQIDs.add(fileName)
                     }
+
                     StandardWatchEventKinds.ENTRY_DELETE -> {
                         availableFAQIDs.remove(fileName)
                     }

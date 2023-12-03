@@ -3,10 +3,8 @@ package dev.erdragh.astralbot.handlers
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.FormattedText
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -15,8 +13,6 @@ import java.io.File
 import java.sql.Connection
 import java.util.*
 import java.util.Random
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 import kotlin.random.asKotlinRandom
 import kotlin.random.nextInt
 

@@ -1,7 +1,6 @@
 package dev.erdragh.astralbot.commands
 
 import com.mojang.authlib.GameProfile
-import dev.erdragh.astralbot.handlers.MinecraftHandler
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.entities.Member
@@ -10,7 +9,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import java.util.*
 
 object LinkCommand : HandledSlashCommand {
     private const val OPTION_CODE = "code"
@@ -34,7 +32,8 @@ object LinkCommand : HandledSlashCommand {
 
         try {
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
-                event.hook.setEphemeral(true).sendMessageFormat("Minecraft username %s already linked", minecraftUser?.name)
+                event.hook.setEphemeral(true)
+                    .sendMessageFormat("Minecraft username %s already linked", minecraftUser?.name)
                     .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
                 event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()

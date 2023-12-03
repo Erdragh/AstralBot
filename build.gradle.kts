@@ -74,7 +74,13 @@ subprojects {
 
             officialMojangMappings()
 
-            parchment(create(group = "org.parchmentmc.data", name = "parchment-$minecraftVersion", version = parchmentVersion))
+            parchment(
+                create(
+                    group = "org.parchmentmc.data",
+                    name = "parchment-$minecraftVersion",
+                    version = parchmentVersion
+                )
+            )
         })
 
         botDependencies.forEach {

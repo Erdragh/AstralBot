@@ -4,15 +4,12 @@ import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
-import net.minecraftforge.event.level.LevelEvent
 import net.minecraftforge.event.server.ServerStartedEvent
 import net.minecraftforge.event.server.ServerStoppingEvent
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.config.ModConfig
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
-import thedarkcolour.kotlinforforge.forge.MOD_CONTEXT
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Mod("astralbot")
 object BotMod {

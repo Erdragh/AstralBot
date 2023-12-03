@@ -2,7 +2,7 @@ package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
 import net.minecraft.server.MinecraftServer
-import java.util.UUID
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 class MinecraftHandler(private val server: MinecraftServer) {

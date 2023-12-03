@@ -22,7 +22,8 @@ object CommandHandlingListener : ListenerAdapter() {
     }
 
     override fun onCommandAutoCompleteInteraction(event: CommandAutoCompleteInteractionEvent) {
-        val usedCommand = commands.find { it is AutocompleteCommand && it.command.name == event.name } as AutocompleteCommand?
+        val usedCommand =
+            commands.find { it is AutocompleteCommand && it.command.name == event.name } as AutocompleteCommand?
         usedCommand?.autocomplete(event)
     }
 }

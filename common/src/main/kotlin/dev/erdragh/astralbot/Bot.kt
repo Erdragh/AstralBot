@@ -10,8 +10,6 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 const val MODID = "astralbot"
 val LOGGER: Logger = LoggerFactory.getLogger(MODID)
@@ -30,10 +28,12 @@ fun startAstralbot(server: MinecraftServer) {
         return
     }
     jda = JDABuilder
-        .createLight(env["DISCORD_TOKEN"],
+        .createLight(
+            env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.GUILD_MEMBERS)
+            GatewayIntent.GUILD_MEMBERS
+        )
         .addEventListeners(CommandHandlingListener)
         .build()
 

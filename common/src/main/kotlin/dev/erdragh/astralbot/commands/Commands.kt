@@ -1,7 +1,6 @@
 package dev.erdragh.astralbot.commands
 
 import dev.erdragh.astralbot.handlers.FAQHandler
-import dev.erdragh.astralbot.handlers.MinecraftHandler
 import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
