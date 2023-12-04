@@ -1,16 +1,16 @@
-**DISCLAIMER**: Much of the below stated is not yet implemented. Don't use this project yet,
-it's still very much WIP.
-
 # AstralBot
 [![build workflow](https://img.shields.io/github/actions/workflow/status/Erdragh/AstralBot/build.yml?style=for-the-badge)](https://github.com/Erdragh/AstralBot/actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/Juuxel/Adorn.svg?style=for-the-badge)](LICENSE)
 ![Environment](https://img.shields.io/badge/environment-server-4caf50?style=for-the-badge)
 
-This is a Minecraft mod and Discord Bot in one package. Initially made for the [Create: Astral](https://www.curseforge.com/minecraft/modpacks/create-astral)
-Modpack, the goal is to be easy-to-use and accessible for non-technical server admins,
+This is a Minecraft mod and Discord Bot in one package. It's intended for the [Create: Astral](https://www.curseforge.com/minecraft/modpacks/create-astral)
+Modpack's official server, but it's implemented cross-platform to be usable by others too.
+The goal is to be easy-to-use and accessible for non-technical server admins,
 while allowing true complexity for power users.
 
 ## Features
+These features are the core of what this bot will do. See [the Status section](#status)
+to see how much is already implemented.
 - Discord and Minecraft account linking, optionally requiring this to be whitelisted
 - Discord and Minecraft chat synchronization
 - FAQ commands using Markdown files without needing to restart the server
@@ -18,10 +18,11 @@ while allowing true complexity for power users.
 ## Implementation
 - [JDA](https://jda.wiki) library to communicate with the Discord API.
 - Kotlin for the improved development experience over Java
+- Architectury for multiplatform development
 - [JetBrains Exposed](https://github.com/JetBrains/Exposed) to communicate with the Database
 
 ## Configuration
-The following things can be configured
+The following things will be configurable:
 - Required linking to be whitelisted (default: `off`)
 - Chat synchronization with imitated Discord Users:
   1. No user imitation (The bot will write the messages under its own name)
@@ -31,6 +32,17 @@ The following things can be configured
   Default: No user imitation
 - Managing FAQs through a command interface (default: `off`)
 - Database connection. Uses an SQLite database by default
+
+## Status
+- [x] Whitelisting
+- [ ] FAQ Commands
+  - [x] Reading Markdown files
+  - [x] Updating suggestions without restart
+  - [ ] Management/Creation via commands
+- [ ] Chat synchronization
+  - [x] Minecraft to Discord
+  - [ ] Discord to Minecraft
+  - [ ] User imitation on Discord
 
 ## Running
 There is no public instance of this bot/mod available. To use it, create a new Application
@@ -58,6 +70,3 @@ DISCORD_TOKEN=<place token here> startmc.sh # Start the script with the env vari
 After starting the server, you can go into the OAuth2 URL builder on the Discord
 Developer Portal and generate a URL with the `bot` and `applications.command` permissions.
 Use the generated URL to have the bot join your server.
-
-To configure chat synchronization you need to run `/chatsync <channel>` to tell the bot
-where to synchronize the messages.
