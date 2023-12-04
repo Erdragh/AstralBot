@@ -53,8 +53,16 @@ class MinecraftHandler(private val server: MinecraftServer, private val api: JDA
         return server.profileCache?.get(name)?.getOrNull()
     }
 
+    /**
+     * Sends a message into the configured Discord channel based on
+     * the Chat [message] the [player] sent.
+     * @param player the Player who sent the message
+     * @param message the String contents of the message
+     */
     fun sendChatToDiscord(player: ServerPlayer, message: String) {
+        // TODO: Replace with more configurable channel selection
         if (channel == null) channel = api?.getTextChannelsByName("chat", true)?.get(0)
+
         channel?.sendMessage("<${player.name.string}> $message")?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()
     }
