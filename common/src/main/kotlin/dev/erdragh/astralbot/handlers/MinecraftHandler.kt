@@ -72,27 +72,58 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             ?.setSuppressEmbeds(true)?.queue()
     }
 
+    /**
+     * Sends a Discord message into the Minecraft chat as a System Message
+     * @param message the Discord message that will be put into the Minecraft chat
+     */
     private fun sendDiscordToChat(message: Message) {
         val formattedMessage = formattedMessage(message)
         server.playerList.broadcastSystemMessage(formattedMessage, false)
     }
 
+    /**
+     * Event handler that gets fired when the bot receives a message
+     * @param event the event which contains information about the message
+     */
     override fun onMessageReceived(event: MessageReceivedEvent) {
+        // Only send messages from the configured channel and only if the author isn't a bot
         if (event.channel.idLong == textChannel?.idLong && !event.author.isBot) {
             sendDiscordToChat(event.message)
         }
     }
 
+    /**
+     * Formats a Discord [Member] into a [Component] with their
+     * name and their Discord role color.
+     * @param member the member which will be used to get the data
+     */
     private fun formattedUser(member: Member): MutableComponent {
         return Component.literal(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
     }
 
+    /**
+     * Formats a Discord [Message] into a [Component] that gets sent
+     * into the Minecraft chat in [sendDiscordToChat].
+     *
+     * This formatting entails the following:
+     * - formatting users with [formattedUser]
+     * - resolving replies
+     * - the message itself
+     * - if enabled in [AstralBotConfig], the embeds and attachments
+     *   of the [message]
+     *
+     * @param message the relevant Discord message
+     */
     private fun formattedMessage(message: Message): MutableComponent {
         val comp = Component.empty()
+        // The actual sender of the message
         message.member?.let {
             comp.append(formattedUser(it))
         }
+
+        // The author of the message this is in reply to
         message.referencedMessage?.author?.id?.let { id ->
+            // This fetches the Member from the ID in a blocking manner
             guild?.retrieveMemberById(id)?.submit()?.get()?.let {
                 comp.append(
                     Component.literal(" replying to ")
@@ -100,13 +131,19 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                 comp.append(formattedUser(it))
             }
         }
+
+        // This is the actual message content
         val actualMessage = Component.empty()
             .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
             .append(message.contentDisplay)
+        // If it's enabled in the config you can click on a message and get linked to said message
+        // in the actual Discord client
         if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
             actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
         }
         comp.append(actualMessage)
+
+        // Only adds embeds if it's enabled in the config
         if (AstralBotConfig.HANDLE_EMBEDS.get()) {
             comp.append(formatEmbeds(message))
         }
@@ -114,8 +151,23 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return comp
     }
 
+    /**
+     * Formats the attachments and embeds on a Discord [Message] into
+     * a comma separated list.
+     * The following things can be en- or disabled in the [AstralBotConfig]:
+     * - Making the embeds clickable
+     * - Blocklist for disallowing certain URLs, blocking based on site hostname
+     *
+     * If an embed doesn't have a title it will be called embed`n` where `n` is
+     * the index of the embed. All embeds come before attachments. If the URL of
+     * an embed or attachment is blocked, it will display `BLOCKED` in red instead
+     * of the name.
+     *
+     * @param message the message of which the attachments and embeds are handled
+     */
     private fun formatEmbeds(message: Message): MutableComponent {
         val comp = Component.empty()
+        // Adds a newline with space if there are embeds and the message isn't empty
         if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
         var i = 0
         message.embeds.forEach {
@@ -133,9 +185,22 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return comp
     }
 
+    /**
+     * Formats a single attachment with a name and URL
+     *
+     * The following things can be en- or disabled in the [AstralBotConfig]:
+     * - Making the embeds clickable
+     * - Blocklist for disallowing certain URLs, blocking based on site hostname
+     *
+     * If the URL of an embed or attachment is blocked, it will display
+     * `BLOCKED` in red instead of the name.
+     *
+     * @param name the name of the embed
+     * @param url the url of the embed
+     */
     private fun formatEmbed(name: String, url: String?): MutableComponent {
         val comp = Component.empty()
-        if (urlAllowed(url)) {
+        if (AstralBotConfig.urlAllowed(url)) {
             val embedComponent = Component.literal(name)
             if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                 embedComponent.withStyle { style ->
@@ -150,19 +215,5 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             comp.append(Component.literal("BLOCKED").withStyle(ChatFormatting.RED))
         }
         return comp
-    }
-
-    private fun urlAllowed(url: String?): Boolean {
-        if (url == null) return true
-        try {
-            val parsedURL = URL(url)
-            for (blockedURL in AstralBotConfig.URL_BLOCKLIST.get()) {
-                if (parsedURL.host.equals(URL(blockedURL).host)) return false
-            }
-        } catch (e: Exception) {
-            LOGGER.warn("URL $url", e)
-            return false
-        }
-        return true
     }
 }

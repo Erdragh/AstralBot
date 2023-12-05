@@ -109,4 +109,24 @@ object AstralBotConfig {
 
         SPEC = builder.build()
     }
+
+    /**
+     * Decides if a given [url] is allowed based on the [URL_BLOCKLIST].
+     *
+     * @param url the URL to check
+     * @return whether the URL is valid. A [url] of `null` is allowed.
+     */
+    fun urlAllowed(url: String?): Boolean {
+        if (url == null) return true
+        try {
+            val parsedURL = URL(url)
+            for (blockedURL in URL_BLOCKLIST.get()) {
+                if (parsedURL.host.equals(URL(blockedURL).host)) return false
+            }
+        } catch (e: Exception) {
+            LOGGER.warn("URL $url", e)
+            return false
+        }
+        return true
+    }
 }
