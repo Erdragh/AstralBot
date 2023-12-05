@@ -36,6 +36,24 @@ object AstralBotConfig {
      */
     val DISCORD_GUILD: ForgeConfigSpec.ConfigValue<Long>
 
+    /**
+     * If this is set to true the message sent into the Minecraft chat
+     * will be clickable and take you to the relevant message on Discord
+     */
+    val CLICKABLE_MESSAGES: ForgeConfigSpec.BooleanValue
+
+    /**
+     * If this is on the embeds and attached files on a message will be
+     * handled and possibly displayed in messages sent to the players
+     */
+    val HANDLE_EMBEDS: ForgeConfigSpec.BooleanValue
+
+    /**
+     * If this is on embeds that have a URL associated with them will
+     * be clickable.
+     */
+    val CLICKABLE_EMBEDS: ForgeConfigSpec.BooleanValue
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -49,6 +67,13 @@ object AstralBotConfig {
             .define("discordChannel", (-1).toLong())
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
             .define("discordGuild", (-1).toLong())
+
+        CLICKABLE_MESSAGES = builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")
+            .define("clickableMessages", true)
+        HANDLE_EMBEDS = builder.comment("Whether to display embeds and attached files on messages")
+            .define("handleEmbeds", true)
+        CLICKABLE_EMBEDS = builder.comment("Whether to add click events opening URLs that may be associated with embeds")
+            .define("clickableEmbeds", true)
 
         SPEC = builder.build()
     }

@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.textChannel
 import net.dv8tion.jda.api.entities.Member
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
+import java.net.URL
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -91,13 +93,48 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
         message.referencedMessage?.author?.id?.let { id ->
             guild?.retrieveMemberById(id)?.submit()?.get()?.let {
-                comp.append(Component.literal(" replying to ").withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
+                comp.append(
+                    Component.literal(" replying to ")
+                        .withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
                 comp.append(formattedUser(it))
             }
         }
-        return comp
+        val actualMessage = Component.empty()
             .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
             .append(message.contentDisplay)
-            .withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
+        if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
+            actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
+        }
+        comp.append(actualMessage)
+        if (AstralBotConfig.HANDLE_EMBEDS.get()) {
+            if (message.embeds.size > 0 && message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+            var i = 0
+            message.embeds.forEach {
+                if (i++ != 0) comp.append(", ")
+                val embedComponent = Component.literal(it.title ?: "embed${i}")
+                if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                    embedComponent.withStyle { style ->
+                        it.url?.let { url ->
+                            style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                                .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                        }
+                    }
+                }
+                comp.append(embedComponent)
+            }
+            message.attachments.forEach {
+                if (i != 0) comp.append(", ")
+                val embedComponent = Component.literal(it.fileName)
+                if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                    embedComponent.withStyle { style ->
+                        style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                            .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, it.url))
+                    }
+                }
+                comp.append(embedComponent)
+            }
+        }
+
+        return comp
     }
 }
