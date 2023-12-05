@@ -1,6 +1,9 @@
 package dev.erdragh.astralbot.config
 
+import dev.erdragh.astralbot.LOGGER
 import net.minecraftforge.common.ForgeConfigSpec
+import java.net.URL
+import java.net.URLDecoder
 
 /**
  * Config for the AstralBot mod. This uses Forge's config system
@@ -54,6 +57,8 @@ object AstralBotConfig {
      */
     val CLICKABLE_EMBEDS: ForgeConfigSpec.BooleanValue
 
+    val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -68,12 +73,40 @@ object AstralBotConfig {
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
             .define("discordGuild", (-1).toLong())
 
-        CLICKABLE_MESSAGES = builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")
-            .define("clickableMessages", true)
+        CLICKABLE_MESSAGES =
+            builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")
+                .define("clickableMessages", true)
         HANDLE_EMBEDS = builder.comment("Whether to display embeds and attached files on messages")
             .define("handleEmbeds", true)
-        CLICKABLE_EMBEDS = builder.comment("Whether to add click events opening URLs that may be associated with embeds")
-            .define("clickableEmbeds", true)
+        CLICKABLE_EMBEDS =
+            builder.comment("Whether to add click events opening URLs that may be associated with embeds")
+                .define("clickableEmbeds", true)
+
+        URL_BLOCKLIST = builder.comment("URLs that don't get turned into clickable links")
+            .defineList(
+                "urlBlocklist",
+                ArrayList(
+                    listOf(
+                        "https://pornhub.com",
+                        "https://xhamster.com",
+                        "https://xvideos.com",
+                        "https://rule34.xyz"
+                    )
+                )
+            ) {
+                if (it !is String) {
+                    LOGGER.warn("$it is URL blocklist is not a String")
+                    return@defineList false
+                }
+                // TODO: Replace with better way to check for URL
+                try {
+                    URL(it)
+                    return@defineList true
+                } catch (e: Exception) {
+                    LOGGER.warn("Failed to parse URL on blocklist: $it", e)
+                    return@defineList false
+                }
+            }
 
         SPEC = builder.build()
     }

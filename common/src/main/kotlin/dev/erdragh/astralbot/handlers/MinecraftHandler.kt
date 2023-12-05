@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.textChannel
@@ -107,34 +108,60 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
         comp.append(actualMessage)
         if (AstralBotConfig.HANDLE_EMBEDS.get()) {
-            if (message.embeds.size > 0 && message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+            if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
             var i = 0
             message.embeds.forEach {
                 if (i++ != 0) comp.append(", ")
-                val embedComponent = Component.literal(it.title ?: "embed${i}")
-                if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                    embedComponent.withStyle { style ->
-                        it.url?.let { url ->
-                            style.withColor(ChatFormatting.BLUE).withUnderlined(true)
-                                .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                if (urlAllowed(it.url)) {
+                    val embedComponent = Component.literal(it.title ?: "embed${i}")
+                    if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                        embedComponent.withStyle { style ->
+                            it.url?.let { url ->
+                                style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                            }
                         }
                     }
+                    comp.append(embedComponent)
+                } else {
+                    comp.append(Component.literal("URL BLOCKED").withStyle(ChatFormatting.RED))
                 }
-                comp.append(embedComponent)
             }
             message.attachments.forEach {
-                if (i != 0) comp.append(", ")
-                val embedComponent = Component.literal(it.fileName)
-                if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                    embedComponent.withStyle { style ->
-                        style.withColor(ChatFormatting.BLUE).withUnderlined(true)
-                            .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, it.url))
-                    }
+                if (i != 0) {
+                    comp.append(", ")
+                } else {
+                    i++
                 }
-                comp.append(embedComponent)
+                if (urlAllowed(it.url)) {
+                    val embedComponent = Component.literal(it.fileName)
+                    if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                        embedComponent.withStyle { style ->
+                            style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                                .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, it.url))
+                        }
+                    }
+                    comp.append(embedComponent)
+                } else {
+                    comp.append(Component.literal("URL BLOCKED").withStyle(ChatFormatting.RED))
+                }
             }
         }
 
         return comp
+    }
+
+    private fun urlAllowed(url: String?): Boolean {
+        if (url == null) return true
+        try {
+            val parsedURL = URL(url)
+            for (blockedURL in AstralBotConfig.URL_BLOCKLIST.get()) {
+                if (parsedURL.host.equals(URL(blockedURL).host)) return false
+            }
+        } catch (e: Exception) {
+            LOGGER.warn("URL $url", e)
+            return false
+        }
+        return true
     }
 }
