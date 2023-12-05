@@ -2,8 +2,13 @@
 
 package dev.erdragh.astralbot.commands
 
+import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.minecraftHandler
+import dev.erdragh.astralbot.textChannel
+import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -15,12 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
  * This gets used to register the commands.
  */
 val commands = arrayOf(
-    RefreshCommandsCommand,
-    FAQCommand,
-    LinkCommand,
-    UnlinkCommand,
-    LinkCheckCommand,
-    ListCommand
+    RefreshCommandsCommand, FAQCommand, LinkCommand, UnlinkCommand, LinkCheckCommand, ListCommand, ChatSyncCommand
 )
 
 /**
@@ -129,5 +129,43 @@ object ListCommand : HandledSlashCommand {
         } else {
             event.hook.sendMessage("There are no players online currently").queue()
         }
+    }
+}
+
+object ChatSyncCommand : HandledSlashCommand {
+    private const val OPTION_CHANNEL = "channel"
+    override val command: SlashCommandData =
+        Commands.slash("chatsync", "Configures the Bot to synchronize chat messages").addOption(
+            OptionType.CHANNEL,
+            OPTION_CHANNEL,
+            "The channel where to sync to. If this isn't provided the current channel will be used",
+            false
+        )
+
+    override fun handle(event: SlashCommandInteractionEvent) {
+        event.deferReply(true).queue()
+        var success = false
+        runBlocking {
+            val eventChannel = event.channel
+            val g = event.guild
+            val channel = event.getOptionsByType(OptionType.CHANNEL).findLast { it.name == OPTION_CHANNEL }?.asChannel
+            textChannel = if (channel is TextChannel) {
+                channel
+            } else if (eventChannel is TextChannel) {
+                eventChannel
+            } else return@runBlocking
+
+            AstralBotConfig.DISCORD_CHANNEL.set(textChannel!!.idLong)
+            AstralBotConfig.DISCORD_CHANNEL.save()
+
+            guild = g ?: return@runBlocking
+
+            AstralBotConfig.DISCORD_GUILD.set(guild!!.idLong)
+            AstralBotConfig.DISCORD_GUILD.save()
+            success = true
+        }
+        event.hook.setEphemeral(true)
+            .sendMessage(if (success) "Successfully set up chat synchronization" else "Something went wrong while setting up chat sync")
+            .queue()
     }
 }

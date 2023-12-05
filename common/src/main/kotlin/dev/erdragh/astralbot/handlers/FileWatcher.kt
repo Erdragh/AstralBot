@@ -20,13 +20,14 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
 
     /**
      * Starts the file system watcher in parallel using Kotlin's coroutines
-     * and the [Dispatchers.IO] scope.
+     * in the [GlobalScope] using the [Dispatchers.IO] dispatcher.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun startWatching() {
         job = GlobalScope.launch(Dispatchers.IO) {
             watchService = FileSystems.getDefault().newWatchService()
             directoryPath.register(
-                watchService,
+                watchService!!,
                 StandardWatchEventKinds.ENTRY_CREATE,
                 StandardWatchEventKinds.ENTRY_MODIFY,
                 StandardWatchEventKinds.ENTRY_DELETE
@@ -41,6 +42,7 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
                     for (event in key.pollEvents()) {
                         LOGGER.info("Event: {}", event.kind())
                         // Send the event to the channel
+                        @Suppress("UNCHECKED_CAST")
                         handler(event as WatchEvent<Path>)
                     }
 

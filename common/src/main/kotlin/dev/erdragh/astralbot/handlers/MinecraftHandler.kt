@@ -1,10 +1,12 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.minecraft.network.chat.ChatType
-import net.minecraft.network.chat.PlayerChatMessage
+import dev.erdragh.astralbot.guild
+import dev.erdragh.astralbot.textChannel
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import java.util.*
@@ -15,8 +17,7 @@ import kotlin.jvm.optionals.getOrNull
  * methods for fetching [GameProfile]s
  * @author Erdragh
  */
-class MinecraftHandler(private val server: MinecraftServer, private val api: JDA?) {
-    private var channel: TextChannel? = null
+class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
 
     /**
      * Fetches all currently online players' [GameProfile]s
@@ -60,10 +61,21 @@ class MinecraftHandler(private val server: MinecraftServer, private val api: JDA
      * @param message the String contents of the message
      */
     fun sendChatToDiscord(player: ServerPlayer, message: String) {
-        // TODO: Replace with more configurable channel selection
-        if (channel == null) channel = api?.getTextChannelsByName("chat", true)?.get(0)
-
-        channel?.sendMessage("<${player.name.string}> $message")?.setSuppressedNotifications(true)
+        textChannel?.sendMessage("<${player.name.string}> $message")?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()
+    }
+
+    private fun sendDiscordToChat(message: Message) {
+        val color = guild?.getMemberById(message.author.idLong)?.colorRaw
+        val formattedMessage =
+            Component.literal(message.author.effectiveName).withStyle { it.withColor(color ?: 0xffffff) }.append(": ")
+                .append(message.contentDisplay)
+        server.playerList.broadcastSystemMessage(formattedMessage, false)
+    }
+
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+        if (event.channel.idLong == textChannel?.idLong) {
+            sendDiscordToChat(event.message)
+        }
     }
 }
