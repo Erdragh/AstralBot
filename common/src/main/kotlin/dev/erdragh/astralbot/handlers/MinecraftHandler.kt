@@ -108,46 +108,47 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
         comp.append(actualMessage)
         if (AstralBotConfig.HANDLE_EMBEDS.get()) {
-            if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
-            var i = 0
-            message.embeds.forEach {
-                if (i++ != 0) comp.append(", ")
-                if (urlAllowed(it.url)) {
-                    val embedComponent = Component.literal(it.title ?: "embed${i}")
-                    if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                        embedComponent.withStyle { style ->
-                            it.url?.let { url ->
-                                style.withColor(ChatFormatting.BLUE).withUnderlined(true)
-                                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
-                            }
-                        }
-                    }
-                    comp.append(embedComponent)
-                } else {
-                    comp.append(Component.literal("URL BLOCKED").withStyle(ChatFormatting.RED))
-                }
-            }
-            message.attachments.forEach {
-                if (i != 0) {
-                    comp.append(", ")
-                } else {
-                    i++
-                }
-                if (urlAllowed(it.url)) {
-                    val embedComponent = Component.literal(it.fileName)
-                    if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                        embedComponent.withStyle { style ->
-                            style.withColor(ChatFormatting.BLUE).withUnderlined(true)
-                                .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, it.url))
-                        }
-                    }
-                    comp.append(embedComponent)
-                } else {
-                    comp.append(Component.literal("URL BLOCKED").withStyle(ChatFormatting.RED))
-                }
-            }
+            comp.append(formatEmbeds(message))
         }
 
+        return comp
+    }
+
+    private fun formatEmbeds(message: Message): MutableComponent {
+        val comp = Component.empty()
+        if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+        var i = 0
+        message.embeds.forEach {
+            if (i++ != 0) comp.append(", ")
+            comp.append(formatEmbed(it.title ?: "embed$i", it.url))
+        }
+        message.attachments.forEach {
+            if (i != 0) {
+                comp.append(", ")
+            } else {
+                i++
+            }
+            comp.append(formatEmbed(it.fileName, it.url))
+        }
+        return comp
+    }
+
+    private fun formatEmbed(name: String, url: String?): MutableComponent {
+        val comp = Component.empty()
+        if (urlAllowed(url)) {
+            val embedComponent = Component.literal(name)
+            if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                embedComponent.withStyle { style ->
+                    if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
+                        style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                            .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                    } else style
+                }
+            }
+            comp.append(embedComponent)
+        } else {
+            comp.append(Component.literal("BLOCKED").withStyle(ChatFormatting.RED))
+        }
         return comp
     }
 
