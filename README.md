@@ -41,7 +41,7 @@ The following things will be configurable:
   - [ ] Management/Creation via commands
 - [ ] Chat synchronization
   - [x] Minecraft to Discord
-  - [ ] Discord to Minecraft
+  - [x] Discord to Minecraft
   - [ ] User imitation on Discord
 
 ## Running
