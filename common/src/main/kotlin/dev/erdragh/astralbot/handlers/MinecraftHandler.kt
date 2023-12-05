@@ -3,10 +3,14 @@ package dev.erdragh.astralbot.handlers
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.textChannel
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import java.util.*
@@ -66,16 +70,34 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     }
 
     private fun sendDiscordToChat(message: Message) {
-        val color = guild?.getMemberById(message.author.idLong)?.colorRaw
-        val formattedMessage =
-            Component.literal(message.author.effectiveName).withStyle { it.withColor(color ?: 0xffffff) }.append(": ")
-                .append(message.contentDisplay)
+        val formattedMessage = formattedMessage(message)
         server.playerList.broadcastSystemMessage(formattedMessage, false)
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        if (event.channel.idLong == textChannel?.idLong) {
+        if (event.channel.idLong == textChannel?.idLong && !event.author.isBot) {
             sendDiscordToChat(event.message)
         }
+    }
+
+    private fun formattedUser(member: Member): MutableComponent {
+        return Component.literal(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
+    }
+
+    private fun formattedMessage(message: Message): MutableComponent {
+        val comp = Component.empty()
+        message.member?.let {
+            comp.append(formattedUser(it))
+        }
+        message.referencedMessage?.author?.id?.let { id ->
+            guild?.retrieveMemberById(id)?.submit()?.get()?.let {
+                comp.append(Component.literal(" replying to ").withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
+                comp.append(formattedUser(it))
+            }
+        }
+        return comp
+            .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
+            .append(message.contentDisplay)
+            .withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
     }
 }

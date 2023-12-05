@@ -45,6 +45,7 @@ private fun setupFromJDA(api: JDA) {
         return
     }
     textChannel = ch
+    guild = g
 }
 
 fun startAstralbot(server: MinecraftServer) {
