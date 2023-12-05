@@ -3,7 +3,6 @@ package dev.erdragh.astralbot.config
 import dev.erdragh.astralbot.LOGGER
 import net.minecraftforge.common.ForgeConfigSpec
 import java.net.URL
-import java.net.URLDecoder
 
 /**
  * Config for the AstralBot mod. This uses Forge's config system
@@ -95,7 +94,7 @@ object AstralBotConfig {
                 )
             ) {
                 if (it !is String) {
-                    LOGGER.warn("$it is URL blocklist is not a String")
+                    LOGGER.warn("$it in URL blocklist is not a String")
                     return@defineList false
                 }
                 // TODO: Replace with better way to check for URL
