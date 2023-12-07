@@ -78,8 +78,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param player the Player who sent the message
      * @param message the String contents of the message
      */
-    fun sendChatToDiscord(player: ServerPlayer, message: String) {
-        textChannel?.sendMessage("<${player.name.string}> $message")?.setSuppressedNotifications(true)
+    fun sendChatToDiscord(player: ServerPlayer?, message: String) {
+        textChannel?.sendMessage(if (player != null) "<${player.displayName.string}> $message" else message)
+            ?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()
     }
 
@@ -89,7 +90,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendDiscordToChat(message: Message) {
         sendFormattedMessage(message) {
-            server.playerList.broadcastSystemMessage(it, false)
+            server.playerList.broadcastSystemMessage(DiscordMessageComponent(it), false)
         }
     }
 
