@@ -39,6 +39,11 @@ object AstralBotConfig {
     val DISCORD_GUILD: ForgeConfigSpec.ConfigValue<Long>
 
     /**
+     * The ID of the Discord role given to linked members
+     */
+    val DISCORD_ROLE: ForgeConfigSpec.ConfigValue<Long>
+
+    /**
      * If this is set to true the message sent into the Minecraft chat
      * will be clickable and take you to the relevant message on Discord
      */
@@ -56,7 +61,7 @@ object AstralBotConfig {
      */
     val CLICKABLE_EMBEDS: ForgeConfigSpec.BooleanValue
 
-    val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
+    private val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
 
     init {
         val builder = ForgeConfigSpec.Builder()
@@ -71,6 +76,8 @@ object AstralBotConfig {
             .define("discordChannel", (-1).toLong())
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
             .define("discordGuild", (-1).toLong())
+        DISCORD_ROLE = builder.comment("ID of the role given to linked users")
+            .define("discordRole", (-1).toLong())
 
         CLICKABLE_MESSAGES =
             builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")

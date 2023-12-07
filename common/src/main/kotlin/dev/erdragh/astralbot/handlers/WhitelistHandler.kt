@@ -13,6 +13,7 @@ import java.io.File
 import java.sql.Connection
 import java.util.*
 import java.util.Random
+import kotlin.collections.ArrayList
 import kotlin.random.asKotlinRandom
 import kotlin.random.nextInt
 
@@ -91,6 +92,24 @@ object WhitelistHandler {
             """.trimIndent()
             )
         }
+    }
+
+    /**
+     * Returns a list of all Discord userIDs that are
+     * contained in the database, i.e. are whitelisted.
+     * @return list of whitelisted discord users
+     */
+    fun getAllUsers(): Collection<Long> {
+        var result: ArrayList<Long>? = null
+        transaction {
+            val query = WhitelistedUser.selectAll()
+            val r = ArrayList<Long>(query.count().toInt())
+            query.iterator().forEach {
+                r.add(it[WhitelistedUser.discordID])
+            }
+            result = r
+        }
+        return result ?: throw RuntimeException("Failed to get whitelisted users")
     }
 
     /**

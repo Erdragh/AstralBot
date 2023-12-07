@@ -2,6 +2,8 @@ package dev.erdragh.astralbot.commands
 
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.entities.Member
@@ -55,6 +57,13 @@ object LinkCommand : HandledSlashCommand {
                 event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
+                guild?.getRoleById(AstralBotConfig.DISCORD_ROLE.get())?.let {
+                    try {
+                        guild?.addRoleToMember(event.user, it)?.queue()
+                    } catch (e: Exception) {
+                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.effectiveName}", e)
+                    }
+                }
                 event.hook.setEphemeral(true)
                     .sendMessageFormat("Linked %s to Minecraft username %s", event.member, minecraftUser?.name).queue()
             }

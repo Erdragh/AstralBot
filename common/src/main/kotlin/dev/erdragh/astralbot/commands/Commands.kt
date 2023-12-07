@@ -2,12 +2,15 @@
 
 package dev.erdragh.astralbot.commands
 
+import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.FAQHandler
+import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.textChannel
 import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -20,7 +23,14 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
  * This gets used to register the commands.
  */
 val commands = arrayOf(
-    RefreshCommandsCommand, FAQCommand, LinkCommand, UnlinkCommand, LinkCheckCommand, ListCommand, ChatSyncCommand
+    RefreshCommandsCommand,
+    FAQCommand,
+    LinkCommand,
+    UnlinkCommand,
+    LinkCheckCommand,
+    ListCommand,
+    ChatSyncCommand,
+    LinkRoleCommand
 )
 
 /**
@@ -179,5 +189,44 @@ object ChatSyncCommand : HandledSlashCommand {
         event.hook.setEphemeral(true)
             .sendMessage(if (success) "Successfully set up chat synchronization" else "Something went wrong while setting up chat sync")
             .queue()
+    }
+}
+
+object LinkRoleCommand : HandledSlashCommand {
+    private const val OPTION_ROLE = "role"
+    override val command: SlashCommandData =
+        Commands.slash("linkrole", "Configures the Bot to assign a role to linked accounts")
+            .addOption(OptionType.ROLE, OPTION_ROLE, "The role which will be given to linked members", true)
+
+    override fun handle(event: SlashCommandInteractionEvent) {
+        event.deferReply(true).queue()
+        val role = event.getOptionsByType(OptionType.ROLE).findLast { it.name == OPTION_ROLE }?.asRole
+        if (role !is Role) {
+            event.hook.setEphemeral(true).sendMessage("Failed to resolve role from command option").queue()
+            LOGGER.error("Failed to resolve role from command option")
+            return
+        }
+
+        AstralBotConfig.DISCORD_ROLE.set(role.idLong)
+        AstralBotConfig.DISCORD_ROLE.save()
+
+        for (id in WhitelistHandler.getAllUsers()) {
+            guild?.retrieveMemberById(id)?.submit()?.whenComplete { member, error ->
+                if (error != null) {
+                    LOGGER.error("Failed to get member with id: $id", error)
+                    return@whenComplete
+                } else if (member == null) {
+                    LOGGER.error("Failed to get member with id: $id")
+                    return@whenComplete
+                }
+                try {
+                    guild?.addRoleToMember(member, role)?.queue()
+                } catch (e: Exception) {
+                    LOGGER.error("Failed to add role ${role.name} to member ${member.effectiveName}", e)
+                }
+            }
+        }
+
+        event.hook.setEphemeral(true).sendMessage("Set up role ${role.name} for linked members").queue()
     }
 }
