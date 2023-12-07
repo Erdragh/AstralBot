@@ -132,6 +132,18 @@ object ListCommand : HandledSlashCommand {
     }
 }
 
+/**
+ * This command sets up the channel and guild in the
+ * [AstralBotConfig] for the chat synchronization.
+ *
+ * It has the following options:
+ * - `channel`: (Optional) the channel where the chat messages
+ *   will be synchronized. If this option is not provided, the
+ *   channel in which the command was executed will be used
+ *   instead.
+ *
+ * @author Erdragh
+ */
 object ChatSyncCommand : HandledSlashCommand {
     private const val OPTION_CHANNEL = "channel"
     override val command: SlashCommandData =
