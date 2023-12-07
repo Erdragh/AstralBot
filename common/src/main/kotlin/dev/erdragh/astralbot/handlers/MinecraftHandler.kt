@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
-import java.net.URL
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -77,8 +76,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param message the Discord message that will be put into the Minecraft chat
      */
     private fun sendDiscordToChat(message: Message) {
-        val formattedMessage = formattedMessage(message)
-        server.playerList.broadcastSystemMessage(formattedMessage, false)
+        sendFormattedMessage(message) {
+            server.playerList.broadcastSystemMessage(it, false)
+        }
     }
 
     /**
@@ -103,7 +103,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
     /**
      * Formats a Discord [Message] into a [Component] that gets sent
-     * into the Minecraft chat in [sendDiscordToChat].
+     * into the Minecraft chat via the [send] argument
      *
      * This formatting entails the following:
      * - formatting users with [formattedUser]
@@ -113,42 +113,62 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      *   of the [message]
      *
      * @param message the relevant Discord message
+     * @param send the function used to send the message into the Minecraft chat
      */
-    private fun formattedMessage(message: Message): MutableComponent {
+    private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
         val comp = Component.empty()
         // The actual sender of the message
         message.member?.let {
             comp.append(formattedUser(it))
         }
 
-        // The author of the message this is in reply to
-        message.referencedMessage?.author?.id?.let { id ->
+        // Lambda that constructs the rest of the message. I'm doing it this way
+        // because this may be used in a callback lambda below, where I can't return
+        // out of sendFormattedMessage anymore
+        val formatRestOfMessage: () -> MutableComponent = { ->
+            val restOfMessage = Component.empty()
+            // This is the actual message content
+            val actualMessage = Component.empty()
+                .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
+                .append(message.contentDisplay)
+            // If it's enabled in the config you can click on a message and get linked to said message
+            // in the actual Discord client
+            if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
+                actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
+            }
+            restOfMessage.append(actualMessage)
+
+            // Only adds embeds if it's enabled in the config
+            if (AstralBotConfig.HANDLE_EMBEDS.get()) {
+                restOfMessage.append(formatEmbeds(message))
+            }
+
+            restOfMessage
+        }
+
+        val referencedAuthor = message.referencedMessage?.author?.id
+
+        if (referencedAuthor != null) {
             // This fetches the Member from the ID in a blocking manner
-            guild?.retrieveMemberById(id)?.submit()?.get()?.let {
+            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { member, error ->
+                if (error != null) {
+                    LOGGER.error("Failed to get member with id: $referencedAuthor", error)
+                    return@whenComplete
+                } else if (member == null) {
+                    LOGGER.error("Failed to get member with id: $referencedAuthor")
+                    return@whenComplete
+                }
                 comp.append(
                     Component.literal(" replying to ")
                         .withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
-                comp.append(formattedUser(it))
+                comp.append(formattedUser(member))
+                comp.append(formatRestOfMessage())
+                send(comp)
             }
+        } else {
+            comp.append(formatRestOfMessage())
+            send(comp)
         }
-
-        // This is the actual message content
-        val actualMessage = Component.empty()
-            .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
-            .append(message.contentDisplay)
-        // If it's enabled in the config you can click on a message and get linked to said message
-        // in the actual Discord client
-        if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
-            actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
-        }
-        comp.append(actualMessage)
-
-        // Only adds embeds if it's enabled in the config
-        if (AstralBotConfig.HANDLE_EMBEDS.get()) {
-            comp.append(formatEmbeds(message))
-        }
-
-        return comp
     }
 
     /**
