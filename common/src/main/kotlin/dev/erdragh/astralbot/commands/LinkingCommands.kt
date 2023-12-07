@@ -133,26 +133,22 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
         if (discordID != null) {
             val guild = event.guild
             if (guild != null) {
-                // TODO: Replace with more performant solution
-                var found = false
-                guild.loadMembers {
-                    if (it.idLong == discordID) {
+                guild.retrieveMemberById(discordID).submit().whenComplete { member, error ->
+                    if (error != null) {
+                        event.hook.setEphemeral(true)
+                            .sendMessageFormat(
+                                "Something went wrong while trying to get link for %s: %s",
+                                minecraftProfile?.name,
+                                error.localizedMessage
+                            )
+                            .queue()
+                    } else {
                         event.hook.setEphemeral(true)
                             .sendMessageFormat(
                                 "Minecraft username %s is linked to %s",
                                 minecraftProfile?.name ?: minecraftName,
-                                it
+                                member
                             ).queue()
-                        found = true
-                    }
-                }.onError {
-                    event.hook.setEphemeral(true).sendMessageFormat("Something went wrong: %s", it.localizedMessage)
-                        .queue()
-                }.onSuccess {
-                    if (!found) {
-                        event.hook.setEphemeral(true).sendMessageFormat(
-                            notFound, minecraftProfile?.name ?: minecraftName
-                        ).queue()
                     }
                 }
             } else {
@@ -197,12 +193,15 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 event.hook.setEphemeral(true)
                     .sendMessage("You need to specify either a Discord user or a Minecraft Username, not both").queue()
             }
+
             minecraftName != null -> {
                 handleMinecraftToDiscord(event, minecraftName)
             }
+
             discordUser is Member -> {
                 handleDiscordToMinecraft(event, discordUser)
             }
+
             else -> {
                 event.hook.setEphemeral(true)
                     .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
