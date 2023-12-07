@@ -24,14 +24,23 @@ import kotlin.jvm.optionals.getOrNull
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
+    private val playerNames = HashSet<String>(server.maxPlayers)
 
     /**
-     * Fetches all currently online players' [GameProfile]s
+     * Gets all currently online players' names
      * @return a [Collection] of all currently online players'
-     * [GameProfile]s
+     * names
      */
-    fun getOnlinePlayers(): Collection<GameProfile> {
-        return server.playerList.players.map { it.gameProfile }
+    fun getOnlinePlayers(): Collection<String> {
+        return playerNames
+    }
+
+    fun onPlayerJoin(name: String) = synchronized(playerNames) {
+        playerNames.add(name)
+    }
+
+    fun onPlayerLeave(name: String) = synchronized(playerNames) {
+        playerNames.remove(name);
     }
 
     /**

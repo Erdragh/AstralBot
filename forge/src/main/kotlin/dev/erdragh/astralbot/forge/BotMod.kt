@@ -6,6 +6,7 @@ import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
 import net.minecraftforge.event.ServerChatEvent
+import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.event.server.ServerStartedEvent
 import net.minecraftforge.event.server.ServerStoppingEvent
 import net.minecraftforge.fml.ModLoadingContext
@@ -20,6 +21,9 @@ object BotMod {
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
+
+        FORGE_BUS.addListener(::onPlayerJoin)
+        FORGE_BUS.addListener(::onPlayerLeave)
     }
 
     private fun onServerStart(event: ServerStartedEvent) {
@@ -33,5 +37,13 @@ object BotMod {
 
     private fun onChatMessage(event: ServerChatEvent) {
         minecraftHandler?.sendChatToDiscord(event.player, event.message.string)
+    }
+
+    private fun onPlayerJoin(event: PlayerEvent.PlayerLoggedInEvent) {
+        minecraftHandler?.onPlayerJoin(event.entity.name.string)
+    }
+
+    private fun onPlayerLeave(event: PlayerEvent.PlayerLoggedOutEvent) {
+        minecraftHandler?.onPlayerLeave(event.entity.name.string)
     }
 }

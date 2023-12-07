@@ -211,9 +211,8 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
 
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (event.focusedOption.name == OPTION_MC) {
-            // TODO: Maybe cache this for servers with a lot of members?
-            val minecraftUsers = minecraftHandler?.getOnlinePlayers()?.map(GameProfile::getName)
-            event.replyChoiceStrings(minecraftUsers?.filter { it.startsWith(event.focusedOption.value) } ?: listOf())
+            event.replyChoiceStrings(
+                minecraftHandler?.getOnlinePlayers()?.filter { it.startsWith(event.focusedOption.value) } ?: listOf())
                 .queue()
         }
     }
