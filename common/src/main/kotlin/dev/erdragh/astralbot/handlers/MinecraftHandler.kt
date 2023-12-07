@@ -5,6 +5,7 @@ import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.textChannel
+import dev.erdragh.astralbot.updatePresence
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -37,10 +38,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
     fun onPlayerJoin(name: String) = synchronized(playerNames) {
         playerNames.add(name)
+        updatePresence(playerNames.size)
     }
 
     fun onPlayerLeave(name: String) = synchronized(playerNames) {
-        playerNames.remove(name);
+        playerNames.remove(name)
+        updatePresence(playerNames.size)
     }
 
     /**

@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -23,6 +24,15 @@ var textChannel: TextChannel? = null
 var guild: Guild? = null
 private var jda: JDA? = null
 lateinit var baseDirectory: File
+
+fun updatePresence(count: Int) {
+    val message = when {
+        count > 1 -> "$count players"
+        count == 1 -> "$count player"
+        else -> "an empty server"
+    }
+    jda?.presence?.setPresence(Activity.watching(message), count < 1)
+}
 
 private fun setupFromJDA(api: JDA) {
     api.awaitReady()
@@ -46,6 +56,7 @@ private fun setupFromJDA(api: JDA) {
     }
     textChannel = ch
     guild = g
+    updatePresence(0)
 }
 
 fun startAstralbot(server: MinecraftServer) {
