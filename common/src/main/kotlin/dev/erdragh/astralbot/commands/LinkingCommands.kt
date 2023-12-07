@@ -6,9 +6,11 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
@@ -112,6 +114,7 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
     override val command = Commands.slash("linkcheck", "Checks link status of a specified Minecraft or Discord account")
         .addOption(OptionType.STRING, OPTION_MC, "Minecraft Username", false, true)
         .addOption(OptionType.MENTIONABLE, OPTION_DC, "Discord User", false)
+        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MODERATE_MEMBERS))
 
     /**
      * Handles the case the command issuer gave a Minecraft name

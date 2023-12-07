@@ -10,10 +10,12 @@ import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.textChannel
 import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
@@ -75,6 +77,7 @@ fun interface AutocompleteCommand {
 object RefreshCommandsCommand : HandledSlashCommand {
     override val command: SlashCommandData =
         Commands.slash("reload", "Reloads the Discord Bot integrations (commands, etc.)")
+            .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
@@ -163,6 +166,7 @@ object ChatSyncCommand : HandledSlashCommand {
             "The channel where to sync to. If this isn't provided the current channel will be used",
             false
         )
+            .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL))
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
@@ -197,6 +201,7 @@ object LinkRoleCommand : HandledSlashCommand {
     override val command: SlashCommandData =
         Commands.slash("linkrole", "Configures the Bot to assign a role to linked accounts")
             .addOption(OptionType.ROLE, OPTION_ROLE, "The role which will be given to linked members", true)
+            .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER, Permission.MANAGE_ROLES, Permission.MODERATE_MEMBERS))
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(true).queue()
