@@ -5,4 +5,4 @@ import net.minecraftforge.eventbus.api.Cancelable
 import net.minecraftforge.eventbus.api.Event
 
 @Cancelable
-class SystemMessageEvent(var message: Component) : Event()
+class SystemMessageEvent(var message: String, var component: Component) : Event()

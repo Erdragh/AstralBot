@@ -3,9 +3,8 @@
   "minVersion": "0.8",
   "package": "dev.erdragh.astralbot.mixins.fabric",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
-  "client": [
+  "server": [
+    "PlayerListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

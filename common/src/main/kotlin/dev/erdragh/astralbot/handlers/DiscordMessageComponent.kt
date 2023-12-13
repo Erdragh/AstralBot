@@ -1,16 +1,21 @@
 package dev.erdragh.astralbot.handlers
 
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.ComponentContents
+import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextComponent
 import net.minecraft.util.FormattedCharSequence
 
-class DiscordMessageComponent(private val wrapped: Component) : Component {
+class DiscordMessageComponent(private val wrapped: Component) : TextComponent("") {
     override fun getStyle(): Style {
         return wrapped.style
     }
 
-    override fun getContents(): ComponentContents {
+    override fun getText(): String {
+        return if (wrapped is TextComponent) wrapped.text else contents
+    }
+
+    override fun getContents(): String {
         return wrapped.contents
     }
 
