@@ -4,7 +4,8 @@
   "package": "dev.erdragh.astralbot.mixins.fabric",
   "compatibilityLevel": "JAVA_17",
   "server": [
-    "PlayerListMixin"
+    "PlayerListMixin",
+    "ServerGamePacketListenerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

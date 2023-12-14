@@ -5,24 +5,13 @@ import dev.erdragh.astralbot.fabric.event.ServerMessageEvents.GameMessage
 import net.fabricmc.fabric.api.event.Event
 import net.fabricmc.fabric.api.event.EventFactory
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.TextComponent
-import net.minecraft.network.chat.TranslatableComponent
 import net.minecraft.server.level.ServerPlayer
 
 class ServerMessageEvents {
     companion object {
         @JvmStatic
         val CHAT_MESSAGE: Event<ChatMessage> =
-            EventFactory.createArrayBacked(ChatMessage::class.java) { callbacks -> ChatMessage { m, p, _ -> run {
-                var message = m
-                var player: ServerPlayer? = null
-                if (m is TranslatableComponent) {
-                    if (m.args[1] !is Component) {
-                        message = TextComponent(m.args[1] as String)
-                        player = p
-                    }
-                }
-
+            EventFactory.createArrayBacked(ChatMessage::class.java) { callbacks -> ChatMessage { message, player, _ -> run {
                 for (callback in callbacks) {
                     callback.onChatMessage(message, player, null);
                 }}}
