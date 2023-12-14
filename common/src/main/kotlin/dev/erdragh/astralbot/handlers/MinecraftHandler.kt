@@ -11,8 +11,10 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
+import net.minecraft.Util
+import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextComponent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
@@ -90,7 +92,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendDiscordToChat(message: Message) {
         sendFormattedMessage(message) {
-            server.playerList.broadcastSystemMessage(DiscordMessageComponent(it), false)
+            server.playerList.broadcastMessage(DiscordMessageComponent(it), ChatType.SYSTEM, Util.NIL_UUID)
         }
     }
 
@@ -111,7 +113,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param member the member which will be used to get the data
      */
     private fun formattedUser(member: Member): MutableComponent {
-        return Component.literal(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
+        return TextComponent(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
     }
 
     /**
@@ -129,7 +131,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param send the function used to send the message into the Minecraft chat
      */
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
-        val comp = Component.empty()
+        val comp = TextComponent("")
         // The actual sender of the message
         message.member?.let {
             comp.append(formattedUser(it))
@@ -139,10 +141,10 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         // because this may be used in a callback lambda below, where I can't return
         // out of sendFormattedMessage anymore
         val formatRestOfMessage: () -> MutableComponent = { ->
-            val restOfMessage = Component.empty()
+            val restOfMessage = TextComponent("")
             // This is the actual message content
-            val actualMessage = Component.empty()
-                .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
+            val actualMessage = TextComponent("")
+                .append(TextComponent(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
                 .append(message.contentDisplay)
             // If it's enabled in the config you can click on a message and get linked to said message
             // in the actual Discord client
@@ -172,7 +174,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                     return@whenComplete
                 }
                 comp.append(
-                    Component.literal(" replying to ")
+                    TextComponent(" replying to ")
                         .withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
                 comp.append(formattedUser(member))
                 comp.append(formatRestOfMessage())
@@ -199,7 +201,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param message the message of which the attachments and embeds are handled
      */
     private fun formatEmbeds(message: Message): MutableComponent {
-        val comp = Component.empty()
+        val comp = TextComponent("")
         // Adds a newline with space if there are embeds and the message isn't empty
         if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
         var i = 0
@@ -232,9 +234,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param url the url of the embed
      */
     private fun formatEmbed(name: String, url: String?): MutableComponent {
-        val comp = Component.empty()
+        val comp = TextComponent("")
         if (AstralBotConfig.urlAllowed(url)) {
-            val embedComponent = Component.literal(name)
+            val embedComponent = TextComponent(name)
             if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                 embedComponent.withStyle { style ->
                     if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
@@ -245,7 +247,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             }
             comp.append(embedComponent)
         } else {
-            comp.append(Component.literal("BLOCKED").withStyle(ChatFormatting.RED))
+            comp.append(TextComponent("BLOCKED").withStyle(ChatFormatting.RED))
         }
         return comp
     }

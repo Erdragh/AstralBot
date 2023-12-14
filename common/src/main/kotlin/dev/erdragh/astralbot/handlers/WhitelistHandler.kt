@@ -5,6 +5,7 @@ import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextComponent
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -250,12 +251,12 @@ object WhitelistHandler {
 
         val discordLink = AstralBotConfig.DISCORD_LINK.get()
 
-        val component = Component.empty()
+        val component = TextComponent("")
         for (i in template.indices) {
             component.append(template[i])
             if (discordLink.isNotEmpty() && i + 1 < template.size) {
                 // TODO: Make this clickable. Using `withStyle` and a ClickEvent did not seem to work
-                component.append(Component.literal(discordLink))
+                component.append(TextComponent(discordLink))
             }
         }
         return component
