@@ -76,7 +76,7 @@ fun interface AutocompleteCommand {
  */
 object RefreshCommandsCommand : HandledSlashCommand {
     override val command: SlashCommandData =
-        Commands.slash("reload", "Reloads the Discord Bot integrations (commands, etc.)")
+        Commands.slash("reload", "Reloads the Discord Bot integrations (commands, etc.). This can take a while!")
             .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
 
     override fun handle(event: SlashCommandInteractionEvent) {
@@ -86,8 +86,16 @@ object RefreshCommandsCommand : HandledSlashCommand {
             event.hook.setEphemeral(true).sendMessage("Failed to fetch Guild to refresh").queue()
             return
         }
-        guild.updateCommands().addCommands(commands.map { it.command }).queue {
-            event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
+        guild.retrieveCommands().submit().whenComplete { fetchedCommands, error ->
+            if (error != null) {
+                event.hook.setEphemeral(true).sendMessage("Something went wrong: ${error.localizedMessage}")
+                return@whenComplete
+            }
+            val deletedCommands = fetchedCommands.map { guild.deleteCommandById(it.id).submit() }
+            deletedCommands.forEach { it.get() }
+            guild.updateCommands().addCommands(commands.map { it.command }).queue {
+                event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
+            }
         }
     }
 }
