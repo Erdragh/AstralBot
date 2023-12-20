@@ -23,7 +23,7 @@ var minecraftHandler: MinecraftHandler? = null
 var textChannel: TextChannel? = null
 var guild: Guild? = null
 private var jda: JDA? = null
-lateinit var baseDirectory: File
+var baseDirectory: File? = null
 var applicationId by Delegates.notNull<Long>()
 private lateinit var setupJob: Job
 
@@ -70,14 +70,15 @@ private fun setupFromJDA(api: JDA) {
 @OptIn(DelicateCoroutinesApi::class)
 fun startAstralbot(server: MinecraftServer) {
     val env = System.getenv()
+
+    baseDirectory = File(server.serverDirectory, MODID)
+    if (baseDirectory!!.mkdir()) {
+        LOGGER.debug("Created $MODID directory")
+    }
+
     if (!env.containsKey("DISCORD_TOKEN")) {
         LOGGER.warn("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
         return
-    }
-
-    baseDirectory = File(server.serverDirectory, MODID)
-    if (baseDirectory.mkdir()) {
-        LOGGER.debug("Created $MODID directory")
     }
 
     minecraftHandler = MinecraftHandler(server)
@@ -109,7 +110,7 @@ fun startAstralbot(server: MinecraftServer) {
 
 fun stopAstralbot() {
     LOGGER.info("Shutting down AstralBot")
-    FAQHandler.stop()
+    if (baseDirectory != null) FAQHandler.stop()
     jda?.shutdownNow()
     jda?.awaitShutdown()
     LOGGER.info("Shut down AstralBot")
