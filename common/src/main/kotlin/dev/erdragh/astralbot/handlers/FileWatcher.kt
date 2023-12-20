@@ -25,6 +25,7 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
     @OptIn(DelicateCoroutinesApi::class)
     fun startWatching() {
         job = GlobalScope.launch(Dispatchers.IO) {
+            LOGGER.info("FileSystem Watcher starting on: {}", directoryPath)
             watchService = FileSystems.getDefault().newWatchService()
             directoryPath.register(
                 watchService!!,
@@ -35,12 +36,9 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
 
             try {
                 while (isActive) {
-                    LOGGER.info("Waiting for watchService WatchKey")
                     val key = watchService?.take() ?: break
-                    LOGGER.info("Got watchService WatchKey")
 
                     for (event in key.pollEvents()) {
-                        LOGGER.info("Event: {}", event.kind())
                         // Send the event to the channel
                         @Suppress("UNCHECKED_CAST")
                         handler(event as WatchEvent<Path>)
@@ -51,8 +49,7 @@ class FileWatcher(private val directoryPath: Path, private val handler: (event: 
             } catch (_: ClosedWatchServiceException) {
                 // Do nothing, this exception means we should just stop
             }
-
-            LOGGER.info("WatchService ending")
+            LOGGER.info("FileSystem Watcher stopping for: {}", directoryPath)
         }
     }
 

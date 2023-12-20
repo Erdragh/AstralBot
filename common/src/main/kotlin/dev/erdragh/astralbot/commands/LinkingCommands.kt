@@ -6,6 +6,7 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
+import dev.erdragh.astralbot.waitForSetup
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
@@ -59,6 +60,7 @@ object LinkCommand : HandledSlashCommand {
                 event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
+                waitForSetup()
                 guild?.getRoleById(AstralBotConfig.DISCORD_ROLE.get())?.let {
                     try {
                         guild?.addRoleToMember(event.user, it)?.queue()

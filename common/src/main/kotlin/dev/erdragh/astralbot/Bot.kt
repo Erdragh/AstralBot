@@ -4,8 +4,7 @@ import dev.erdragh.astralbot.commands.CommandHandlingListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
@@ -16,6 +15,7 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
 val LOGGER: Logger = LoggerFactory.getLogger(MODID)
@@ -24,6 +24,12 @@ var textChannel: TextChannel? = null
 var guild: Guild? = null
 private var jda: JDA? = null
 lateinit var baseDirectory: File
+var applicationId by Delegates.notNull<Long>()
+private lateinit var setupJob: Job
+
+fun waitForSetup() = runBlocking {
+    setupJob.join()
+}
 
 fun updatePresence(count: Int) {
     val message = when {
@@ -36,6 +42,9 @@ fun updatePresence(count: Int) {
 
 private fun setupFromJDA(api: JDA) {
     api.awaitReady()
+    LOGGER.info("Fetching required data from Discord")
+    updatePresence(0)
+    applicationId = api.retrieveApplicationInfo().submit().get().idLong
     if (AstralBotConfig.DISCORD_GUILD.get() < 0) {
         LOGGER.warn("No text channel for chat synchronization configured. Chat sync will not be enabled.")
         return
@@ -56,9 +65,9 @@ private fun setupFromJDA(api: JDA) {
     }
     textChannel = ch
     guild = g
-    updatePresence(0)
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun startAstralbot(server: MinecraftServer) {
     val env = System.getenv()
     if (!env.containsKey("DISCORD_TOKEN")) {
@@ -73,8 +82,6 @@ fun startAstralbot(server: MinecraftServer) {
 
     minecraftHandler = MinecraftHandler(server)
 
-    FAQHandler.start()
-
     jda = JDABuilder.createLight(
             env["DISCORD_TOKEN"],
             GatewayIntent.MESSAGE_CONTENT,
@@ -82,9 +89,11 @@ fun startAstralbot(server: MinecraftServer) {
             GatewayIntent.GUILD_MEMBERS
         ).addEventListeners(CommandHandlingListener, minecraftHandler).build()
 
-    runBlocking {
+    setupJob = GlobalScope.async {
         launch {
+            FAQHandler.start()
             setupFromJDA(jda!!)
+            LOGGER.info("AstralBot started!")
         }
     }
 

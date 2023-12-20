@@ -1,11 +1,8 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
-import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.guild
-import dev.erdragh.astralbot.textChannel
-import dev.erdragh.astralbot.updatePresence
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -160,6 +157,8 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         val referencedAuthor = message.referencedMessage?.author?.id
+
+        waitForSetup()
 
         if (referencedAuthor != null) {
             // This fetches the Member from the ID in a blocking manner

@@ -2,13 +2,10 @@
 
 package dev.erdragh.astralbot.commands
 
-import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.WhitelistHandler
-import dev.erdragh.astralbot.minecraftHandler
-import dev.erdragh.astralbot.textChannel
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
@@ -91,7 +88,8 @@ object RefreshCommandsCommand : HandledSlashCommand {
                 event.hook.setEphemeral(true).sendMessage("Something went wrong: ${error.localizedMessage}")
                 return@whenComplete
             }
-            val deletedCommands = fetchedCommands.map { guild.deleteCommandById(it.id).submit() }
+            waitForSetup()
+            val deletedCommands = fetchedCommands.filter { it.applicationIdLong == applicationId }.map { guild.deleteCommandById(it.id).submit() }
             deletedCommands.forEach { it.get() }
             guild.updateCommands().addCommands(commands.map { it.command }).queue {
                 event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
@@ -222,6 +220,8 @@ object LinkRoleCommand : HandledSlashCommand {
 
         AstralBotConfig.DISCORD_ROLE.set(role.idLong)
         AstralBotConfig.DISCORD_ROLE.save()
+
+        waitForSetup()
 
         for (id in WhitelistHandler.getAllUsers()) {
             guild?.retrieveMemberById(id)?.submit()?.whenComplete { member, error ->
