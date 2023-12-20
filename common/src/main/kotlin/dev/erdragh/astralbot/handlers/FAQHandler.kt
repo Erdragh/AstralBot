@@ -27,7 +27,7 @@ object FAQHandler {
             faqFiles?.forEach(availableFAQIDs::add)
 
             watcher = FileWatcher(faqDirectory.toPath()) {
-                LOGGER.info("Event Handling: {}", it.kind())
+                LOGGER.debug("Event Handling: {}", it.kind())
                 val fileName = it.context().nameWithoutExtension
                 val extension = it.context().extension
                 if (extension == "md") when (it.kind()) {

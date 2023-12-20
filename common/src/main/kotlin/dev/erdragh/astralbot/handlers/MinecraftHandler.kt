@@ -163,6 +163,8 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         val referencedAuthor = message.referencedMessage?.author?.id
 
+        waitForSetup()
+
         if (referencedAuthor != null) {
             // This fetches the Member from the ID in a blocking manner
             guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { member, error ->
