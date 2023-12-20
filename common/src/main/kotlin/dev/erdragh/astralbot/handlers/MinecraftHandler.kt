@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import net.dv8tion.jda.api.entities.Member
@@ -8,11 +9,15 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
+import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.ComponentUtils
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.commands.BanPlayerCommands
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.players.UserBanListEntry
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 

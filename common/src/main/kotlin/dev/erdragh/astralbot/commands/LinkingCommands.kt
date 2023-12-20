@@ -8,7 +8,6 @@ import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.waitForSetup
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -98,6 +97,10 @@ object UnlinkCommand : HandledSlashCommand {
     }
 }
 
+
+// Specifying option names as constants to prevent typos
+private const val OPTION_MC = "mc"
+private const val OPTION_DC = "dc"
 /**
  * This command can check the link status of Discord Users and Minecraft accounts
  *
@@ -107,11 +110,7 @@ object UnlinkCommand : HandledSlashCommand {
  *
  * @author Erdragh
  */
-object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
-    // Specifying option names as constants to prevent typos
-    private const val OPTION_MC = "mc"
-    private const val OPTION_DC = "dc"
-
+object LinkCheckCommand : HandledSlashCommand, MinecraftUserAutocompleteCommand(OPTION_MC, OPTION_DC) {
     override val command = Commands.slash("linkcheck", "Checks link status of a specified Minecraft or Discord account")
         .addOption(OptionType.STRING, OPTION_MC, "Minecraft Username", false, true)
         .addOption(OptionType.MENTIONABLE, OPTION_DC, "Discord User", false)
@@ -207,14 +206,6 @@ object LinkCheckCommand : HandledSlashCommand, AutocompleteCommand {
                 event.hook.setEphemeral(true)
                     .sendMessage("You need to specify either a Discord user or a Minecraft Username").queue()
             }
-        }
-    }
-
-    override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
-        if (event.focusedOption.name == OPTION_MC) {
-            event.replyChoiceStrings(
-                minecraftHandler?.getOnlinePlayers()?.filter { it.startsWith(event.focusedOption.value) } ?: listOf())
-                .queue()
         }
     }
 }

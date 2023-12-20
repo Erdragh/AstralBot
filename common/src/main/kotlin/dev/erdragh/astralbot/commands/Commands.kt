@@ -2,6 +2,7 @@
 
 package dev.erdragh.astralbot.commands
 
+import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
@@ -53,4 +54,14 @@ fun interface AutocompleteCommand {
      * @param event the event where this function provides suggestions
      */
     fun autocomplete(event: CommandAutoCompleteInteractionEvent)
+}
+
+abstract class MinecraftUserAutocompleteCommand(private vararg val options: String) : AutocompleteCommand {
+    override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
+        if (options.contains(event.focusedOption.name)) {
+            event.replyChoiceStrings(
+                minecraftHandler?.getOnlinePlayers()?.filter { it.startsWith(event.focusedOption.value) } ?: listOf())
+                .queue()
+        }
+    }
 }
