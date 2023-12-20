@@ -1,6 +1,5 @@
 package dev.erdragh.astralbot.commands
 
-import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.guild
