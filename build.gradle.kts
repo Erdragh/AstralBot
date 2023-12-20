@@ -185,6 +185,9 @@ subprojects {
                 // Luckily, shadow can relocate them to a different package.
                 relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
+                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+                relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
                 exclude("**/org/slf4j/**")
