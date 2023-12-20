@@ -28,12 +28,12 @@ dependencies {
     modApi(group = "net.fabricmc.fabric-api", name = "fabric-api", version = "$fabricApiVersion+$minecraftVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
 
-    modApi(group = "com.terraformersmc", name = "modmenu", version = modMenuVersion)
-
     //modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
     modApi("com.electronwill.night-config:core:$nightConfig")
     modApi("com.electronwill.night-config:toml:$nightConfig")
-    modApi("net.minecraftforge:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
+    modApi("net.minecraftforge:forgeconfigapiport-fabric:$forgeConfigAPIVersion") {
+        exclude(module = "fabric-loader")
+    }
 }
 
 // Fixes "duplicate fabric loader classes found on classpath" error
@@ -41,7 +41,7 @@ configurations.configureEach {
     resolutionStrategy.eachDependency {
         val fabricLoaderVersion: String by project
 
-        if (requested.module.name == "fabric-loader") {
+        if (requested.module.name == "fabric-loader" && requested.group.startsWith("net.fabricmc")) {
             useVersion(fabricLoaderVersion)
         }
     }
