@@ -1,11 +1,8 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
-import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.guild
-import dev.erdragh.astralbot.textChannel
-import dev.erdragh.astralbot.updatePresence
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -14,8 +11,8 @@ import net.minecraft.ChatFormatting
 import net.minecraft.Util
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.TextComponent
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.TextComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import java.util.*
