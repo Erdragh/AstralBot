@@ -189,13 +189,15 @@ object WhitelistHandler {
         // Generates a link code only if the user doesn't have one and has to go through linking to get one
         if (!loginCodes.containsValue(minecraftID) && hasToBeWhitelistedByLink) {
             val loginCodeRange = 10000..99999
-            var whitelistCode = loginRandom.nextInt(loginCodeRange)
+            val whitelistCode = loginRandom.nextInt(loginCodeRange)
             // The following line could be vulnerable to a DOS attack
             // I accept the possibility of a login code possibly getting overwritten
             // so this DOS won't cause an infinite loop. Such a DOS may still cause
             // Players to not be able to whitelist.
             // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
-            loginCodes[whitelistCode] = minecraftID
+            synchronized(loginCodes) {
+                loginCodes[whitelistCode] = minecraftID
+            }
         }
 
         // The config option is false by default, which means other methods of whitelisting
@@ -215,7 +217,7 @@ object WhitelistHandler {
      * @return the login code of the given user or `null` if there isn't
      * one for them yet.
      */
-    fun getWhitelistCode(minecraftID: UUID): Int? {
+    fun getWhitelistCode(minecraftID: UUID): Int? = synchronized(loginCodes) {
         return loginCodes.entries.find { it.value == minecraftID }?.key
     }
 
@@ -227,7 +229,7 @@ object WhitelistHandler {
      * link code or `null` if nobody is associated with
      * the given code.
      */
-    fun getPlayerFromCode(code: Int): UUID? {
+    fun getPlayerFromCode(code: Int): UUID? = synchronized(loginCodes) {
         return loginCodes[code]
     }
 
