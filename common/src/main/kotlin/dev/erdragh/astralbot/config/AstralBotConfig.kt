@@ -63,6 +63,8 @@ object AstralBotConfig {
 
     private val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
 
+    val ENABLE_UNLINK: ForgeConfigSpec.BooleanValue
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -113,6 +115,9 @@ object AstralBotConfig {
                     return@defineList false
                 }
             }
+
+        ENABLE_UNLINK = builder.comment("Whether to allow the unlink command. Be warned: if this is on any miscreant can unlink their account and escape responsibilities on Discord!")
+            .define("enableUnlink", false)
 
         SPEC = builder.build()
     }

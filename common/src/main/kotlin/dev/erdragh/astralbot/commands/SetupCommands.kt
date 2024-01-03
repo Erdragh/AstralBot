@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
  *
  * @author Erdragh
  */
-object RefreshCommandsCommand : HandledSlashCommand {
+object ReloadCommand : HandledSlashCommand {
     override val command: SlashCommandData =
         Commands.slash("reload", "Reloads the Discord Bot integrations (commands, etc.). This can take a while!")
             .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
@@ -30,17 +30,8 @@ object RefreshCommandsCommand : HandledSlashCommand {
             event.hook.setEphemeral(true).sendMessage("Failed to fetch Guild to refresh").queue()
             return
         }
-        guild.retrieveCommands().submit().whenComplete { fetchedCommands, error ->
-            if (error != null) {
-                event.hook.setEphemeral(true).sendMessage("Something went wrong: ${error.localizedMessage}")
-                return@whenComplete
-            }
-            waitForSetup()
-            val deletedCommands = fetchedCommands.filter { it.applicationIdLong == applicationId }.map { guild.deleteCommandById(it.id).submit() }
-            deletedCommands.forEach { it.get() }
-            guild.updateCommands().addCommands(commands.map { it.command }).queue {
-                event.hook.setEphemeral(true).sendMessage("Reloaded commands for guild").queue()
-            }
+        CommandHandlingListener.updateCommands(guild) { msg ->
+            event.hook.setEphemeral(true).sendMessage(msg).queue()
         }
     }
 }

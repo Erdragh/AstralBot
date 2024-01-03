@@ -29,7 +29,7 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.20",
+    "minecraft": ">=1.20.1",
     "java": ">=17",
     "fabric-language-kotlin": ">=1.9.0",
     "forgeconfigapiport": ">=8.0.0"
