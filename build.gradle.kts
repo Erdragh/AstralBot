@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.task.RemapJarTask
@@ -181,12 +182,21 @@ subprojects {
                 archiveClassifier.set("dev-shadow")
                 configurations = listOf(shadowCommon)
 
+                // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+                mergeServiceFiles()
+
                 // Forge restricts loading certain classes for security reasons.
                 // Luckily, shadow can relocate them to a different package.
                 relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
-                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+                // Relocating Exposed and the sqlite driver somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
                 relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+                relocate("org.sqlite", "dev.erdragh.shadowed.org.sqlite")
+
+                // Transforms the reference to point to the relocated sqlite driver (see: https://github.com/xerial/sqlite-jdbc/issues/145)
+                transform(AppendingTransformer::class.java) {
+                    resource = "META-INF/services/java.sql.Driver"
+                }
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
