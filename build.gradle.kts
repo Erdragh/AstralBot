@@ -33,7 +33,6 @@ subprojects {
     val modLoader = project.name
     val modId = rootProject.name
     val isCommon = modLoader == rootProject.projects.common.name
-    val isForge = modLoader == rootProject.projects.forge.name
 
     base {
         // This will be the final name of the exported JAR file
@@ -81,7 +80,8 @@ subprojects {
         "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
 
         // Database driver that allows Exposed to communicate with
-        // the SQLite database
+        // the SQLite database. This will not be in the JAR and needs to be provided
+        // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
         "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
     )
 
@@ -161,7 +161,7 @@ subprojects {
 
         dependencies {
             botDependencies.forEach {
-                shadowCommon(it) {
+                if (!it.contains("sqlite-jdbc")) shadowCommon(it) {
                     // opus-java is for audio, which this bot doesn't need
                     exclude(module = "opus-java")
                     // Kotlin would be included as a transitive dependency
@@ -190,18 +190,8 @@ subprojects {
                 // Luckily, shadow can relocate them to a different package.
                 relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
-                // Relocating Exposed and the sqlite driver somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
                 relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
-                if (!isForge) {
-                    // Relocating SQLite on Forge breaks things. TODO: Depend on SQLite JDBC externally
-                    relocate("org.sqlite", "dev.erdragh.shadowed.org.sqlite")
-                }
-
-
-                // Transforms the reference to point to the relocated sqlite driver (see: https://github.com/xerial/sqlite-jdbc/issues/145)
-                transform(AppendingTransformer::class.java) {
-                    resource = "META-INF/services/java.sql.Driver"
-                }
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
