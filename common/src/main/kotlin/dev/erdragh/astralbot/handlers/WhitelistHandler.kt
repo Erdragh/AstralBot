@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
 import net.dv8tion.jda.api.entities.User
@@ -70,7 +71,7 @@ object WhitelistHandler {
         transaction {
             // Creates the Table in the database file if it didn't exist beforehand.
             // Exposed will create the SQLite file if none is present.
-            if (SchemaUtils.listTables().find { it == WhitelistedUser.javaClass.simpleName } == null) {
+            if (SchemaUtils.listTables().contains(WhitelistedUser.javaClass.simpleName)) {
                 SchemaUtils.create(WhitelistedUser)
             }
         }
@@ -84,10 +85,9 @@ object WhitelistHandler {
                 Hello {{USER}}, you're not whitelisted yet.
                 
                 To whitelist yourself, join the discord:
+                
                 {{DISCORD}}
-                
                 and run the /link command with the following code:
-                
                 {{CODE}}
             """.trimIndent()
             )
@@ -119,13 +119,16 @@ object WhitelistHandler {
      * @param id the Minecraft user ID of the account to get linked
      */
     fun whitelist(user: User, id: UUID) {
-        transaction {
+        val removedID = transaction {
             WhitelistedUser.insert {
                 it[discordID] = user.idLong
                 it[minecraftID] = id
             }
+            loginCodes.remove(getWhitelistCode(id))
         }
-        loginCodes.remove(getWhitelistCode(id))
+        if (removedID != id) {
+            LOGGER.error("Failed to whitelist user: {}. Removed whitelist code: {}, but user's Minecraft ID is: {}", user, removedID, id)
+        }
     }
 
     /**
@@ -135,9 +138,10 @@ object WhitelistHandler {
      */
     fun unWhitelist(user: User) {
         transaction {
-            WhitelistedUser.deleteWhere {
+            val deletedCount = WhitelistedUser.deleteWhere {
                 discordID eq user.idLong
             }
+            LOGGER.info("Removed {} from whitelist DB for user: {}", deletedCount, user)
         }
     }
 
