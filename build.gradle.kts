@@ -8,10 +8,10 @@ plugins {
     id("architectury-plugin") version "3.4-SNAPSHOT"
     id("dev.architectury.loom") version "1.3-SNAPSHOT" apply false
     // The shadow plugin is used in both Architectury and when including JDA and Exposed
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     java
 }
 
