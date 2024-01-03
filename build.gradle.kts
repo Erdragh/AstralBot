@@ -33,6 +33,7 @@ subprojects {
     val modLoader = project.name
     val modId = rootProject.name
     val isCommon = modLoader == rootProject.projects.common.name
+    val isForge = modLoader == rootProject.projects.forge.name
 
     base {
         // This will be the final name of the exported JAR file
@@ -191,7 +192,11 @@ subprojects {
 
                 // Relocating Exposed and the sqlite driver somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
                 relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
-                relocate("org.sqlite", "dev.erdragh.shadowed.org.sqlite")
+                if (!isForge) {
+                    // Relocating SQLite on Forge breaks things. TODO: Depend on SQLite JDBC externally
+                    relocate("org.sqlite", "dev.erdragh.shadowed.org.sqlite")
+                }
+
 
                 // Transforms the reference to point to the relocated sqlite driver (see: https://github.com/xerial/sqlite-jdbc/issues/145)
                 transform(AppendingTransformer::class.java) {
