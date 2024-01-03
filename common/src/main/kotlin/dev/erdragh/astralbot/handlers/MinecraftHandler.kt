@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import com.mojang.authlib.GameProfile
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import net.dv8tion.jda.api.entities.Member
@@ -11,6 +12,7 @@ import net.minecraft.ChatFormatting
 import net.minecraft.Util
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.TextComponent
 import net.minecraft.server.MinecraftServer
@@ -110,7 +112,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param member the member which will be used to get the data
      */
     private fun formattedUser(member: Member): MutableComponent {
-        return TextComponent(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
+        return TextComponent(member.effectiveName).withStyle {
+            it
+                .withColor(member.colorRaw)
+                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent("@${member.user.name}")))
+        }
     }
 
     /**

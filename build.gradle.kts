@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.task.RemapJarTask
@@ -8,10 +9,10 @@ plugins {
     id("architectury-plugin") version "3.4-SNAPSHOT"
     id("dev.architectury.loom") version "1.3-SNAPSHOT" apply false
     // The shadow plugin is used in both Architectury and when including JDA and Exposed
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     java
 }
 
@@ -181,12 +182,21 @@ subprojects {
                 archiveClassifier.set("dev-shadow")
                 configurations = listOf(shadowCommon)
 
+                // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+                mergeServiceFiles()
+
                 // Forge restricts loading certain classes for security reasons.
                 // Luckily, shadow can relocate them to a different package.
                 relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
-                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+                // Relocating Exposed and the sqlite driver somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
                 relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+                relocate("org.sqlite", "dev.erdragh.shadowed.org.sqlite")
+
+                // Transforms the reference to point to the relocated sqlite driver (see: https://github.com/xerial/sqlite-jdbc/issues/145)
+                transform(AppendingTransformer::class.java) {
+                    resource = "META-INF/services/java.sql.Driver"
+                }
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.

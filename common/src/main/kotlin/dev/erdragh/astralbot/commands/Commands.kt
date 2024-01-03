@@ -2,25 +2,33 @@
 
 package dev.erdragh.astralbot.commands
 
+import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
 /**
- * Array of all commands the bot provides.
+ * Returns a list of all commands the bot provides.
  * This gets used to register the commands.
  */
-val commands = arrayOf(
-    RefreshCommandsCommand,
-    FAQCommand,
-    LinkCommand,
-    UnlinkCommand,
-    LinkCheckCommand,
-    ListCommand,
-    ChatSyncCommand,
-    LinkRoleCommand
-)
+fun getEnabledCommands(): Collection<HandledSlashCommand> {
+    val alwaysOnCommands = arrayOf(
+        ReloadCommand,
+        FAQCommand,
+        LinkCommand,
+        LinkCheckCommand,
+        ListCommand,
+        ChatSyncCommand,
+        LinkRoleCommand
+    )
+    val enabledCommands = ArrayList<HandledSlashCommand>()
+    enabledCommands.addAll(alwaysOnCommands)
+
+    if (AstralBotConfig.ENABLE_UNLINK.get()) enabledCommands.add(UnlinkCommand)
+
+    return enabledCommands
+}
 
 /**
  * Interface to make a common denominator for
