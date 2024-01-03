@@ -10,10 +10,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
 import net.minecraft.commands.CommandSourceStack
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.ComponentUtils
-import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.commands.BanPlayerCommands
 import net.minecraft.server.level.ServerPlayer
@@ -113,7 +110,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param member the member which will be used to get the data
      */
     private fun formattedUser(member: Member): MutableComponent {
-        return Component.literal(member.effectiveName).withStyle { it.withColor(member.colorRaw) }
+        return Component.literal(member.effectiveName).withStyle {
+            it
+                .withColor(member.colorRaw)
+                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("@${member.user.name}")))
+        }
     }
 
     /**
