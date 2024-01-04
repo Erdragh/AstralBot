@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.task.RemapJarTask
@@ -192,6 +191,9 @@ subprojects {
 
                 // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
                 relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+
+                // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
+                relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
 
                 exclude(".cache/**") //Remove datagen cache from jar.
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
