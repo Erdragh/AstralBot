@@ -71,7 +71,7 @@ object WhitelistHandler {
         transaction {
             // Creates the Table in the database file if it didn't exist beforehand.
             // Exposed will create the SQLite file if none is present.
-            if (SchemaUtils.listTables().contains(WhitelistedUser.javaClass.simpleName)) {
+            if (!SchemaUtils.listTables().contains(WhitelistedUser.javaClass.simpleName)) {
                 SchemaUtils.create(WhitelistedUser)
             }
         }
