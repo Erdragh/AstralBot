@@ -16,7 +16,8 @@ val allCommands = arrayOf(
     LinkCheckCommand,
     ListCommand,
     ChatSyncCommand,
-    LinkRoleCommand
+    LinkRoleCommand,
+    UptimeCommand
 )
 
 /**
