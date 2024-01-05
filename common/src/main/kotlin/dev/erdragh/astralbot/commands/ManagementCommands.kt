@@ -1,7 +1,10 @@
 package dev.erdragh.astralbot.commands
 
 import dev.erdragh.astralbot.getStartTimestamp
+import dev.erdragh.astralbot.minecraftHandler
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.minecraft.util.Tuple
 import java.time.LocalDateTime
@@ -30,5 +33,17 @@ object UptimeCommand : HandledSlashCommand {
 
         event.interaction.reply("Uptime: $uptimeString")
             .queue()
+    }
+}
+
+object StopCommand : HandledSlashCommand {
+    override val command = Commands.slash("stop", "Stops the Minecraft server").setDefaultPermissions(
+        DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)
+    )
+
+    override fun handle(event: SlashCommandInteractionEvent) {
+        event.interaction.reply("Stopping Minecraft Server").submit().whenComplete { _, _ ->
+            minecraftHandler?.stopServer()
+        }
     }
 }
