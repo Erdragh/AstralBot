@@ -8,26 +8,23 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
+val allCommands = arrayOf(
+    ReloadCommand,
+    FAQCommand,
+    LinkCommand,
+    UnlinkCommand,
+    LinkCheckCommand,
+    ListCommand,
+    ChatSyncCommand,
+    LinkRoleCommand
+)
+
 /**
  * Returns a list of all commands the bot provides.
  * This gets used to register the commands.
  */
 fun getEnabledCommands(): Collection<HandledSlashCommand> {
-    val alwaysOnCommands = arrayOf(
-        ReloadCommand,
-        FAQCommand,
-        LinkCommand,
-        LinkCheckCommand,
-        ListCommand,
-        ChatSyncCommand,
-        LinkRoleCommand
-    )
-    val enabledCommands = ArrayList<HandledSlashCommand>()
-    enabledCommands.addAll(alwaysOnCommands)
-
-    if (AstralBotConfig.ENABLE_UNLINK.get()) enabledCommands.add(UnlinkCommand)
-
-    return enabledCommands
+    return allCommands.filter { AstralBotConfig.ENABLED_COMMANDS.get().contains(it.command.name) }
 }
 
 /**

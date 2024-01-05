@@ -15,6 +15,7 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.LocalDateTime
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
@@ -26,6 +27,12 @@ private var jda: JDA? = null
 var baseDirectory: File? = null
 var applicationId by Delegates.notNull<Long>()
 private lateinit var setupJob: Job
+
+private lateinit var startTimestamp: LocalDateTime
+
+fun getStartTimestamp(): LocalDateTime {
+    return startTimestamp
+}
 
 fun waitForSetup() = runBlocking {
     setupJob.join()
@@ -69,6 +76,7 @@ private fun setupFromJDA(api: JDA) {
 
 @OptIn(DelicateCoroutinesApi::class)
 fun startAstralbot(server: MinecraftServer) {
+    startTimestamp = LocalDateTime.now()
     val env = System.getenv()
 
     baseDirectory = File(server.serverDirectory, MODID)

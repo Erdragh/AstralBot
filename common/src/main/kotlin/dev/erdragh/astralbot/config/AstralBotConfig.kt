@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.config
 
 import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.commands.allCommands
 import net.minecraftforge.common.ForgeConfigSpec
 import java.net.URL
 
@@ -63,7 +64,7 @@ object AstralBotConfig {
 
     private val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
 
-    val ENABLE_UNLINK: ForgeConfigSpec.BooleanValue
+    val ENABLED_COMMANDS: ForgeConfigSpec.ConfigValue<List<String>>
 
     init {
         val builder = ForgeConfigSpec.Builder()
@@ -116,8 +117,19 @@ object AstralBotConfig {
                 }
             }
 
-        ENABLE_UNLINK = builder.comment("Whether to allow the unlink command. Be warned: if this is on any miscreant can unlink their account and escape responsibilities on Discord!")
-            .define("enableUnlink", false)
+        ENABLED_COMMANDS = builder.comment("Enabled Slash Commands")
+            .defineList("enabledCommands",
+                allCommands.map { it.command.name }) {
+                if (it !is String) {
+                    LOGGER.warn("$it in enabledCommands is not a String")
+                    return@defineList false
+                }
+                if (!allCommands.map { it.command.name }.contains(it)) {
+                    LOGGER.warn("$it in enabledCommands doesn't exist")
+                    return@defineList false
+                }
+                return@defineList true
+            }
 
         SPEC = builder.build()
     }
