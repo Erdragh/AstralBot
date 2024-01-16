@@ -20,24 +20,39 @@ import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
 val LOGGER: Logger = LoggerFactory.getLogger(MODID)
+
+private lateinit var startTimestamp: LocalDateTime
 var minecraftHandler: MinecraftHandler? = null
+
 var textChannel: TextChannel? = null
 var guild: Guild? = null
 private var jda: JDA? = null
-var baseDirectory: File? = null
 var applicationId by Delegates.notNull<Long>()
+
+var baseDirectory: File? = null
+
 private lateinit var setupJob: Job
 
-private lateinit var startTimestamp: LocalDateTime
-
+/**
+ * @return the time at which the AstralBot was started
+ */
 fun getStartTimestamp(): LocalDateTime {
     return startTimestamp
 }
 
+/**
+ * Waits for the [setupJob] to be finished
+ * before letting the caller continue.
+ */
 fun waitForSetup() = runBlocking {
     setupJob.join()
 }
 
+/**
+ * Updates the Discord presence based on how many
+ * players are online.
+ * @param count how many players are online
+ */
 fun updatePresence(count: Int) {
     val message = when {
         count > 1 -> "$count players"
@@ -47,6 +62,12 @@ fun updatePresence(count: Int) {
     jda?.presence?.setPresence(Activity.watching(message), count < 1)
 }
 
+/**
+ * Handles all the setup that needs to be done when JDA
+ * has finished connecting. This includes fetching the guild,
+ * channel and role for things like Chat Synchronization, Linking
+ * etc.
+ */
 private fun setupFromJDA(api: JDA) {
     api.awaitReady()
     LOGGER.info("Fetching required data from Discord")

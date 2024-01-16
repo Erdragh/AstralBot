@@ -5,6 +5,11 @@ import net.minecraft.network.chat.ComponentContents
 import net.minecraft.network.chat.Style
 import net.minecraft.util.FormattedCharSequence
 
+/**
+ * Wrapper [Component] implemented by delegation to allow filtering of
+ * messages being sent to clients
+ * @author Erdragh
+ */
 class DiscordMessageComponent(private val wrapped: Component) : Component {
     override fun getStyle(): Style {
         return wrapped.style

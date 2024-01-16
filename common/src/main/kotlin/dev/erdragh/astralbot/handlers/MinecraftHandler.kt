@@ -21,7 +21,8 @@ import kotlin.math.round
 
 /**
  * Wrapper class around the [MinecraftServer] to provide convenience
- * methods for fetching [GameProfile]s
+ * methods for fetching [GameProfile]s, sending Messages, acting
+ * on the currently online players, etc.
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
@@ -36,21 +37,40 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return playerNames
     }
 
+    /**
+     * Adds the given [name] to the list and updates the Discord
+     * presence of the Bot.
+     * @param name the Name of the player that joined
+     */
     fun onPlayerJoin(name: String) = synchronized(playerNames) {
         playerNames.add(name)
         updatePresence(playerNames.size)
     }
 
+    /**
+     * Removes the given [name] from the list and updates the Discord
+     * presence of the Bot.
+     * @param name the Name of the player that left
+     */
     fun onPlayerLeave(name: String) = synchronized(playerNames) {
         playerNames.remove(name)
         updatePresence(playerNames.size)
     }
 
 
+    /**
+     * Stops the Minecraft [server] the same way the `/stop` command
+     * does from inside Minecraft
+     */
     fun stopServer() {
         server.halt(false)
     }
 
+    /**
+     * Formats the ticking performance information in a Human
+     * Readable form.
+     * @return the formatted String
+     */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
         return "Average Tick Time: ${round(server.averageTickTime * 100) / 100} (TPS: ${min(20.0, 1000.0/server.averageTickTime)})"

@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.build.Commands
-import net.minecraft.util.Tuple
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 import java.time.LocalDateTime
@@ -15,12 +14,20 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.log2
 import kotlin.math.pow
 
+/**
+ * This command prints the current Uptime of the Minecraft Server,
+ * measured from the time AstralBot was started (normally after world load).
+ *
+ * @author Erdragh
+ */
 object UptimeCommand : HandledSlashCommand {
     override val command = Commands.slash("uptime", "Prints the current uptime")
 
     override fun handle(event: SlashCommandInteractionEvent) {
         var start = getStartTimestamp()
         val now = LocalDateTime.now()
+
+        // Dynamically format the uptime
         val uptimeString = arrayOf(
             ChronoUnit.YEARS,
             ChronoUnit.MONTHS,
@@ -31,9 +38,9 @@ object UptimeCommand : HandledSlashCommand {
         ).map {
             val inUnit = it.between(start, now)
             start = start.plus(inUnit, it)
-            Tuple(inUnit, it)
-        }.filter { it.a > 0 }.joinToString {
-            "${it.a} ${it.b}"
+            Pair(inUnit, it)
+        }.filter { it.first > 0 }.joinToString { (amount, unit) ->
+            "$amount $unit"
         }
 
         event.interaction.reply("Uptime: $uptimeString")
@@ -41,6 +48,12 @@ object UptimeCommand : HandledSlashCommand {
     }
 }
 
+/**
+ * This command stops the Minecraft server the same way the
+ * `/stop` command does from inside Minecraft
+ *
+ * @author Erdragh
+ */
 object StopCommand : HandledSlashCommand {
     override val command = Commands.slash("stop", "Stops the Minecraft server").setDefaultPermissions(
         DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)
@@ -53,6 +66,10 @@ object StopCommand : HandledSlashCommand {
     }
 }
 
+/**
+ * Extension function taking from StackOverflow to format a Long
+ * in Bytes and the associated SI Units
+ */
 private val Long.asFileSize: String
     get() = log2(coerceAtLeast(1).toDouble()).toInt().div(10).let {
         val precision = when (it) {
@@ -62,6 +79,12 @@ private val Long.asFileSize: String
         String.format("%.${precision}f ${prefix[it]}B", toDouble() / 2.0.pow(it * 10.0))
     }
 
+/**
+ * This command prints some Information about the ticking performance
+ * of the Minecraft server
+ *
+ * @author Erdragh
+ */
 object TPSCommand : HandledSlashCommand {
     override val command = Commands.slash("tps", "Shows information about the tick speed")
 
@@ -70,25 +93,34 @@ object TPSCommand : HandledSlashCommand {
     }
 }
 
+/**
+ * This command prints System usage information, e.g. Memory and CPU
+ *
+ * @author Erdragh
+ */
 object UsageCommand : HandledSlashCommand {
     override val command = Commands.slash("usage", "Shows information about the hardware usage")
 
+    // Java interfaces for gathering the Data
     private val memoryBean = ManagementFactory.getMemoryMXBean()
     private val runtime = Runtime.getRuntime()
 
+    // Format for the CPU Usage numbers
     private val numberFormat = DecimalFormat("###.##")
 
+    // This is a var because it will be dynamically set based on what
+    // classes are available in the environment
     private var getCPUUsage: () -> Pair<Double, Double>
 
     init {
+        // The com.sun.management classes aren't available on certain versions of Java,
+        // so if it's not available getCPUUsage needs to be dynamically set to prevent
+        // loading of unavailable classes
         try {
             Class.forName("com.sun.management.OperatingSystemMXBean")
             getCPUUsage = ManagementHelper::getCpuUsage
         } catch (e: ClassNotFoundException) {
             LOGGER.warn("com.sun.management.OperatingSystemMXBean class not available, Usage information will be limited.", e)
-            getCPUUsage = { Pair(-1.0, -1.0) }
-        } catch (e: Exception) {
-            LOGGER.warn("com.sun.management.OperatingSystemMXBean::getProcessCpuLoad method not available, Usage information will be limited.", e)
             getCPUUsage = { Pair(-1.0, -1.0) }
         }
     }
@@ -114,6 +146,5 @@ object UsageCommand : HandledSlashCommand {
             ```
         """.trimIndent()
         ).queue()
-
     }
 }
