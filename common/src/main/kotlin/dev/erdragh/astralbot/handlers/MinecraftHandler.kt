@@ -16,6 +16,8 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.min
+import kotlin.math.round
 
 /**
  * Wrapper class around the [MinecraftServer] to provide convenience
@@ -47,6 +49,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
     fun stopServer() {
         server.halt(false)
+    }
+
+    fun tickReport(): String {
+        // Idea from the TPSCommand in Forge
+        return "Average Tick Time: ${round(server.averageTickTime * 100) / 100} (TPS: ${min(20.0, 1000.0/server.averageTickTime)})"
     }
 
     /**

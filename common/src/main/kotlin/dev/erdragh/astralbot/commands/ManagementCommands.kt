@@ -47,3 +47,13 @@ object StopCommand : HandledSlashCommand {
         }
     }
 }
+
+object TPSCommand : HandledSlashCommand {
+    override val command = Commands.slash("tps", "Shows information about the tick speed").setDefaultPermissions(
+        DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR)
+    )
+
+    override fun handle(event: SlashCommandInteractionEvent) {
+        event.interaction.reply(minecraftHandler?.tickReport() ?: "No Information Available").queue()
+    }
+}
