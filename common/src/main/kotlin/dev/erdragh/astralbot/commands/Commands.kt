@@ -19,7 +19,8 @@ val allCommands = arrayOf(
     LinkRoleCommand,
     UptimeCommand,
     StopCommand,
-    TPSCommand
+    TPSCommand,
+    UsageCommand
 )
 
 /**
