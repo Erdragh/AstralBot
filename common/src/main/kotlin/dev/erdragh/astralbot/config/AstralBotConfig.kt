@@ -62,8 +62,17 @@ object AstralBotConfig {
      */
     val CLICKABLE_EMBEDS: ForgeConfigSpec.BooleanValue
 
+    /**
+     * List of Strings containing the URLs that are blocked by default.
+     * If you read this and want to add more to the default list, feel
+     * free to open an Issue or Pull Request.
+     */
     private val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
 
+    /**
+     * List of the names of the commands that are enabled by default.
+     * On first startup of a server, it will be all available commands.
+     */
     val ENABLED_COMMANDS: ForgeConfigSpec.ConfigValue<List<String>>
 
     init {

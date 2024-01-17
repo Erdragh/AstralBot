@@ -1,8 +1,11 @@
 package dev.erdragh.astralbot.commands
 
-import dev.erdragh.astralbot.*
+import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
+import dev.erdragh.astralbot.textChannel
+import dev.erdragh.astralbot.waitForSetup
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
@@ -88,6 +91,16 @@ object ChatSyncCommand : HandledSlashCommand {
     }
 }
 
+/**
+ * This command sets up the Bot to give roles to people who link
+ * their accounts. It also assigns the role to anybody who's already
+ * linked themselves.
+ *
+ * It has the following options:
+ * - `role`: The role which will be given to linked members
+ *
+ * @author Erdragh
+ */
 object LinkRoleCommand : HandledSlashCommand {
     private const val OPTION_ROLE = "role"
     override val command: SlashCommandData =

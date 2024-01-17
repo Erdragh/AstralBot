@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.utils.messages.MessageCreateData
 
 /**
  * Event listener for [JDA](https://jda.wiki) that sets up commands on servers
@@ -29,6 +28,12 @@ object CommandHandlingListener : ListenerAdapter() {
         ).queue()
     }
 
+    /**
+     * Allows the owner of a Discord Guild (Server) to sync the commands
+     * in case the Bot was offline when it joined and the commands didn't
+     * get registered.
+     * @param event the message event about the message sent
+     */
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.message.contentDisplay == "!reload") {
             guild?.retrieveOwner()?.submit()?.whenComplete { owner, error ->
@@ -43,6 +48,16 @@ object CommandHandlingListener : ListenerAdapter() {
         }
     }
 
+    /**
+     * Helper function that fully updates commands on a given guild.
+     * Starts an asynchronous workflow removing and re-adding commands
+     * to make sure disabling commands actually removes them from the
+     * server.
+     * @param guild the guild on which the commands are going to be updated
+     * @param sendMessage callback to send responses. This is a callback
+     * because this helper function is called from different places and
+     * can't return anything because of its asynchronous nature
+     */
     fun updateCommands(guild: Guild, sendMessage: (msg: String) -> Unit) {
         guild.retrieveCommands().submit().whenComplete { fetchedCommands, error ->
             if (error != null) {
