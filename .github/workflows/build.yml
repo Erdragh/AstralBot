@@ -33,7 +33,7 @@ jobs:
       - name: setup gradle
         uses: gradle/gradle-build-action@v2
         with:
-          dependency-graph: ${{ github.ref == 'refs/heads/develop' && 'generate-and-submit' || 'generate-and-upload' }}
+          dependency-graph: ${{ github.ref == 'refs/heads/develop' && generate-and-submit || generate-and-upload }}
 
       - name: gradle clean build
         run: ./gradlew clean build
