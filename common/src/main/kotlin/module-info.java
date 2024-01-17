@@ -21,5 +21,5 @@ module Minecraft.astralbot.common.main {
   requires transitive org.slf4j;
 
   // For accessing the config
-  requires forgeconfigapiport.common;
+  requires forgeconfigapiport.fabric;
 }
