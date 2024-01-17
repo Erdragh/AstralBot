@@ -1,11 +1,15 @@
 package dev.erdragh.astralbot.handlers
 
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextComponent
 import net.minecraft.util.FormattedCharSequence
 
+/**
+ * Wrapper [Component] implemented by delegation to allow filtering of
+ * messages being sent to clients
+ * @author Erdragh
+ */
 class DiscordMessageComponent(private val wrapped: Component) : TextComponent("") {
     override fun getStyle(): Style {
         return wrapped.style

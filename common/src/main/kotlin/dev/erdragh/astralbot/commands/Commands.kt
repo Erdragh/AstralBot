@@ -9,25 +9,37 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
 /**
- * Returns a list of all commands the bot provides.
- * This gets used to register the commands.
+ * Array containing every single command AstralBot supports
+ */
+val allCommands = arrayOf(
+    // Bot management commands
+    ReloadCommand,
+    // Utility Commands
+    FAQCommand,
+    // Player related commands
+    LinkCommand,
+    UnlinkCommand,
+    LinkCheckCommand,
+    ListCommand,
+    // Bot setup commands
+    ChatSyncCommand,
+    LinkRoleCommand,
+    // Minecraft server management commands
+    UptimeCommand,
+    StopCommand,
+    TPSCommand,
+    UsageCommand
+)
+
+/**
+ * Filters the list of [allCommands] based on the commands enabled
+ * in the [AstralBotConfig]
+ * @see AstralBotConfig.ENABLED_COMMANDS
+ * @see allCommands
+ * @return filtered list containing only the commands that are enabled
  */
 fun getEnabledCommands(): Collection<HandledSlashCommand> {
-    val alwaysOnCommands = arrayOf(
-        ReloadCommand,
-        FAQCommand,
-        LinkCommand,
-        LinkCheckCommand,
-        ListCommand,
-        ChatSyncCommand,
-        LinkRoleCommand
-    )
-    val enabledCommands = ArrayList<HandledSlashCommand>()
-    enabledCommands.addAll(alwaysOnCommands)
-
-    if (AstralBotConfig.ENABLE_UNLINK.get()) enabledCommands.add(UnlinkCommand)
-
-    return enabledCommands
+    return allCommands.filter { AstralBotConfig.ENABLED_COMMANDS.get().contains(it.command.name) }
 }
 
 /**
@@ -64,6 +76,10 @@ fun interface AutocompleteCommand {
     fun autocomplete(event: CommandAutoCompleteInteractionEvent)
 }
 
+/**
+ * Base class for commands that need autocompletion on Minecraft usernames
+ * @author Erdragh
+ */
 abstract class MinecraftUserAutocompleteCommand(private vararg val options: String) : AutocompleteCommand {
     override fun autocomplete(event: CommandAutoCompleteInteractionEvent) {
         if (options.contains(event.focusedOption.name)) {

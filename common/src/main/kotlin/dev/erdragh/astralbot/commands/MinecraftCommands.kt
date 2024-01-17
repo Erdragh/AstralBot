@@ -16,10 +16,10 @@ object ListCommand : HandledSlashCommand {
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(false).queue()
 
-        val list = minecraftHandler?.getOnlinePlayers()?.map { "- ${it}\n" }
+        val list = minecraftHandler?.getOnlinePlayers()?.map { "- $it" }
 
         if (!list.isNullOrEmpty()) {
-            event.hook.sendMessage("The following players are currently online:\n${list.joinToString()}").queue()
+            event.hook.sendMessage("The following players are currently online:\n${list.joinToString("\n")}").queue()
         } else {
             event.hook.sendMessage("There are no players online currently").queue()
         }
