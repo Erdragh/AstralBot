@@ -34,13 +34,13 @@ jobs:
         if: github.ref == 'refs/heads/develop'
         uses: gradle/gradle-build-action@v2
         with:
-          dependency-graph: generate-and-submit
+          dependency-graph: 'generate-and-submit'
 
       - name: setup gradle
         if: github.ref != 'refs/heads/develop'
         uses: gradle/gradle-build-action@v2
         with:
-          dependency-graph: generate-and-upload
+          dependency-graph: 'generate-and-upload'
 
       - name: gradle clean build
         run: ./gradlew clean build
