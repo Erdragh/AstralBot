@@ -113,6 +113,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param message the String contents of the message
      */
     fun sendChatToDiscord(player: ServerPlayer?, message: String) {
+        if (shuttingDown.get()) return
         textChannel?.sendMessage(if (player != null) "<${player.displayName.string.replace("_", "\\_")}> $message" else message)
             ?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()

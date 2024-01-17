@@ -15,7 +15,9 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
@@ -32,6 +34,7 @@ var applicationId by Delegates.notNull<Long>()
 var baseDirectory: File? = null
 
 private lateinit var setupJob: Job
+var shuttingDown = AtomicBoolean(false)
 
 /**
  * @return the time at which the AstralBot was started
@@ -139,8 +142,15 @@ fun startAstralbot(server: MinecraftServer) {
 
 fun stopAstralbot() {
     LOGGER.info("Shutting down AstralBot")
+    shuttingDown.set(true)
     if (baseDirectory != null) FAQHandler.stop()
-    jda?.shutdownNow()
-    jda?.awaitShutdown()
+    if (jda != null) {
+        jda!!.shutdown()
+        // Allow at most 10 seconds for remaining requests to finish
+        if (!jda!!.awaitShutdown(Duration.ofSeconds(10))) {
+            jda!!.shutdownNow() // Cancel all remaining requests
+            jda!!.awaitShutdown() // Wait until shutdown is complete (indefinitely)
+        }
+    }
     LOGGER.info("Shut down AstralBot")
 }
