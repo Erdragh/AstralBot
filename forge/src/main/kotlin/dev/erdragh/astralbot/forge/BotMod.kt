@@ -24,7 +24,7 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 object BotMod {
     init {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text")
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
