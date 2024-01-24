@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.handlers
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -28,6 +29,7 @@ import kotlin.math.round
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
     private val playerNames = HashSet<String>(server.maxPlayers)
+
     companion object {
         private val numberFormat = DecimalFormat("###.##")
     }
@@ -77,11 +79,15 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return "Average Tick Time: ${numberFormat.format(server.averageTickTime)}mspt (TPS: ${numberFormat.format(
-            min(
-                20.0,
-                1000.0 / server.averageTickTime
-            ))})"
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime))
+            .replace(
+                "{{tps}}", numberFormat.format(
+                    min(
+                        20.0,
+                        1000.0 / server.averageTickTime
+                    )
+                )
+            )
     }
 
     /**
@@ -118,7 +124,15 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun sendChatToDiscord(player: ServerPlayer?, message: String) {
         if (shuttingDown.get()) return
-        textChannel?.sendMessage(if (player != null) "<${player.displayName.string.replace("_", "\\_")}> $message" else message)
+        val escape = { it: String -> it.replace("_", "\\_") }
+        textChannel?.sendMessage(
+            if (player != null)
+                AstralBotTextConfig.PLAYER_MESSAGE.get()
+                    .replace("{{message}}", escape(message))
+                    .replace("{{fullName}}", escape(player.displayName.string))
+                    .replace("{{name}}", escape(player.name.string))
+            else escape(message)
+        )
             ?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()
     }
