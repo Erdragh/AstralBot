@@ -1,6 +1,6 @@
 // This file contains multiple commands which don't warrant separate files
 
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.minecraftHandler

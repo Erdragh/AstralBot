@@ -174,6 +174,23 @@ object WhitelistHandler {
         return result
     }
 
+    fun getOrGenerateWhitelistCode(minecraftID: UUID): Int {
+        val foundCode = loginCodes.entries.find { it.value == minecraftID }?.key
+        if (foundCode != null) return foundCode
+
+        val loginCodeRange = 10000..99999
+        val whitelistCode = loginRandom.nextInt(loginCodeRange)
+        // The following line could be vulnerable to a DOS attack
+        // I accept the possibility of a login code possibly getting overwritten
+        // so this DOS won't cause an infinite loop. Such a DOS may still cause
+        // Players to not be able to whitelist.
+        // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
+        synchronized(loginCodes) {
+            loginCodes[whitelistCode] = minecraftID
+        }
+        return whitelistCode
+    }
+
     /**
      * Checks whether a User is actually whitelisted and is allowed to join the server.
      * This method gets used in the PlayerList mixins to expand the isWhiteListed check.
@@ -190,17 +207,8 @@ object WhitelistHandler {
         val hasToBeWhitelistedByLink =
             (!isWhitelisted && AstralBotConfig.REQUIRE_LINK_FOR_WHITELIST.get()) || (!isWhitelisted && !defaultWhitelisted)
         // Generates a link code only if the user doesn't have one and has to go through linking to get one
-        if (!loginCodes.containsValue(minecraftID) && hasToBeWhitelistedByLink) {
-            val loginCodeRange = 10000..99999
-            val whitelistCode = loginRandom.nextInt(loginCodeRange)
-            // The following line could be vulnerable to a DOS attack
-            // I accept the possibility of a login code possibly getting overwritten
-            // so this DOS won't cause an infinite loop. Such a DOS may still cause
-            // Players to not be able to whitelist.
-            // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
-            synchronized(loginCodes) {
-                loginCodes[whitelistCode] = minecraftID
-            }
+        if (hasToBeWhitelistedByLink) {
+            getOrGenerateWhitelistCode(minecraftID)
         }
 
         // The config option is false by default, which means other methods of whitelisting
