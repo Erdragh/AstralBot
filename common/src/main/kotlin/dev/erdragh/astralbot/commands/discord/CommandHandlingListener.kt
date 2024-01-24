@@ -2,6 +2,7 @@ package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.applicationId
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.waitForSetup
 import net.dv8tion.jda.api.entities.Guild
@@ -61,14 +62,14 @@ object CommandHandlingListener : ListenerAdapter() {
     fun updateCommands(guild: Guild, sendMessage: (msg: String) -> Unit) {
         guild.retrieveCommands().submit().whenComplete { fetchedCommands, error ->
             if (error != null) {
-                sendMessage("Something went wrong: ${error.localizedMessage}")
+                sendMessage(AstralBotTextConfig.RELOAD_ERROR.get().replace("{{error}}", error.localizedMessage))
                 return@whenComplete
             }
             waitForSetup()
             val deletedCommands = fetchedCommands.filter { it.applicationIdLong == applicationId }.map { guild.deleteCommandById(it.id).submit() }
             deletedCommands.forEach { it.get() }
             guild.updateCommands().addCommands(getEnabledCommands().map { it.command }).queue {
-                sendMessage("Reloaded commands for guild")
+                sendMessage(AstralBotTextConfig.RELOAD_SUCCESS.get())
             }
         }
     }
@@ -84,7 +85,7 @@ object CommandHandlingListener : ListenerAdapter() {
         if (usedCommand != null) {
             usedCommand.handle(event)
         } else {
-            event.reply("Something went wrong").queue()
+            event.reply(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
         }
     }
 
