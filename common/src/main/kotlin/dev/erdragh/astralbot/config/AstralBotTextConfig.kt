@@ -20,9 +20,18 @@ object AstralBotTextConfig {
     val RELOAD_ERROR: ForgeConfigSpec.ConfigValue<String>
     val RELOAD_SUCCESS: ForgeConfigSpec.ConfigValue<String>
 
+    val LINK_NO_MINECRAFT: ForgeConfigSpec.ConfigValue<String>
+    val LINK_MINECRAFT_TAKEN: ForgeConfigSpec.ConfigValue<String>
+    val LINK_DISCORD_TAKEN: ForgeConfigSpec.ConfigValue<String>
+    val LINK_SUCCESSFUL: ForgeConfigSpec.ConfigValue<String>
+    val LINK_ERROR: ForgeConfigSpec.ConfigValue<String>
+
+    val LINK_COMMAND_MESSAGE: ForgeConfigSpec.ConfigValue<String>
+    val LINK_COMMAND_ALREADY_LINKED: ForgeConfigSpec.ConfigValue<String>
+
     init {
         val builder = ForgeConfigSpec.Builder()
-        val whitespaceRegex = Regex("\n[ \t]+");
+        val whitespaceRegex = Regex("\n[ \t]+")
 
         GENERIC_ERROR = builder.comment("Generic error message sent to Discord")
             .define("genericError", "Something went wrong!")
@@ -69,6 +78,49 @@ object AstralBotTextConfig {
                 .define(mutableListOf("reload", "error"), "Something went wrong: {{error}}")
         RELOAD_SUCCESS = builder.comment("Message sent to Discord after a successful reload")
             .define(mutableListOf("reload", "success"), "Reloaded commands for guild")
+
+        LINK_NO_MINECRAFT =
+            builder.comment("""
+                Message for when there's no Minecraft account associated with the given Link code.
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "noMinecraft"), "Couldn't find Minecraft account to link.")
+        LINK_MINECRAFT_TAKEN =
+            builder.comment("""
+                Message for when the Minecraft account is already linked. This should never happen under
+                normal circumstances.
+                The Minecraft username is referenced by {{name}}
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "minecaftTaken"), "Minecraft username {{name}} already linked.")
+        LINK_DISCORD_TAKEN =
+            builder.comment("""
+                Message for when a Discord account is already linked.
+                The Discord user is referenced by {{name}}
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "discordTaken"), "{{name}} already linked.")
+        LINK_SUCCESSFUL =
+            builder.comment("""
+                Message for when linking was successful.
+                The Minecraft usernames can be accessed via {{mc}}. The Discord user via {{dc}}
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "successful"), "Linked {{dc}} to Minecraft username {{mc}}.")
+        LINK_ERROR =
+            builder.comment("""
+                Message for when linking failed for some reason.
+                The error message can be accessed via {{error}}
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "error"), "Failed to link: {{error}}")
+
+        LINK_COMMAND_MESSAGE =
+            builder.comment("""
+                The message sent to a Minecraft user that requested a link code.
+                The code is referenced via {{code}}
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "command", "message"), "Use this code to /link yourself on Discord: {{code}}")
+        LINK_COMMAND_ALREADY_LINKED =
+            builder.comment("""
+                The message sent to a Minecraft user requesting a link code when they're already linked.
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("link", "command", "alreadyLinked"), "You're already linked!")
 
         SPEC = builder.build()
     }
