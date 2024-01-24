@@ -14,6 +14,7 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
+import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
@@ -27,6 +28,9 @@ import kotlin.math.round
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
     private val playerNames = HashSet<String>(server.maxPlayers)
+    companion object {
+        private val numberFormat = DecimalFormat("###.##")
+    }
 
     /**
      * Gets all currently online players' names
@@ -73,7 +77,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return "Average Tick Time: ${round(server.averageTickTime * 100) / 100} (TPS: ${min(20.0, 1000.0/server.averageTickTime)})"
+        return "Average Tick Time: ${numberFormat.format(server.averageTickTime)}mspt (TPS: ${numberFormat.format(
+            min(
+                20.0,
+                1000.0 / server.averageTickTime
+            ))})"
     }
 
     /**
