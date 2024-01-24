@@ -19,7 +19,6 @@ import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
-import kotlin.math.round
 
 /**
  * Wrapper class around the [MinecraftServer] to provide convenience
@@ -187,10 +186,6 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
         val comp = Component.empty()
-        // The actual sender of the message
-        message.member?.let {
-            comp.append(formattedUser(it))
-        }
 
         // Lambda that constructs the rest of the message. I'm doing it this way
         // because this may be used in a callback lambda below, where I can't return
@@ -198,9 +193,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         val formatRestOfMessage: () -> MutableComponent = { ->
             val restOfMessage = Component.empty()
             // This is the actual message content
-            val actualMessage = Component.empty()
-                .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
-                .append(message.contentDisplay)
+            val actualMessage = Component.literal(message.contentDisplay)
             // If it's enabled in the config you can click on a message and get linked to said message
             // in the actual Discord client
             if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
@@ -222,25 +215,70 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         if (referencedAuthor != null) {
             // This fetches the Member from the ID in a blocking manner
-            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { member, error ->
+            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { repliedMember, error ->
                 if (error != null) {
                     LOGGER.error("Failed to get member with id: $referencedAuthor", error)
                     return@whenComplete
-                } else if (member == null) {
+                } else if (repliedMember == null) {
                     LOGGER.error("Failed to get member with id: $referencedAuthor")
                     return@whenComplete
                 }
-                comp.append(
-                    Component.literal(" replying to ")
-                        .withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
-                comp.append(formattedUser(member))
+                message.member?.let {
+                    comp.append(formattedUsers(it, repliedMember))
+                }
                 comp.append(formatRestOfMessage())
                 send(comp)
             }
         } else {
+            message.member?.let {
+                comp.append(formattedUsers(it, null))
+            }
             comp.append(formatRestOfMessage())
             send(comp)
         }
+    }
+
+    private fun formattedUsers(author: Member, replied: Member?): MutableComponent {
+        val users = Component.empty()
+
+        val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
+
+        val withReply = { templatePart: String ->
+            val accumulator = Component.empty()
+
+            val reply = Component.empty()
+            replied?.let {
+                val replyTemplateSplit = AstralBotTextConfig.DISCORD_REPLY.get().split("{{replied}}")
+                for ((index, value) in replyTemplateSplit.withIndex()) {
+                    reply.append(Component.literal(value).withStyle { style -> style.withColor(ChatFormatting.GRAY) })
+
+                    if (index + 1 < replyTemplateSplit.size) {
+                        reply.append(formattedUser(it))
+                    }
+                }
+            }
+
+            val templateSplitByReply = templatePart.split("{{reply}}")
+
+            for ((index, value) in templateSplitByReply.withIndex()) {
+                accumulator.append(Component.literal(value).withStyle { it.withColor(ChatFormatting.GRAY) })
+
+                if (index + 1 < templateSplitByReply.size) {
+                    accumulator.append(reply.copy())
+                }
+            }
+            accumulator
+        }
+
+        for ((index, value) in templateSplitByUser.withIndex()) {
+            users.append(withReply(value))
+
+            if (index + 1 < templateSplitByUser.size) {
+                users.append(formattedUser(author))
+            }
+        }
+
+        return users
     }
 
     /**

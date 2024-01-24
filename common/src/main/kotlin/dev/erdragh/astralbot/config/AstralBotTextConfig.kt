@@ -12,6 +12,9 @@ object AstralBotTextConfig {
 
     val PLAYER_MESSAGE: ForgeConfigSpec.ConfigValue<String>
 
+    val DISCORD_MESSAGE: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_REPLY: ForgeConfigSpec.ConfigValue<String>
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -37,6 +40,17 @@ object AstralBotTextConfig {
                 via {{fullName}}. The message itself is accessed via {{message}}.
             """.trimIndent())
                 .define("playerMessage", "<{{fullName}}> {{message}}")
+
+        DISCORD_MESSAGE =
+            builder.comment("""Template for how Discord messages are synchronized to Minecraft.
+                The sender is referenced by {{user}}. The optional response is accessed by {{reply}}
+            """.trimIndent())
+                .define("discordMessage", "{{user}}{{reply}}:")
+        DISCORD_REPLY =
+            builder.comment("""Template for the {{reply}} part of the discordMessage.
+                The user the message is in reply to is referenced by {{replied}}
+            """.trimIndent())
+                .define("discordReply", " replying to {{replied}}:")
 
         SPEC = builder.build()
     }
