@@ -96,6 +96,8 @@ private fun setupFromJDA(api: JDA) {
     }
     textChannel = ch
     guild = g
+
+    ch.sendMessage("Server Started!").queue()
 }
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -141,6 +143,7 @@ fun startAstralbot(server: MinecraftServer) {
 }
 
 fun stopAstralbot() {
+    if (!shuttingDown.get()) textChannel?.sendMessage("Server shutting down!")?.queue()
     LOGGER.info("Shutting down AstralBot")
     shuttingDown.set(true)
     if (baseDirectory != null) FAQHandler.stop()
