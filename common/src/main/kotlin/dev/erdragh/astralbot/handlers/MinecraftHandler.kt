@@ -187,26 +187,19 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
         val comp = Component.empty()
 
-        // Lambda that constructs the rest of the message. I'm doing it this way
-        // because this may be used in a callback lambda below, where I can't return
-        // out of sendFormattedMessage anymore
-        val formatRestOfMessage: () -> MutableComponent = { ->
-            val restOfMessage = Component.empty()
-            // This is the actual message content
-            val actualMessage = Component.literal(message.contentDisplay)
-            // If it's enabled in the config you can click on a message and get linked to said message
-            // in the actual Discord client
-            if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
-                actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
-            }
-            restOfMessage.append(actualMessage)
+        val messageContents = Component.empty()
+        // This is the actual message content
+        val actualMessage = Component.literal(message.contentDisplay)
+        // If it's enabled in the config you can click on a message and get linked to said message
+        // in the actual Discord client
+        if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
+            actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
+        }
+        messageContents.append(actualMessage)
 
-            // Only adds embeds if it's enabled in the config
-            if (AstralBotConfig.HANDLE_EMBEDS.get()) {
-                restOfMessage.append(formatEmbeds(message))
-            }
-
-            restOfMessage
+        // Only adds embeds if it's enabled in the config
+        if (AstralBotConfig.HANDLE_EMBEDS.get()) {
+            messageContents.append(formatEmbeds(message))
         }
 
         val referencedAuthor = message.referencedMessage?.author?.id
@@ -224,24 +217,40 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                     return@whenComplete
                 }
                 message.member?.let {
-                    comp.append(formattedUsers(it, repliedMember))
+                    comp.append(formatMessageWithUsers(messageContents, it, repliedMember))
+                    send(comp)
                 }
-                comp.append(formatRestOfMessage())
-                send(comp)
             }
         } else {
             message.member?.let {
-                comp.append(formattedUsers(it, null))
+                comp.append(formatMessageWithUsers(messageContents, it, null))
+                send(comp)
             }
-            comp.append(formatRestOfMessage())
-            send(comp)
         }
     }
 
-    private fun formattedUsers(author: Member, replied: Member?): MutableComponent {
-        val users = Component.empty()
+    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Member?): MutableComponent {
+        val formatted = Component.empty()
 
         val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
+
+        val formattedLiteral = { contents: String -> Component.literal(contents).withStyle(ChatFormatting.GRAY) }
+
+        val withMessage = { templatePart: String ->
+            val accumulator = Component.empty()
+
+            val templateSplitMessage = templatePart.split("{{message}}")
+
+            for ((index, value) in templateSplitMessage.withIndex()) {
+                accumulator.append(formattedLiteral(value))
+
+                if (index + 1 < templateSplitMessage.size) {
+                    accumulator.append(message)
+                }
+            }
+
+            accumulator
+        }
 
         val withReply = { templatePart: String ->
             val accumulator = Component.empty()
@@ -250,7 +259,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             replied?.let {
                 val replyTemplateSplit = AstralBotTextConfig.DISCORD_REPLY.get().split("{{replied}}")
                 for ((index, value) in replyTemplateSplit.withIndex()) {
-                    reply.append(Component.literal(value).withStyle { style -> style.withColor(ChatFormatting.GRAY) })
+                    reply.append(formattedLiteral(value))
 
                     if (index + 1 < replyTemplateSplit.size) {
                         reply.append(formattedUser(it))
@@ -261,7 +270,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             val templateSplitByReply = templatePart.split("{{reply}}")
 
             for ((index, value) in templateSplitByReply.withIndex()) {
-                accumulator.append(Component.literal(value).withStyle { it.withColor(ChatFormatting.GRAY) })
+                accumulator.append(withMessage(value))
 
                 if (index + 1 < templateSplitByReply.size) {
                     accumulator.append(reply.copy())
@@ -271,14 +280,14 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         for ((index, value) in templateSplitByUser.withIndex()) {
-            users.append(withReply(value))
+            formatted.append(withReply(value))
 
             if (index + 1 < templateSplitByUser.size) {
-                users.append(formattedUser(author))
+                formatted.append(formattedUser(author))
             }
         }
 
-        return users
+        return formatted
     }
 
     /**
