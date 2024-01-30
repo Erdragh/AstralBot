@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.handlers.WhitelistHandler.WhitelistedUser
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.Component
 import org.jetbrains.exposed.sql.*
@@ -153,7 +154,7 @@ object WhitelistHandler {
     fun checkWhitelist(minecraftID: UUID): Long? {
         var result: Long? = null
         transaction {
-            val query = WhitelistedUser.select { WhitelistedUser.minecraftID eq minecraftID }
+            val query = WhitelistedUser.selectAll().where { WhitelistedUser.minecraftID eq minecraftID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.discordID]
         }
         return result
@@ -168,7 +169,7 @@ object WhitelistHandler {
     fun checkWhitelist(discordID: Long): UUID? {
         var result: UUID? = null
         transaction {
-            val query = WhitelistedUser.select { WhitelistedUser.discordID eq discordID }
+            val query = WhitelistedUser.selectAll().where { WhitelistedUser.discordID eq discordID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
         }
         return result
