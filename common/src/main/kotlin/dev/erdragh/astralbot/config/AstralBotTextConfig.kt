@@ -6,6 +6,7 @@ object AstralBotTextConfig {
     val SPEC: ForgeConfigSpec
 
     val GENERIC_ERROR: ForgeConfigSpec.ConfigValue<String>
+    val GENERIC_SUCCESS: ForgeConfigSpec.ConfigValue<String>
 
     val FAQ_ERROR: ForgeConfigSpec.ConfigValue<String>
     val FAQ_NO_REGISTERED: ForgeConfigSpec.ConfigValue<String>
@@ -35,6 +36,8 @@ object AstralBotTextConfig {
 
         GENERIC_ERROR = builder.comment("Generic error message sent to Discord")
             .define("genericError", "Something went wrong!")
+        GENERIC_SUCCESS = builder.comment("Generic success message sent to Discord")
+            .define("genericSuccess", "Success!")
 
         FAQ_ERROR = builder.comment("Message sent to Discord if an error ocurrs during FAQ loading")
             .define(mutableListOf("faq", "error"), "Bot Error (Contact Bot Operator)")
