@@ -2,6 +2,7 @@ package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.textChannel
@@ -30,7 +31,7 @@ object ReloadCommand : HandledSlashCommand {
         event.deferReply(true).queue()
         val guild = event.guild
         if (guild == null) {
-            event.hook.setEphemeral(true).sendMessage("Failed to fetch Guild to refresh").queue()
+            event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
             return
         }
         CommandHandlingListener.updateCommands(guild) { msg ->
@@ -86,7 +87,7 @@ object ChatSyncCommand : HandledSlashCommand {
             success = true
         }
         event.hook.setEphemeral(true)
-            .sendMessage(if (success) "Successfully set up chat synchronization" else "Something went wrong while setting up chat sync")
+            .sendMessage(if (success) AstralBotTextConfig.GENERIC_SUCCESS.get() else AstralBotTextConfig.GENERIC_ERROR.get())
             .queue()
     }
 }
@@ -112,7 +113,7 @@ object LinkRoleCommand : HandledSlashCommand {
         event.deferReply(true).queue()
         val role = event.getOptionsByType(OptionType.ROLE).findLast { it.name == OPTION_ROLE }?.asRole
         if (role !is Role) {
-            event.hook.setEphemeral(true).sendMessage("Failed to resolve role from command option").queue()
+            event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
             LOGGER.error("Failed to resolve role from command option")
             return
         }
@@ -139,6 +140,6 @@ object LinkRoleCommand : HandledSlashCommand {
             }
         }
 
-        event.hook.setEphemeral(true).sendMessage("Set up role ${role.name} for linked members").queue()
+        event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.GENERIC_SUCCESS.get()).queue()
     }
 }

@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.forge
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.forge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import dev.erdragh.astralbot.minecraftHandler
@@ -23,6 +24,7 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 object BotMod {
     init {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)

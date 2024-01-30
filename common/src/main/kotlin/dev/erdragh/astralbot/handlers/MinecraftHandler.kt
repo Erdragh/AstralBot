@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.handlers
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -18,7 +19,6 @@ import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
-import kotlin.math.round
 
 /**
  * Wrapper class around the [MinecraftServer] to provide convenience
@@ -28,6 +28,7 @@ import kotlin.math.round
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
     private val playerNames = HashSet<String>(server.maxPlayers)
+
     companion object {
         private val numberFormat = DecimalFormat("###.##")
     }
@@ -77,11 +78,15 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return "Average Tick Time: ${numberFormat.format(server.averageTickTime)}mspt (TPS: ${numberFormat.format(
-            min(
-                20.0,
-                1000.0 / server.averageTickTime
-            ))})"
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime))
+            .replace(
+                "{{tps}}", numberFormat.format(
+                    min(
+                        20.0,
+                        1000.0 / server.averageTickTime
+                    )
+                )
+            )
     }
 
     /**
@@ -118,7 +123,15 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun sendChatToDiscord(player: ServerPlayer?, message: String) {
         if (shuttingDown.get()) return
-        textChannel?.sendMessage(if (player != null) "<${player.displayName.string.replace("_", "\\_")}> $message" else message)
+        val escape = { it: String -> it.replace("_", "\\_") }
+        textChannel?.sendMessage(
+            if (player != null)
+                AstralBotTextConfig.PLAYER_MESSAGE.get()
+                    .replace("{{message}}", escape(message))
+                    .replace("{{fullName}}", escape(player.displayName.string))
+                    .replace("{{name}}", escape(player.name.string))
+            else escape(message)
+        )
             ?.setSuppressedNotifications(true)
             ?.setSuppressEmbeds(true)?.queue()
     }
@@ -173,33 +186,20 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
         val comp = Component.empty()
-        // The actual sender of the message
-        message.member?.let {
-            comp.append(formattedUser(it))
+
+        val messageContents = Component.empty()
+        // This is the actual message content
+        val actualMessage = Component.literal(message.contentDisplay)
+        // If it's enabled in the config you can click on a message and get linked to said message
+        // in the actual Discord client
+        if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
+            actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
         }
+        messageContents.append(actualMessage)
 
-        // Lambda that constructs the rest of the message. I'm doing it this way
-        // because this may be used in a callback lambda below, where I can't return
-        // out of sendFormattedMessage anymore
-        val formatRestOfMessage: () -> MutableComponent = { ->
-            val restOfMessage = Component.empty()
-            // This is the actual message content
-            val actualMessage = Component.empty()
-                .append(Component.literal(": ").withStyle { it.withColor(ChatFormatting.GRAY) })
-                .append(message.contentDisplay)
-            // If it's enabled in the config you can click on a message and get linked to said message
-            // in the actual Discord client
-            if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
-                actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
-            }
-            restOfMessage.append(actualMessage)
-
-            // Only adds embeds if it's enabled in the config
-            if (AstralBotConfig.HANDLE_EMBEDS.get()) {
-                restOfMessage.append(formatEmbeds(message))
-            }
-
-            restOfMessage
+        // Only adds embeds if it's enabled in the config
+        if (AstralBotConfig.HANDLE_EMBEDS.get()) {
+            messageContents.append(formatEmbeds(message))
         }
 
         val referencedAuthor = message.referencedMessage?.author?.id
@@ -208,25 +208,86 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         if (referencedAuthor != null) {
             // This fetches the Member from the ID in a blocking manner
-            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { member, error ->
+            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { repliedMember, error ->
                 if (error != null) {
                     LOGGER.error("Failed to get member with id: $referencedAuthor", error)
                     return@whenComplete
-                } else if (member == null) {
+                } else if (repliedMember == null) {
                     LOGGER.error("Failed to get member with id: $referencedAuthor")
                     return@whenComplete
                 }
-                comp.append(
-                    Component.literal(" replying to ")
-                        .withStyle { style -> style.withColor(ChatFormatting.GRAY).withItalic(true) })
-                comp.append(formattedUser(member))
-                comp.append(formatRestOfMessage())
-                send(comp)
+                message.member?.let {
+                    comp.append(formatMessageWithUsers(messageContents, it, repliedMember))
+                    send(comp)
+                }
             }
         } else {
-            comp.append(formatRestOfMessage())
-            send(comp)
+            message.member?.let {
+                comp.append(formatMessageWithUsers(messageContents, it, null))
+                send(comp)
+            }
         }
+    }
+
+    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Member?): MutableComponent {
+        val formatted = Component.empty()
+
+        val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
+
+        val formattedLiteral = { contents: String -> Component.literal(contents).withStyle(ChatFormatting.GRAY) }
+
+        val withMessage = { templatePart: String ->
+            val accumulator = Component.empty()
+
+            val templateSplitMessage = templatePart.split("{{message}}")
+
+            for ((index, value) in templateSplitMessage.withIndex()) {
+                accumulator.append(formattedLiteral(value))
+
+                if (index + 1 < templateSplitMessage.size) {
+                    accumulator.append(message)
+                }
+            }
+
+            accumulator
+        }
+
+        val withReply = { templatePart: String ->
+            val accumulator = Component.empty()
+
+            val reply = Component.empty()
+            replied?.let {
+                val replyTemplateSplit = AstralBotTextConfig.DISCORD_REPLY.get().split("{{replied}}")
+                for ((index, value) in replyTemplateSplit.withIndex()) {
+                    reply.append(formattedLiteral(value))
+
+                    if (index + 1 < replyTemplateSplit.size) {
+                        reply.append(formattedUser(it))
+                    }
+                }
+            }
+
+            val templateSplitByReply = templatePart.split("{{reply}}")
+
+            for ((index, value) in templateSplitByReply.withIndex()) {
+                accumulator.append(withMessage(value))
+
+                if (index + 1 < templateSplitByReply.size) {
+                    accumulator.append(reply.copy())
+                }
+            }
+            accumulator
+        }
+
+        for ((index, value) in templateSplitByUser.withIndex()) {
+            formatted.append(withReply(value))
+
+            if (index + 1 < templateSplitByUser.size) {
+                formatted.append(formattedUser(author))
+            }
+        }
+
+        return formatted
     }
 
     /**

@@ -3,6 +3,7 @@ package dev.erdragh.astralbot.fabric
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry
 import net.fabricmc.api.ModInitializer
@@ -16,6 +17,7 @@ import net.minecraftforge.fml.config.ModConfig
 object BotMod : ModInitializer {
     override fun onInitialize() {
         ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
 
         ServerLifecycleEvents.SERVER_STARTED.register {
             LOGGER.info("Starting AstralBot on Fabric")

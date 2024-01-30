@@ -2,6 +2,7 @@ package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
@@ -41,7 +42,7 @@ object LinkCommand : HandledSlashCommand {
 
         // Notify the user that the given link code couldn't be associated with a Minecraft account
         if (minecraftID == null) {
-            event.hook.setEphemeral(true).sendMessage("Couldn't find Minecraft account to link").queue()
+            event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.LINK_NO_MINECRAFT.get()).queue()
             return
         }
 
@@ -52,10 +53,16 @@ object LinkCommand : HandledSlashCommand {
             // Depending on the whitelisting status of the given data send the relevant response
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Minecraft username %s already linked", minecraftUser?.name)
+                    .sendMessageFormat(
+                        AstralBotTextConfig.LINK_MINECRAFT_TAKEN.get()
+                            .replace("{{name}}", minecraftUser?.name ?: "Unnamed Account")
+                    )
                     .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
-                event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
+                event.hook.setEphemeral(true).sendMessageFormat(
+                    AstralBotTextConfig.LINK_DISCORD_TAKEN.get()
+                        .replace("{{name}}", event.member?.toString() ?: "Unnamed Account")
+                ).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
                 waitForSetup()
@@ -67,11 +74,17 @@ object LinkCommand : HandledSlashCommand {
                     }
                 }
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Linked %s to Minecraft username %s", event.member, minecraftUser?.name).queue()
+                    .sendMessageFormat(
+                        AstralBotTextConfig.LINK_SUCCESSFUL.get()
+                            .replace("{{dc}}", event.member?.toString() ?: "Unnamed Account")
+                            .replace("{{mc}}", minecraftUser?.name ?: "Unnamed Account")
+                    ).queue()
             }
         } catch (e: Exception) {
             // Just in case a DB interaction failed the user still needs to get a response.
-            event.hook.setEphemeral(true).sendMessageFormat("Failed to link: %s", e.localizedMessage).queue()
+            event.hook.setEphemeral(true)
+                .sendMessageFormat(AstralBotTextConfig.LINK_ERROR.get().replace("{{error}}", e.localizedMessage))
+                .queue()
             LOGGER.error("Failed to link", e)
         }
 
@@ -101,6 +114,7 @@ object UnlinkCommand : HandledSlashCommand {
 // Specifying option names as constants to prevent typos
 private const val OPTION_MC = "mc"
 private const val OPTION_DC = "dc"
+
 /**
  * This command can check the link status of Discord Users and Minecraft accounts
  *
