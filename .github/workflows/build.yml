@@ -30,23 +30,18 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
 
-      - name: echo ref
-        run: echo ${{github.ref}}
-
-      - name: setup gradle with dependency graph
+      - name: Build with Gradle and generate dependency Graph
         if: ${{github.ref == 'refs/heads/main' && github.event_name != 'pull_request'}}
         uses: gradle/gradle-build-action@v2
-        # with:
-        #   dependency-graph: 'generate-and-submit'
+        with:
+          arguments: build
+          dependency-graph: 'generate-and-submit'
 
-      - name: setup gradle
+      - name: Build with Gradle
         if: ${{github.ref != 'refs/heads/main' || github.event_name == 'pull_request'}}
         uses: gradle/gradle-build-action@v2
-        # with:
-        #   dependency-graph: 'generate-and-upload'
-
-      - name: gradle clean build
-        run: ./gradlew clean build
+        with:
+          arguments: build
 
 #      - name: Capture Fabric Artifacts
 #        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
