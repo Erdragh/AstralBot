@@ -1,6 +1,5 @@
 package dev.erdragh.astralbot.commands.discord
 
-import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -16,6 +15,7 @@ object HeadpatCommand : HandledSlashCommand {
     private const val USER_OPTION = "user"
     override val command: SlashCommandData = Commands.slash("headpat", "Headpats a user")
         .addOption(OptionType.USER, USER_OPTION, "The user whose avatar will be headpat.", true)
+    val headpatBaseImage = ImageIO.read(this.javaClass.getResource("/headpat.png"))
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(false).queue()
@@ -26,9 +26,6 @@ object HeadpatCommand : HandledSlashCommand {
             return
         }
 
-        val headpatBase = this.javaClass.getResource("/headpat.png")
-        val headpatBaseImage = ImageIO.read(headpatBase)
-
         val url = URL(user.effectiveAvatarUrl)
         val avatar = ImageIO.read(url)
         val headpatImage = BufferedImage(headpatBaseImage.width, headpatBaseImage.height, BufferedImage.TYPE_INT_ARGB)
@@ -37,8 +34,24 @@ object HeadpatCommand : HandledSlashCommand {
 
         val xOffset = 20
         val yOffset = 20
-        graphics.drawImage(avatar, xOffset, yOffset, headpatImage.width - xOffset, headpatImage.height - yOffset, Color(0, 0, 0, 0), null)
-        graphics.drawImage(headpatBaseImage, 0, 0, headpatBaseImage.width, headpatBaseImage.height, Color(0, 0, 0, 0), null)
+        graphics.drawImage(
+            avatar,
+            xOffset,
+            yOffset,
+            headpatImage.width - xOffset,
+            headpatImage.height - yOffset,
+            Color(0, 0, 0, 0),
+            null
+        )
+        graphics.drawImage(
+            headpatBaseImage,
+            0,
+            0,
+            headpatBaseImage.width,
+            headpatBaseImage.height,
+            Color(0, 0, 0, 0),
+            null
+        )
 
         graphics.dispose()
         val byteStream = ByteArrayOutputStream()
