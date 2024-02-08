@@ -7,6 +7,7 @@ import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
+import kotlin.jvm.Throws
 
 /**
  * Array containing every single command AstralBot supports
@@ -59,6 +60,7 @@ interface HandledSlashCommand {
      * @param event the event that is connected with the
      * issuing of the command
      */
+    @Throws(Exception::class)
     fun handle(event: SlashCommandInteractionEvent)
 }
 
