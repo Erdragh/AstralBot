@@ -29,7 +29,9 @@ val allCommands = arrayOf(
     UptimeCommand,
     StopCommand,
     TPSCommand,
-    UsageCommand
+    UsageCommand,
+    // Fun commands
+    HeadpatCommand
 )
 
 /**

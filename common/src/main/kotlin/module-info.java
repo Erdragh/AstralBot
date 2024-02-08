@@ -23,4 +23,5 @@ module Minecraft.astralbot.common.main {
 
   // For accessing the config
   requires forgeconfigapiport.common;
+  requires java.desktop;
 }
