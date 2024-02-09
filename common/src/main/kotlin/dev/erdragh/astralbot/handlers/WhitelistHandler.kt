@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
-import dev.erdragh.astralbot.handlers.WhitelistHandler.WhitelistedUser
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.Component
 import org.jetbrains.exposed.sql.*
@@ -229,7 +228,7 @@ object WhitelistHandler {
      * @return the login code of the given user or `null` if there isn't
      * one for them yet.
      */
-    fun getWhitelistCode(minecraftID: UUID): Int? = synchronized(loginCodes) {
+    private fun getWhitelistCode(minecraftID: UUID): Int? = synchronized(loginCodes) {
         return loginCodes.entries.find { it.value == minecraftID }?.key
     }
 
