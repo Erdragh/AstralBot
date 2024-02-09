@@ -15,7 +15,7 @@ object HeadpatCommand : HandledSlashCommand {
     private const val USER_OPTION = "user"
     override val command: SlashCommandData = Commands.slash("headpat", "Headpats a user")
         .addOption(OptionType.USER, USER_OPTION, "The user whose avatar will be headpat.", true)
-    val headpatBaseImage = ImageIO.read(this.javaClass.getResource("/headpat.png"))
+    private val headpatBaseImage = ImageIO.read(this.javaClass.getResource("/headpat.png"))
 
     override fun handle(event: SlashCommandInteractionEvent) {
         event.deferReply(false).queue()
