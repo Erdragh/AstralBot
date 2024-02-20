@@ -307,7 +307,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun formatEmbeds(message: Message): MutableComponent {
         val comp = Component.empty()
         // Adds a newline with space if there are embeds and the message isn't empty
-        if (message.embeds.size + message.attachments.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+        if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
         var i = 0
         message.embeds.forEach {
             if (i++ != 0) comp.append(", ")
@@ -320,6 +320,14 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                 i++
             }
             comp.append(formatEmbed(it.fileName, it.url))
+        }
+        message.stickers.forEach {
+            if (i != 0) {
+                comp.append(", ")
+            } else {
+                i++
+            }
+            comp.append(formatEmbed(it.name, it.icon.url))
         }
         return comp
     }
