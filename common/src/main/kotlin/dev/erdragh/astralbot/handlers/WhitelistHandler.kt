@@ -41,7 +41,7 @@ object WhitelistHandler {
     // Users whose code it is. Storing these in memory only
     // Results in users getting a new code when the server
     // restarts, which is acceptable in my opinion.
-    private val loginCodes = HashMap<Int, UUID>()
+    private val loginCodes = Collections.synchronizedMap(HashMap<Int, UUID>())
     // The random used to generate the login codes.
     // I'm using .asKotlinRandom() here because the
     // default Kotlin Random constructor wants a seed.
@@ -185,9 +185,7 @@ object WhitelistHandler {
         // so this DOS won't cause an infinite loop. Such a DOS may still cause
         // Players to not be able to whitelist.
         // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
-        synchronized(loginCodes) {
-            loginCodes[whitelistCode] = minecraftID
-        }
+        loginCodes[whitelistCode] = minecraftID
         return whitelistCode
     }
 
@@ -228,7 +226,7 @@ object WhitelistHandler {
      * @return the login code of the given user or `null` if there isn't
      * one for them yet.
      */
-    private fun getWhitelistCode(minecraftID: UUID): Int? = synchronized(loginCodes) {
+    private fun getWhitelistCode(minecraftID: UUID): Int?  {
         return loginCodes.entries.find { it.value == minecraftID }?.key
     }
 
@@ -240,7 +238,7 @@ object WhitelistHandler {
      * link code or `null` if nobody is associated with
      * the given code.
      */
-    fun getPlayerFromCode(code: Int): UUID? = synchronized(loginCodes) {
+    fun getPlayerFromCode(code: Int): UUID? {
         return loginCodes[code]
     }
 
