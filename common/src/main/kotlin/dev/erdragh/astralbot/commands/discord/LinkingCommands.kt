@@ -27,6 +27,8 @@ object LinkCommand : HandledSlashCommand {
     // Specifying option names as constants to prevent typos
     private const val OPTION_CODE = "code"
 
+    private const val UNNAMED_ACCOUNT = "Unnamed Account";
+
     override val command: SlashCommandData =
         Commands.slash("link", "Links your Minecraft account with your Discord account")
             .addOption(OptionType.NUMBER, OPTION_CODE, "your personal link code", true)
@@ -55,13 +57,13 @@ object LinkCommand : HandledSlashCommand {
                 event.hook.setEphemeral(true)
                     .sendMessageFormat(
                         AstralBotTextConfig.LINK_MINECRAFT_TAKEN.get()
-                            .replace("{{name}}", minecraftUser?.name ?: "Unnamed Account")
+                            .replace("{{name}}", minecraftUser?.name ?: UNNAMED_ACCOUNT)
                     )
                     .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
                     AstralBotTextConfig.LINK_DISCORD_TAKEN.get()
-                        .replace("{{name}}", event.member?.toString() ?: "Unnamed Account")
+                        .replace("{{name}}", event.member?.asMention ?: UNNAMED_ACCOUNT)
                 ).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
@@ -70,14 +72,14 @@ object LinkCommand : HandledSlashCommand {
                     try {
                         guild?.addRoleToMember(event.user, it)?.queue()
                     } catch (e: Exception) {
-                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.effectiveName}", e)
+                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.asMention}", e)
                     }
                 }
                 event.hook.setEphemeral(true)
                     .sendMessageFormat(
                         AstralBotTextConfig.LINK_SUCCESSFUL.get()
-                            .replace("{{dc}}", event.member?.toString() ?: "Unnamed Account")
-                            .replace("{{mc}}", minecraftUser?.name ?: "Unnamed Account")
+                            .replace("{{dc}}", event.member?.asMention ?: UNNAMED_ACCOUNT)
+                            .replace("{{mc}}", minecraftUser?.name ?: UNNAMED_ACCOUNT)
                     ).queue()
             }
         } catch (e: Exception) {
@@ -115,7 +117,7 @@ object UnlinkCommand : HandledSlashCommand {
                 return
             }
         }
-        event.hook.setEphemeral(true).sendMessageFormat(AstralBotTextConfig.UNLINK_UNLINKED.get().replace("{{name}}", (user ?: event.user).effectiveName)).queue()
+        event.hook.setEphemeral(true).sendMessageFormat(AstralBotTextConfig.UNLINK_UNLINKED.get().replace("{{name}}", (user ?: event.user).asMention)).queue()
     }
 }
 
@@ -195,12 +197,12 @@ object LinkCheckCommand : HandledSlashCommand, MinecraftUserAutocompleteCommand(
             val minecraftUser = minecraftHandler?.byUUID(minecraftID)
             if (minecraftUser != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
-                    "%s is linked to Minecraft username %s", discordUser, minecraftUser.name
+                    "%s is linked to Minecraft username %s", discordUser.asMention, minecraftUser.name
                 ).queue()
                 return
             }
         }
-        event.hook.setEphemeral(true).sendMessageFormat("%s not linked to any Minecraft username", discordUser).queue()
+        event.hook.setEphemeral(true).sendMessageFormat("%s not linked to any Minecraft username", discordUser.asMention).queue()
     }
 
     override fun handle(event: SlashCommandInteractionEvent) {
