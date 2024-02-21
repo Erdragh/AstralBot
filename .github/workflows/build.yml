@@ -4,6 +4,12 @@ on:
     branches: [ "main", "develop", "version/*" ]
   pull_request:
     branches: [ "main", "develop", "version/*" ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to Modrinth and CurseForge
+        required: true
+        default: "false"
 
 permissions:
   contents: write
@@ -65,6 +71,7 @@ jobs:
           name: build-changelog
           path: prepared_changelog.md
   publish:
+    if: ${{ github.event.inputs.publish }}
     needs:
       - build
     runs-on: ubuntu-latest
@@ -124,7 +131,6 @@ jobs:
           changelog-file: build-changelog/prepared_changelog.md
           loaders: forge
           game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
 
           curseforge-dependencies: |
             sqlite-jdbc(optional)
@@ -155,7 +161,6 @@ jobs:
           changelog-file: build-changelog/prepared_changelog.md
           loaders: fabric
           game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
 
           curseforge-dependencies: |
             fabric-api(required)
