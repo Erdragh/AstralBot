@@ -1,9 +1,9 @@
 name: build
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "version/*" ]
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main", "develop", "version/*" ]
 
 permissions:
   contents: write
@@ -17,7 +17,7 @@ jobs:
           17,    # Current Java LTS & minimum supported by Minecraft
         ]
         # and run on Linux
-        os: [ubuntu-latest]
+        os: [ ubuntu-latest ]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -43,15 +43,127 @@ jobs:
         with:
           arguments: build
 
+      - name: Prepare Changelog
+        run: ./gradlew -q prepareChangelog > prepared_changelog.md
+
       - name: Capture Fabric Artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Fabric Artifacts
+          name: build-fabric
           path: fabric/build/libs
       - name: Capture Forge Artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Forge Artifacts
+          name: build-forge
           path: forge/build/libs
+      - name: Capture Changelog
+        if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
+        uses: actions/upload-artifact@v4
+        with:
+          name: Changelog
+          path: prepared_changelog.md
+  publish:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Fabric artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build/fabric
+          pattern: build-fabric
+          merge-multiple: true
+      - name: Download Forge artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build/forge
+          pattern: build-forge
+          merge-multiple: true
+      - name: Download Changelog
+        uses: actions/download-artifact@v4
+        with:
+          path: prepared_changelog.md
+          pattern: Changelog
+
+      - name: List build artifacts
+        run: ls -R fabric forge
+      - name: Show Changelog
+        run: cat prepared_changelog.md
+
+      - name: Get Version and Platform
+        id: properties
+        uses: christian-draeger/read-properties@1.1.1
+        with:
+          path: "./gradle.properties"
+          properties: "version enabledPlatforms minecraftVersion"
+
+      - name: Upload Forge Releases (Curse/Modrinth/Github)
+        id: forge_release
+        if: contains(steps.properties.outputs.enabledPlatforms, 'forge')
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          curseforge-id: ${{ vars.CURSE_ID }}
+          curseforge-token: ${{ secrets.CURSE_TOKEN }}
+
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          github-tag: "mc${{ steps.properties.outputs.minecraftVersion }}-${{ steps.properties.output.version }}"
+          github-commitish: "version/${{ steps.properties.outputs.minecraftVersion }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: ./build/forge/!(*-@(dev|sources|dev-shadow)).jar
+          name: "AstralBot ${{ steps.properties.outputs.version }} Forge ${{ steps.properties.output.minecraftVersion }}"
+          version: ${{ steps.properties.outputs.version }}
+          version-type: release
+          changelog-file: prepared_changelog.md
+          loaders: forge
+          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
+          version-resolver: exact
+
+          curseforge-dependencies: |
+            sqlite-jdbc(optional)
+            kotlin-for-forge(required)
+          modrinth-dependencies: |
+            sqlite-jdbc(optional)
+            kotlin-for-forge(required)
+
+      - name: Upload Fabric Releases (Curse/Modrinth/Github)
+        id: fabric_release
+        if: contains(steps.properties.outputs.enabledPlatforms, 'fabric')
+        uses: Kir-Antipov/mc-publish@v3.3.0
+        with:
+          curseforge-id: ${{ vars.CURSE_ID }}
+          curseforge-token: ${{ secrets.CURSE_TOKEN }}
+
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          github-tag: "mc${{ steps.properties.outputs.minecraftVersion }}-${{ steps.properties.output.version }}"
+          github-commitish: "version/${{ steps.properties.outputs.minecraftVersion }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: ./build/fabric/!(*-@(dev|sources|dev-shadow)).jar
+          name: "AstralBot ${{ steps.properties.outputs.version }} Fabric ${{ steps.properties.output.minecraftVersion }}"
+          version: ${{ steps.properties.outputs.version }}
+          version-type: release
+          changelog-file: prepared_changelog.md
+          loaders: fabric
+          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
+          version-resolver: exact
+
+          curseforge-dependencies: |
+            fabric-api(required)
+            fabric-language-kotlin(required)
+            sqlite-jdbc(optional)
+            ledger(optional)
+          modrinth-dependencies: |
+            fabric-api(required)
+            fabric-language-kotlin(required)
+            sqlite-jdbc(optional)
+            ledger(optional)
