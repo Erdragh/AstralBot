@@ -30,6 +30,9 @@ object AstralBotTextConfig {
     val LINK_COMMAND_MESSAGE: ForgeConfigSpec.ConfigValue<String>
     val LINK_COMMAND_ALREADY_LINKED: ForgeConfigSpec.ConfigValue<String>
 
+    val UNLINK_UNLINKED: ForgeConfigSpec.ConfigValue<String>
+    val UNLINK_NOPERMS: ForgeConfigSpec.ConfigValue<String>
+
     init {
         val builder = ForgeConfigSpec.Builder()
         val whitespaceRegex = Regex("\n[ \t]+")
@@ -124,6 +127,19 @@ object AstralBotTextConfig {
                 The message sent to a Minecraft user requesting a link code when they're already linked.
             """.replace(whitespaceRegex, "\n"))
                 .define(mutableListOf("link", "command", "alreadyLinked"), "You're already linked!")
+
+        UNLINK_UNLINKED =
+            builder.comment("""
+                The message sent to the /unlink issuer on successful unlink. The unlinked
+                user's name can be referenced with {{name}}.
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("unlink", "unlinked"), "Unlinked {{name}}")
+        UNLINK_NOPERMS =
+            builder.comment("""
+                The message sent to the /unlink issuer when the issuer doesn't have the permissions
+                to unlink another user.
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("unlink", "noPerms"), "You don't have the permissions to unlink other users")
 
         SPEC = builder.build()
     }

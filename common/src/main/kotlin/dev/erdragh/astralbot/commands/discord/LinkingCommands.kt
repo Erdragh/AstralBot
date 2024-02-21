@@ -97,16 +97,25 @@ object LinkCommand : HandledSlashCommand {
  * @author Erdragh
  */
 object UnlinkCommand : HandledSlashCommand {
+    private const val OPTION_USER = "user"
     override val command: SlashCommandData =
         Commands.slash("unlink", "Unlinks your Minecraft account with your Discord account")
+            .addOption(OptionType.USER, OPTION_USER, "The user that will be unlinked. If not provided, the command issuer will be used.", false)
 
     override fun handle(event: SlashCommandInteractionEvent) {
         // DB Interactions could take a while, so the reply needs to get deferred
         event.deferReply(true).queue()
+        val user = event.getOption(OPTION_USER)?.asUser
 
-        WhitelistHandler.unWhitelist(event.user)
-
-        event.hook.setEphemeral(true).sendMessageFormat("Unlinked %s", event.user).queue()
+        when {
+            user == null -> WhitelistHandler.unWhitelist(event.user)
+            event.member?.hasPermission(Permission.MODERATE_MEMBERS) == true -> WhitelistHandler.unWhitelist(user)
+            else -> {
+                event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.UNLINK_NOPERMS.get()).queue()
+                return
+            }
+        }
+        event.hook.setEphemeral(true).sendMessageFormat(AstralBotTextConfig.UNLINK_UNLINKED.get().replace("{{name}}", (user ?: event.user).effectiveName)).queue()
     }
 }
 
