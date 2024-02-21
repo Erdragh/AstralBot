@@ -87,11 +87,11 @@ jobs:
       - name: Download Changelog
         uses: actions/download-artifact@v4
         with:
-          path: prepared_changelog.md
+          path: .
           pattern: Changelog
 
       - name: List build artifacts
-        run: ls -R fabric forge
+        run: ls -R build
       - name: Show Changelog
         run: cat prepared_changelog.md
 
