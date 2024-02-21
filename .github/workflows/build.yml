@@ -122,7 +122,7 @@ jobs:
 
           github-tag: "mc${{ steps.properties.outputs.minecraftVersion }}-${{ steps.properties.output.version }}"
           github-commitish: "version/${{ steps.properties.outputs.minecraftVersion }}"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
 
           files: ./build/forge/!(*-@(dev|sources|dev-shadow)).jar
           name: "AstralBot ${{ steps.properties.outputs.version }} Forge ${{ steps.properties.output.minecraftVersion }}"
@@ -152,7 +152,7 @@ jobs:
 
           github-tag: "mc${{ steps.properties.outputs.minecraftVersion }}-${{ steps.properties.output.version }}"
           github-commitish: "version/${{ steps.properties.outputs.minecraftVersion }}"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
 
           files: ./build/fabric/!(*-@(dev|sources|dev-shadow)).jar
           name: "AstralBot ${{ steps.properties.outputs.version }} Fabric ${{ steps.properties.output.minecraftVersion }}"
