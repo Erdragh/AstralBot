@@ -62,7 +62,7 @@ jobs:
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
         uses: actions/upload-artifact@v4
         with:
-          name: Changelog
+          name: prepared_changelog.md
           path: prepared_changelog.md
   publish:
     needs:
@@ -88,7 +88,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: .
-          pattern: Changelog
+          pattern: prepared_changelog.md
 
       - name: List build artifacts
         run: ls -R build
