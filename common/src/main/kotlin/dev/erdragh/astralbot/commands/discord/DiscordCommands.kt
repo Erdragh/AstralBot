@@ -1,12 +1,13 @@
 // This file contains multiple commands which don't warrant separate files
 
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.minecraftHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
+import kotlin.jvm.Throws
 
 /**
  * Array containing every single command AstralBot supports
@@ -28,7 +29,9 @@ val allCommands = arrayOf(
     UptimeCommand,
     StopCommand,
     TPSCommand,
-    UsageCommand
+    UsageCommand,
+    // Fun commands
+    HeadpatCommand
 )
 
 /**
@@ -59,6 +62,7 @@ interface HandledSlashCommand {
      * @param event the event that is connected with the
      * issuing of the command
      */
+    @Throws(Exception::class)
     fun handle(event: SlashCommandInteractionEvent)
 }
 

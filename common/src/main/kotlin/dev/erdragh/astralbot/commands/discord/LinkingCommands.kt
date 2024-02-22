@@ -1,7 +1,8 @@
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import dev.erdragh.astralbot.minecraftHandler
@@ -26,6 +27,8 @@ object LinkCommand : HandledSlashCommand {
     // Specifying option names as constants to prevent typos
     private const val OPTION_CODE = "code"
 
+    private const val UNNAMED_ACCOUNT = "Unnamed Account";
+
     override val command: SlashCommandData =
         Commands.slash("link", "Links your Minecraft account with your Discord account")
             .addOption(OptionType.NUMBER, OPTION_CODE, "your personal link code", true)
@@ -41,7 +44,7 @@ object LinkCommand : HandledSlashCommand {
 
         // Notify the user that the given link code couldn't be associated with a Minecraft account
         if (minecraftID == null) {
-            event.hook.setEphemeral(true).sendMessage("Couldn't find Minecraft account to link").queue()
+            event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.LINK_NO_MINECRAFT.get()).queue()
             return
         }
 
@@ -52,10 +55,16 @@ object LinkCommand : HandledSlashCommand {
             // Depending on the whitelisting status of the given data send the relevant response
             if (WhitelistHandler.checkWhitelist(minecraftID) != null) {
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Minecraft username %s already linked", minecraftUser?.name)
+                    .sendMessageFormat(
+                        AstralBotTextConfig.LINK_MINECRAFT_TAKEN.get()
+                            .replace("{{name}}", minecraftUser?.name ?: UNNAMED_ACCOUNT)
+                    )
                     .queue()
             } else if (WhitelistHandler.checkWhitelist(event.user.idLong) != null) {
-                event.hook.setEphemeral(true).sendMessageFormat("%s already linked", event.member).queue()
+                event.hook.setEphemeral(true).sendMessageFormat(
+                    AstralBotTextConfig.LINK_DISCORD_TAKEN.get()
+                        .replace("{{name}}", event.member?.asMention ?: UNNAMED_ACCOUNT)
+                ).queue()
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
                 waitForSetup()
@@ -63,15 +72,21 @@ object LinkCommand : HandledSlashCommand {
                     try {
                         guild?.addRoleToMember(event.user, it)?.queue()
                     } catch (e: Exception) {
-                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.effectiveName}", e)
+                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.asMention}", e)
                     }
                 }
                 event.hook.setEphemeral(true)
-                    .sendMessageFormat("Linked %s to Minecraft username %s", event.member, minecraftUser?.name).queue()
+                    .sendMessageFormat(
+                        AstralBotTextConfig.LINK_SUCCESSFUL.get()
+                            .replace("{{dc}}", event.member?.asMention ?: UNNAMED_ACCOUNT)
+                            .replace("{{mc}}", minecraftUser?.name ?: UNNAMED_ACCOUNT)
+                    ).queue()
             }
         } catch (e: Exception) {
             // Just in case a DB interaction failed the user still needs to get a response.
-            event.hook.setEphemeral(true).sendMessageFormat("Failed to link: %s", e.localizedMessage).queue()
+            event.hook.setEphemeral(true)
+                .sendMessageFormat(AstralBotTextConfig.LINK_ERROR.get().replace("{{error}}", e.localizedMessage))
+                .queue()
             LOGGER.error("Failed to link", e)
         }
 
@@ -84,16 +99,25 @@ object LinkCommand : HandledSlashCommand {
  * @author Erdragh
  */
 object UnlinkCommand : HandledSlashCommand {
+    private const val OPTION_USER = "user"
     override val command: SlashCommandData =
         Commands.slash("unlink", "Unlinks your Minecraft account with your Discord account")
+            .addOption(OptionType.USER, OPTION_USER, "The user that will be unlinked. If not provided, the command issuer will be used.", false)
 
     override fun handle(event: SlashCommandInteractionEvent) {
         // DB Interactions could take a while, so the reply needs to get deferred
         event.deferReply(true).queue()
+        val user = event.getOption(OPTION_USER)?.asUser
 
-        WhitelistHandler.unWhitelist(event.user)
-
-        event.hook.setEphemeral(true).sendMessageFormat("Unlinked %s", event.user).queue()
+        when {
+            user == null -> WhitelistHandler.unWhitelist(event.user)
+            event.member?.hasPermission(Permission.MODERATE_MEMBERS) == true -> WhitelistHandler.unWhitelist(user)
+            else -> {
+                event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.UNLINK_NOPERMS.get()).queue()
+                return
+            }
+        }
+        event.hook.setEphemeral(true).sendMessageFormat(AstralBotTextConfig.UNLINK_UNLINKED.get().replace("{{name}}", (user ?: event.user).asMention)).queue()
     }
 }
 
@@ -101,6 +125,7 @@ object UnlinkCommand : HandledSlashCommand {
 // Specifying option names as constants to prevent typos
 private const val OPTION_MC = "mc"
 private const val OPTION_DC = "dc"
+
 /**
  * This command can check the link status of Discord Users and Minecraft accounts
  *
@@ -172,12 +197,12 @@ object LinkCheckCommand : HandledSlashCommand, MinecraftUserAutocompleteCommand(
             val minecraftUser = minecraftHandler?.byUUID(minecraftID)
             if (minecraftUser != null) {
                 event.hook.setEphemeral(true).sendMessageFormat(
-                    "%s is linked to Minecraft username %s", discordUser, minecraftUser.name
+                    "%s is linked to Minecraft username %s", discordUser.asMention, minecraftUser.name
                 ).queue()
                 return
             }
         }
-        event.hook.setEphemeral(true).sendMessageFormat("%s not linked to any Minecraft username", discordUser).queue()
+        event.hook.setEphemeral(true).sendMessageFormat("%s not linked to any Minecraft username", discordUser.asMention).queue()
     }
 
     override fun handle(event: SlashCommandInteractionEvent) {

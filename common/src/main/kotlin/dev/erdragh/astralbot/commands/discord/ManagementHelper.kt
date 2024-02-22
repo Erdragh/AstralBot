@@ -1,4 +1,4 @@
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import com.sun.management.OperatingSystemMXBean
 import java.lang.management.ManagementFactory

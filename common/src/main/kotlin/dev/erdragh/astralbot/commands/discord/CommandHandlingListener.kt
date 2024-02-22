@@ -1,7 +1,8 @@
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.applicationId
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.waitForSetup
 import net.dv8tion.jda.api.entities.Guild
@@ -59,16 +60,19 @@ object CommandHandlingListener : ListenerAdapter() {
      * can't return anything because of its asynchronous nature
      */
     fun updateCommands(guild: Guild, sendMessage: (msg: String) -> Unit) {
+        LOGGER.info("Reloading commands.")
         guild.retrieveCommands().submit().whenComplete { fetchedCommands, error ->
             if (error != null) {
-                sendMessage("Something went wrong: ${error.localizedMessage}")
+                sendMessage(AstralBotTextConfig.RELOAD_ERROR.get().replace("{{error}}", error.localizedMessage))
+                LOGGER.error("Couldn't reload commands", error)
                 return@whenComplete
             }
             waitForSetup()
             val deletedCommands = fetchedCommands.filter { it.applicationIdLong == applicationId }.map { guild.deleteCommandById(it.id).submit() }
             deletedCommands.forEach { it.get() }
             guild.updateCommands().addCommands(getEnabledCommands().map { it.command }).queue {
-                sendMessage("Reloaded commands for guild")
+                sendMessage(AstralBotTextConfig.RELOAD_SUCCESS.get())
+                LOGGER.info("Reloaded commands.")
             }
         }
     }
@@ -82,9 +86,14 @@ object CommandHandlingListener : ListenerAdapter() {
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val usedCommand = getEnabledCommands().find { it.command.name == event.name }
         if (usedCommand != null) {
-            usedCommand.handle(event)
+            try {
+                usedCommand.handle(event)
+            } catch (e: Exception) {
+                LOGGER.error("Failed to execute command: ${event.name}", e)
+                event.hook.sendMessage(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
+            }
         } else {
-            event.reply("Something went wrong").queue()
+            event.reply(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
         }
     }
 

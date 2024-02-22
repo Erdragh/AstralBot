@@ -1,9 +1,12 @@
 package dev.erdragh.astralbot.fabric
 
 import dev.erdragh.astralbot.*
+import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
@@ -14,6 +17,7 @@ import net.minecraftforge.fml.config.ModConfig
 object BotMod : ModInitializer {
     override fun onInitialize() {
         ModLoadingContext.registerConfig(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+        ModLoadingContext.registerConfig(MODID, ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
 
         ServerLifecycleEvents.SERVER_STARTED.register {
             LOGGER.info("Starting AstralBot on Fabric")
@@ -39,6 +43,10 @@ object BotMod : ModInitializer {
 
         ServerPlayConnectionEvents.DISCONNECT.register { packet, _ ->
             minecraftHandler?.onPlayerLeave(packet.player.name.string)
+        }
+
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+            registerMinecraftCommands(dispatcher)
         }
     }
 }

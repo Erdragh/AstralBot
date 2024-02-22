@@ -1,13 +1,16 @@
 package dev.erdragh.astralbot.forge
 
 import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.forge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
 import net.minecraft.server.level.ServerPlayer
+import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.event.server.ServerStartedEvent
@@ -21,6 +24,7 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 object BotMod {
     init {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
@@ -55,5 +59,9 @@ object BotMod {
 
     private fun onPlayerLeave(event: PlayerEvent.PlayerLoggedOutEvent) {
         minecraftHandler?.onPlayerLeave(event.entity.name.string)
+    }
+
+    private fun onCommandRegistration(event: RegisterCommandsEvent) {
+        registerMinecraftCommands(event.dispatcher)
     }
 }
