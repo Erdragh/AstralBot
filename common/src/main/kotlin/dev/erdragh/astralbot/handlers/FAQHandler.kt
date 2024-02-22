@@ -2,6 +2,7 @@ package dev.erdragh.astralbot.handlers
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import java.io.File
 import java.nio.file.StandardWatchEventKinds
 import kotlin.io.path.extension
@@ -67,11 +68,11 @@ object FAQHandler {
     fun getFAQForId(id: String): String {
         if (!faqDirectory.exists() || !faqDirectory.isDirectory) {
             LOGGER.error("FAQ directory not specified as directory: ${faqDirectory.absolutePath}")
-            return "Bot Error (Contact Bot Operator)"
+            return AstralBotTextConfig.FAQ_ERROR.get()
         }
         val faqFiles = faqDirectory.listFiles { file -> file.name == "$id.md" }
         val faqFile = if (faqFiles?.isNotEmpty() == true) faqFiles[0] else null
-        return faqFile?.readText(Charsets.UTF_8) ?: "No FAQ registered for id: `$id`"
+        return faqFile?.readText(Charsets.UTF_8) ?: AstralBotTextConfig.FAQ_NO_REGISTERED.get().replace("{{id}}", id)
     }
 
     /**

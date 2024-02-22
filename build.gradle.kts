@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import net.fabricmc.loom.task.RemapJarTask
+import java.nio.charset.StandardCharsets
 
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
@@ -218,4 +219,10 @@ subprojects {
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.create("prepareChangelog") {
+    var changelog = File("Changelog.md").readText(StandardCharsets.UTF_8)
+    changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
+    println(changelog.trim())
 }

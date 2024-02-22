@@ -1,6 +1,6 @@
 package dev.erdragh.astralbot
 
-import dev.erdragh.astralbot.commands.CommandHandlingListener
+import dev.erdragh.astralbot.commands.discord.CommandHandlingListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
@@ -96,6 +96,8 @@ private fun setupFromJDA(api: JDA) {
     }
     textChannel = ch
     guild = g
+
+    ch.sendMessage("Server Started!").queue()
 }
 
 @OptIn(DelicateCoroutinesApi::class)

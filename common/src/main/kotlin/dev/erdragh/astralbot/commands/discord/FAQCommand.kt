@@ -1,4 +1,4 @@
-package dev.erdragh.astralbot.commands
+package dev.erdragh.astralbot.commands.discord
 
 import dev.erdragh.astralbot.handlers.FAQHandler
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent

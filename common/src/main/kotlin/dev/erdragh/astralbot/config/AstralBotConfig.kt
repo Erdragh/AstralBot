@@ -1,7 +1,7 @@
 package dev.erdragh.astralbot.config
 
 import dev.erdragh.astralbot.LOGGER
-import dev.erdragh.astralbot.commands.allCommands
+import dev.erdragh.astralbot.commands.discord.allCommands
 import net.minecraftforge.common.ForgeConfigSpec
 import java.net.URL
 

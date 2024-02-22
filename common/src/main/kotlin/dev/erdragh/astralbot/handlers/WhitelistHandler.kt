@@ -42,7 +42,7 @@ object WhitelistHandler {
     // Users whose code it is. Storing these in memory only
     // Results in users getting a new code when the server
     // restarts, which is acceptable in my opinion.
-    private val loginCodes = HashMap<Int, UUID>()
+    private val loginCodes = Collections.synchronizedMap(HashMap<Int, UUID>())
     // The random used to generate the login codes.
     // I'm using .asKotlinRandom() here because the
     // default Kotlin Random constructor wants a seed.
@@ -154,7 +154,7 @@ object WhitelistHandler {
     fun checkWhitelist(minecraftID: UUID): Long? {
         var result: Long? = null
         transaction {
-            val query = WhitelistedUser.select { WhitelistedUser.minecraftID eq minecraftID }
+            val query = WhitelistedUser.selectAll().where { WhitelistedUser.minecraftID eq minecraftID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.discordID]
         }
         return result
@@ -169,10 +169,25 @@ object WhitelistHandler {
     fun checkWhitelist(discordID: Long): UUID? {
         var result: UUID? = null
         transaction {
-            val query = WhitelistedUser.select { WhitelistedUser.discordID eq discordID }
+            val query = WhitelistedUser.selectAll().where { WhitelistedUser.discordID eq discordID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
         }
         return result
+    }
+
+    fun getOrGenerateWhitelistCode(minecraftID: UUID): Int {
+        val foundCode = loginCodes.entries.find { it.value == minecraftID }?.key
+        if (foundCode != null) return foundCode
+
+        val loginCodeRange = 10000..99999
+        val whitelistCode = loginRandom.nextInt(loginCodeRange)
+        // The following line could be vulnerable to a DOS attack
+        // I accept the possibility of a login code possibly getting overwritten
+        // so this DOS won't cause an infinite loop. Such a DOS may still cause
+        // Players to not be able to whitelist.
+        // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
+        loginCodes[whitelistCode] = minecraftID
+        return whitelistCode
     }
 
     /**
@@ -191,17 +206,8 @@ object WhitelistHandler {
         val hasToBeWhitelistedByLink =
             (!isWhitelisted && AstralBotConfig.REQUIRE_LINK_FOR_WHITELIST.get()) || (!isWhitelisted && !defaultWhitelisted)
         // Generates a link code only if the user doesn't have one and has to go through linking to get one
-        if (!loginCodes.containsValue(minecraftID) && hasToBeWhitelistedByLink) {
-            val loginCodeRange = 10000..99999
-            val whitelistCode = loginRandom.nextInt(loginCodeRange)
-            // The following line could be vulnerable to a DOS attack
-            // I accept the possibility of a login code possibly getting overwritten
-            // so this DOS won't cause an infinite loop. Such a DOS may still cause
-            // Players to not be able to whitelist.
-            // while (loginCodes.containsKey(whitelistCode)) whitelistCode = loginRandom.nextInt(loginCodeRange)
-            synchronized(loginCodes) {
-                loginCodes[whitelistCode] = minecraftID
-            }
+        if (hasToBeWhitelistedByLink) {
+            getOrGenerateWhitelistCode(minecraftID)
         }
 
         // The config option is false by default, which means other methods of whitelisting
@@ -221,7 +227,7 @@ object WhitelistHandler {
      * @return the login code of the given user or `null` if there isn't
      * one for them yet.
      */
-    fun getWhitelistCode(minecraftID: UUID): Int? = synchronized(loginCodes) {
+    private fun getWhitelistCode(minecraftID: UUID): Int?  {
         return loginCodes.entries.find { it.value == minecraftID }?.key
     }
 
@@ -233,7 +239,7 @@ object WhitelistHandler {
      * link code or `null` if nobody is associated with
      * the given code.
      */
-    fun getPlayerFromCode(code: Int): UUID? = synchronized(loginCodes) {
+    fun getPlayerFromCode(code: Int): UUID? {
         return loginCodes[code]
     }
 
