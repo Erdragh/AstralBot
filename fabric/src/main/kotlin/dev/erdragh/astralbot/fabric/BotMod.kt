@@ -7,9 +7,8 @@ import dev.erdragh.astralbot.fabric.event.ServerMessageEvents
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.server.level.ServerPlayer
 import net.minecraftforge.api.ModLoadingContext
@@ -46,7 +45,7 @@ object BotMod : ModInitializer {
             minecraftHandler?.onPlayerLeave(packet.player.name.string)
         }
 
-        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+        CommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             registerMinecraftCommands(dispatcher)
         }
     }

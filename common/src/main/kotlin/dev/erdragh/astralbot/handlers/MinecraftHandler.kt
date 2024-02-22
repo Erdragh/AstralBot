@@ -10,15 +10,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
 import net.minecraft.Util
-import net.minecraft.network.chat.ChatType
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.HoverEvent
-import net.minecraft.network.chat.MutableComponent
-import net.minecraft.network.chat.TextComponent
+import net.minecraft.network.chat.*
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.commands.BanPlayerCommands
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.players.UserBanListEntry
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -189,11 +183,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param send the function used to send the message into the Minecraft chat
      */
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
-        val comp = Component.empty()
+        val comp = TextComponent("")
 
-        val messageContents = Component.empty()
+        val messageContents = TextComponent("")
         // This is the actual message content
-        val actualMessage = Component.literal(message.contentDisplay)
+        val actualMessage = TextComponent(message.contentDisplay)
         // If it's enabled in the config you can click on a message and get linked to said message
         // in the actual Discord client
         if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
@@ -234,14 +228,14 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     }
 
     private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Member?): MutableComponent {
-        val formatted = Component.empty()
+        val formatted = TextComponent("")
 
         val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
 
-        val formattedLiteral = { contents: String -> Component.literal(contents).withStyle(ChatFormatting.GRAY) }
+        val formattedLiteral = { contents: String -> TextComponent(contents).withStyle(ChatFormatting.GRAY) }
 
         val withMessage = { templatePart: String ->
-            val accumulator = Component.empty()
+            val accumulator = TextComponent("")
 
             val templateSplitMessage = templatePart.split("{{message}}")
 
@@ -257,9 +251,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         val withReply = { templatePart: String ->
-            val accumulator = Component.empty()
+            val accumulator = TextComponent("")
 
-            val reply = Component.empty()
+            val reply = TextComponent("")
             replied?.let {
                 val replyTemplateSplit = AstralBotTextConfig.DISCORD_REPLY.get().split("{{replied}}")
                 for ((index, value) in replyTemplateSplit.withIndex()) {
