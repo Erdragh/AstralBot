@@ -221,9 +221,11 @@ kotlin {
     jvmToolchain(17)
 }
 
-tasks.create("prepareChangelog") {
+tasks.register<Task>("prepareChangelog") {
+    group = "common"
+    description = "Prepares the changelog by removing irrelevant parts from Changelog.md"
     val file = File("Changelog.md")
-    if (!file.exists()) return@create
+    if (!file.exists()) return@register
     var changelog = file.readText(StandardCharsets.UTF_8)
     changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
     println(changelog.trim())
