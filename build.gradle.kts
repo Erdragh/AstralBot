@@ -222,7 +222,9 @@ kotlin {
 }
 
 tasks.create("prepareChangelog") {
-    var changelog = File("Changelog.md").readText(StandardCharsets.UTF_8)
+    val file = File("Changelog.md")
+    if (!file.exists()) return@create
+    var changelog = file.readText(StandardCharsets.UTF_8)
     changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
     println(changelog.trim())
 }

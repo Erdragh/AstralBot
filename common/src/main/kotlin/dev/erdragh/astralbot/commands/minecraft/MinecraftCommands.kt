@@ -20,9 +20,7 @@ object LinkCommand : Command<CommandSourceStack> {
             context.source.sendFailure(Component.literal(AstralBotTextConfig.LINK_COMMAND_ALREADY_LINKED.get()))
         }
         val whitelistCode = WhitelistHandler.getOrGenerateWhitelistCode(caller.uuid)
-        context.source.sendSuccess({
-            Component.literal(AstralBotTextConfig.LINK_COMMAND_MESSAGE.get().replace("{{code}}", "$whitelistCode"))
-        }, false)
+        context.source.sendSuccess(Component.literal(AstralBotTextConfig.LINK_COMMAND_MESSAGE.get().replace("{{code}}", "$whitelistCode")), false)
         return 0
     }
 }
