@@ -79,6 +79,7 @@ jobs:
         if: ${{github.ref == 'refs/heads/version/1.20.1' && github.event_name != 'pull_request'}}
         uses: gradle/gradle-build-action@v2
         with:
+          arguments: dependencies
           dependency-graph: 'generate-and-submit'
 
   publish:
