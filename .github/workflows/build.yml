@@ -37,14 +37,14 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle and generate dependency Graph
-        if: ${{github.ref == 'refs/heads/main' && github.event_name != 'pull_request'}}
+        if: ${{github.ref == 'refs/heads/version/1.20.1' && github.event_name != 'pull_request'}}
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
           dependency-graph: 'generate-and-submit'
 
       - name: Build with Gradle
-        if: ${{github.ref != 'refs/heads/main' || github.event_name == 'pull_request'}}
+        if: ${{github.ref != 'refs/heads/version/1.20.1' || github.event_name == 'pull_request'}}
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
