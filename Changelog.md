@@ -1,3 +1,6 @@
+# 1.2.1
+Allow providing token via config
+
 # 1.2.0
 - Unlink other Discord users with permissions
 - Customizable text for basically anything

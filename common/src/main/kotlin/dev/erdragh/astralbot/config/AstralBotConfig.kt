@@ -15,6 +15,12 @@ object AstralBotConfig {
     val SPEC: ForgeConfigSpec
 
     /**
+     * If the `DISCORD_TOKEN` environment variable isn't set, the bot will
+     * look for a token in this config option.
+     */
+    val DISCORD_TOKEN: ForgeConfigSpec.ConfigValue<String>
+
+    /**
      * Whether the default whitelisting process is respected or ignored.
      * Setting this to `true` will *force* every user who wants to join
      * the server to link their account, even Operators.
@@ -79,6 +85,9 @@ object AstralBotConfig {
         val builder = ForgeConfigSpec.Builder()
 
         builder.comment("AstralBot Config")
+
+        DISCORD_TOKEN = builder.comment("Discord token for the bot. Can also be supplied via DISCORD_TOKEN environment variable")
+            .define("token", "")
 
         REQUIRE_LINK_FOR_WHITELIST = builder.comment("Whether to require being linked to be whitelisted")
             .define("requireLinkForWhitelist", false)
