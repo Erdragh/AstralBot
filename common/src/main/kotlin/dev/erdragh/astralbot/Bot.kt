@@ -110,15 +110,17 @@ fun startAstralbot(server: MinecraftServer) {
         LOGGER.debug("Created $MODID directory")
     }
 
-    if (!env.containsKey("DISCORD_TOKEN")) {
-        LOGGER.warn("Not starting AstralBot because of missing DISCORD_TOKEN environment variable.")
+    val token: String? = env["DISCORD_TOKEN"] ?: AstralBotConfig.DISCORD_TOKEN.get()
+
+    if (token == null || token == "") {
+        LOGGER.warn("Not starting AstralBot because no token was not provided")
         return
     }
 
     minecraftHandler = MinecraftHandler(server)
 
     jda = JDABuilder.createLight(
-            env["DISCORD_TOKEN"],
+            token,
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MEMBERS
