@@ -228,3 +228,11 @@ tasks.register<Task>("prepareChangelog") {
     changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
     println(changelog.trim())
 }
+
+// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
+}
