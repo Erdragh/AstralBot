@@ -44,12 +44,12 @@ object BotMod {
     }
 
     private fun onChatMessage(event: ServerChatEvent) {
-        minecraftHandler?.sendChatToDiscord(event.player, event.message.string)
+        minecraftHandler?.sendChatToDiscord(event.player, event.message)
     }
 
     private fun onSystemMessage(event: SystemMessageEvent) {
         if (event.message !is DiscordMessageComponent) {
-            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message.string)
+            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message)
         }
     }
 

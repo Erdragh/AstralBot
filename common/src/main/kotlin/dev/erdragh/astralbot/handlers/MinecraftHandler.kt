@@ -4,8 +4,10 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
@@ -15,6 +17,8 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.EntityType
+import java.awt.Color
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -121,19 +125,69 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param player the Player who sent the message
      * @param message the String contents of the message
      */
-    fun sendChatToDiscord(player: ServerPlayer?, message: String) {
+    fun sendChatToDiscord(player: ServerPlayer?, message: Component) {
         if (shuttingDown.get()) return
+
+        val attachments = message.toFlatList().mapNotNull {
+            it.style.hoverEvent
+        }
+
+        val formattedEmbeds: MutableList<MessageEmbed> = mutableListOf()
+
+        for (attachment in attachments) {
+            attachment.getValue(HoverEvent.Action.SHOW_TEXT)?.let {
+                formattedEmbeds.add(
+                    EmbedBuilder()
+                        .setDescription(it.string)
+                        .let { builder: EmbedBuilder ->
+                            it.style.color?.value?.let { color -> builder.setColor(color) }
+                            builder
+                        }
+                        .build()
+                )
+            }
+            attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
+                formattedEmbeds.add(
+                    EmbedBuilder()
+                        .setDescription(it.item.description.string)
+                        .setTitle("${it.displayName.string} ${if (it.count > 0) "(${it.count})" else ""}")
+                        .let { builder: EmbedBuilder ->
+                            it.rarity.color.color?.let { color -> builder.setColor(color) }
+                            builder
+                        }
+                        .build()
+                )
+            }
+            attachment.getValue(HoverEvent.Action.SHOW_ENTITY)?.let {
+                if (it.type == EntityType.PLAYER) return@let
+                formattedEmbeds.add(
+                    EmbedBuilder()
+                        .setTitle(it.name?.string)
+                        .setDescription(it.type.description.string)
+                        .let { builder: EmbedBuilder ->
+                            val mobCategory = it.type.category
+                            if (mobCategory.isFriendly) {
+                                builder.setColor(Color.GREEN)
+                            }
+                            builder
+                        }
+                        .build()
+                )
+            }
+        }
+
         val escape = { it: String -> it.replace("_", "\\_") }
         textChannel?.sendMessage(
             if (player != null)
                 AstralBotTextConfig.PLAYER_MESSAGE.get()
-                    .replace("{{message}}", escape(message))
+                    .replace("{{message}}", escape(message.string))
                     .replace("{{fullName}}", escape(player.displayName.string))
                     .replace("{{name}}", escape(player.name.string))
-            else escape(message)
+            else escape(message.string)
         )
+            ?.addEmbeds(formattedEmbeds)
             ?.setSuppressedNotifications(true)
-            ?.setSuppressEmbeds(true)?.queue()
+            ?.queue()
     }
 
     /**
