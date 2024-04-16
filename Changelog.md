@@ -1,3 +1,7 @@
+# Indev
+- Message Embeds to better represent Minecraft messages on Discord
+- Fix `/link` Minecraft command not being registered on Forge
+
 # 1.2.1
 Allow providing token via config
 
