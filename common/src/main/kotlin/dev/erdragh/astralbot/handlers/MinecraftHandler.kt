@@ -214,7 +214,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         textChannel?.sendMessage(
             if (player != null)
                 AstralBotTextConfig.PLAYER_MESSAGE.get()
-                    .replace("{{message}}", escape(message.string))
+                    .replace("{{message}}", formatComponentToMarkdown(message))
                     .replace("{{fullName}}", escape(player.displayName.string))
                     .replace("{{name}}", escape(player.name.string))
             else escape(message.string)
