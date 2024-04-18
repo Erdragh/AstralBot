@@ -33,7 +33,8 @@ import kotlin.math.min
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
-    private val playerNames = HashSet<String>(server.maxPlayers)
+    private val playerNames = HashSet<String>(server.maxPlayers);
+    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
 
     companion object {
         private val numberFormat = DecimalFormat("###.##")
@@ -155,7 +156,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>): MessageEmbed? {
         if (knownItems.contains(stack)) return null
         knownItems.add(stack)
-        val tooltip = stack.getTooltipLines(null, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
+        val tooltip = stack.getTooltipLines(notchPlayer, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
         return EmbedBuilder()
             .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
             .setDescription(tooltip.drop(1).joinToString("\n"))
