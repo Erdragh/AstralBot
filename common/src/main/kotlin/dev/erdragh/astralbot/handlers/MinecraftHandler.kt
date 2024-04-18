@@ -19,6 +19,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
 import java.awt.Color
 import java.text.DecimalFormat
 import java.util.*
@@ -120,6 +121,27 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return server.profileCache?.get(name)?.getOrNull()
     }
 
+    private fun formatComponentToMarkdown(comp: Component): String {
+        return comp.toFlatList()
+            .map {
+                var formatted = it.string
+                // TODO filter out bad domains
+                if (it.style.isBold) {
+                    formatted = "**$formatted**"
+                }
+                if (it.style.isItalic) {
+                    formatted = "_${formatted}_"
+                }
+                it.style.clickEvent?.let { clickEvent ->
+                    if (clickEvent.action == ClickEvent.Action.OPEN_URL) {
+                        formatted = "[$formatted](${clickEvent.value})"
+                    }
+                }
+                return@map formatted
+            }
+            .joinToString("")
+    }
+
     private fun formatHoverText(text: Component): MessageEmbed {
         return EmbedBuilder()
             .setDescription(text.string)
@@ -133,9 +155,10 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>): MessageEmbed? {
         if (knownItems.contains(stack)) return null
         knownItems.add(stack)
+        val tooltip = stack.getTooltipLines(null, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
         return EmbedBuilder()
-            .setDescription(stack.item.description.string)
-            .setTitle("${stack.displayName.string} ${if (stack.count > 1) "(${stack.count})" else ""}")
+            .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
+            .setDescription(tooltip.drop(1).joinToString("\n"))
             .let { builder: EmbedBuilder ->
                 stack.rarity.color.color?.let { color -> builder.setColor(color) }
                 builder
@@ -371,7 +394,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun formatEmbeds(message: Message): MutableComponent {
         val comp = Component.empty()
         // Adds a newline with space if there are embeds and the message isn't empty
-        if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+        if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append(
+            "\n "
+        )
         var i = 0
         message.embeds.forEach {
             if (i++ != 0) comp.append(", ")
