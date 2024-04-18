@@ -18,6 +18,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.item.ItemStack
 import java.awt.Color
 import java.text.DecimalFormat
 import java.util.*
@@ -133,6 +134,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         val formattedEmbeds: MutableList<MessageEmbed> = mutableListOf()
+        val items: MutableList<ItemStack> = mutableListOf()
 
         for (attachment in attachments) {
             attachment.getValue(HoverEvent.Action.SHOW_TEXT)?.let {
@@ -147,10 +149,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                 )
             }
             attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
+                if (items.contains(it)) return@let
+                items.add(it)
                 formattedEmbeds.add(
                     EmbedBuilder()
                         .setDescription(it.item.description.string)
-                        .setTitle("${it.displayName.string} ${if (it.count > 0) "(${it.count})" else ""}")
+                        .setTitle("${it.displayName.string} ${if (it.count > 1) "(${it.count})" else ""}")
                         .let { builder: EmbedBuilder ->
                             it.rarity.color.color?.let { color -> builder.setColor(color) }
                             builder
