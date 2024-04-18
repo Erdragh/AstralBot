@@ -159,7 +159,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         val tooltip = stack.getTooltipLines(notchPlayer, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
         return EmbedBuilder()
             .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
-            .setDescription(tooltip.drop(1).joinToString("\n"))
+            .setDescription(tooltip.drop(1).let {
+                if (stack.hasCustomHoverName()) {
+                    listOf(stack.item.description.string).plus(it)
+                } else it
+            }.joinToString("\n"))
             .let { builder: EmbedBuilder ->
                 stack.rarity.color.color?.let { color -> builder.setColor(color) }
                 builder
