@@ -120,6 +120,44 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return server.profileCache?.get(name)?.getOrNull()
     }
 
+    private fun formatHoverText(text: Component): MessageEmbed {
+        return EmbedBuilder()
+            .setDescription(text.string)
+            .let { builder: EmbedBuilder ->
+                text.style.color?.value?.let { color -> builder.setColor(color) }
+                builder
+            }
+            .build()
+    }
+
+    private fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>): MessageEmbed? {
+        if (knownItems.contains(stack)) return null
+        knownItems.add(stack)
+        return EmbedBuilder()
+            .setDescription(stack.item.description.string)
+            .setTitle("${stack.displayName.string} ${if (stack.count > 1) "(${stack.count})" else ""}")
+            .let { builder: EmbedBuilder ->
+                stack.rarity.color.color?.let { color -> builder.setColor(color) }
+                builder
+            }
+            .build()
+    }
+
+    private fun formatHoverEntity(entity: HoverEvent.EntityTooltipInfo): MessageEmbed? {
+        if (entity.type == EntityType.PLAYER) return null
+        return EmbedBuilder()
+            .setTitle(entity.name?.string)
+            .setDescription(entity.type.description.string)
+            .let { builder: EmbedBuilder ->
+                val mobCategory = entity.type.category
+                if (mobCategory.isFriendly) {
+                    builder.setColor(Color.GREEN)
+                }
+                builder
+            }
+            .build()
+    }
+
     /**
      * Sends a message into the configured Discord channel based on
      * the Chat [message] the [player] sent.
@@ -138,45 +176,13 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         for (attachment in attachments) {
             attachment.getValue(HoverEvent.Action.SHOW_TEXT)?.let {
-                formattedEmbeds.add(
-                    EmbedBuilder()
-                        .setDescription(it.string)
-                        .let { builder: EmbedBuilder ->
-                            it.style.color?.value?.let { color -> builder.setColor(color) }
-                            builder
-                        }
-                        .build()
-                )
+                formattedEmbeds.add(formatHoverText(it))
             }
             attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
-                if (items.contains(it)) return@let
-                items.add(it)
-                formattedEmbeds.add(
-                    EmbedBuilder()
-                        .setDescription(it.item.description.string)
-                        .setTitle("${it.displayName.string} ${if (it.count > 1) "(${it.count})" else ""}")
-                        .let { builder: EmbedBuilder ->
-                            it.rarity.color.color?.let { color -> builder.setColor(color) }
-                            builder
-                        }
-                        .build()
-                )
+                formatHoverItems(it, items)?.let(formattedEmbeds::add)
             }
             attachment.getValue(HoverEvent.Action.SHOW_ENTITY)?.let {
-                if (it.type == EntityType.PLAYER) return@let
-                formattedEmbeds.add(
-                    EmbedBuilder()
-                        .setTitle(it.name?.string)
-                        .setDescription(it.type.description.string)
-                        .let { builder: EmbedBuilder ->
-                            val mobCategory = it.type.category
-                            if (mobCategory.isFriendly) {
-                                builder.setColor(Color.GREEN)
-                            }
-                            builder
-                        }
-                        .build()
-                )
+                formatHoverEntity(it)?.let(formattedEmbeds::add)
             }
         }
 
