@@ -23,6 +23,7 @@ import net.minecraft.world.item.TooltipFlag
 import java.awt.Color
 import java.text.DecimalFormat
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
 
@@ -36,8 +37,18 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private val playerNames = HashSet<String>(server.maxPlayers);
     private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
 
+
     companion object {
         private val numberFormat = DecimalFormat("###.##")
+
+        // Pattern for recognizing a URL, based off RFC 3986
+        // Source: https://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
+        private val urlPattern: Pattern = Pattern.compile(
+            "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
+                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+            Pattern.CASE_INSENSITIVE or Pattern.MULTILINE or Pattern.DOTALL
+        )
     }
 
     /**
@@ -126,7 +137,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return comp.toFlatList()
             .map {
                 var formatted = it.string
-                // TODO filter out bad domains
+
                 if (it.style.isBold) {
                     formatted = "**$formatted**"
                 }
@@ -138,6 +149,18 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                         formatted = "[$formatted](${clickEvent.value})"
                     }
                 }
+
+                val matcher = urlPattern.matcher(formatted)
+                val replaced = matcher.replaceAll { match ->
+                    val group = match.group()
+                    if (AstralBotConfig.urlAllowed(group)) {
+                        return@replaceAll group
+                    } else {
+                        return@replaceAll "`URL BLOCKED`"
+                    }
+                }
+                formatted = replaced
+
                 return@map formatted
             }
             .joinToString("")
