@@ -117,7 +117,9 @@ object AstralBotConfig {
                         "https://pornhub.com",
                         "https://xhamster.com",
                         "https://xvideos.com",
-                        "https://rule34.xyz"
+                        "https://rule34.xyz",
+                        "https://rule34.xxx",
+                        "https://discord.gg"
                     )
                 )
             ) {
