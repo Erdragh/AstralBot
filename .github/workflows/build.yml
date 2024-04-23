@@ -65,6 +65,7 @@ jobs:
 
   dependencies:
     runs-on: ubuntu-latest
+    if: ${{github.ref == 'refs/heads/version/1.20.1' && github.event_name != 'pull_request'}}
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -76,7 +77,6 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle and generate dependency Graph
-        if: ${{github.ref == 'refs/heads/version/1.20.1' && github.event_name != 'pull_request'}}
         uses: gradle/gradle-build-action@v2
         with:
           arguments: dependencies
