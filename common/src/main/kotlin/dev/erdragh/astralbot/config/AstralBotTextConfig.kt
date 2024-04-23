@@ -7,6 +7,7 @@ object AstralBotTextConfig {
 
     val GENERIC_ERROR: ForgeConfigSpec.ConfigValue<String>
     val GENERIC_SUCCESS: ForgeConfigSpec.ConfigValue<String>
+    val GENERIC_BLOCKED: ForgeConfigSpec.ConfigValue<String>
 
     val FAQ_ERROR: ForgeConfigSpec.ConfigValue<String>
     val FAQ_NO_REGISTERED: ForgeConfigSpec.ConfigValue<String>
@@ -17,6 +18,7 @@ object AstralBotTextConfig {
 
     val DISCORD_MESSAGE: ForgeConfigSpec.ConfigValue<String>
     val DISCORD_REPLY: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_EMBEDS: ForgeConfigSpec.ConfigValue<String>
 
     val RELOAD_ERROR: ForgeConfigSpec.ConfigValue<String>
     val RELOAD_SUCCESS: ForgeConfigSpec.ConfigValue<String>
@@ -41,6 +43,8 @@ object AstralBotTextConfig {
             .define("genericError", "Something went wrong!")
         GENERIC_SUCCESS = builder.comment("Generic success message sent to Discord")
             .define("genericSuccess", "Success!")
+        GENERIC_BLOCKED = builder.comment("Generic string that replaces blocked URLs/Links")
+            .define("genericBlocked", "[BLOCKED]")
 
         FAQ_ERROR = builder.comment("Message sent to Discord if an error ocurrs during FAQ loading")
             .define(mutableListOf("faq", "error"), "Bot Error (Contact Bot Operator)")
@@ -76,6 +80,9 @@ object AstralBotTextConfig {
                 The user the message is in reply to is referenced by {{replied}}
             """.replace(whitespaceRegex, "\n"))
                 .define(mutableListOf("messages", "discord", "reply"), " replying to {{replied}}")
+        DISCORD_EMBEDS =
+            builder.comment("Template for the label of embeds of a message.")
+                .define(mutableListOf("messages", "discord", "embeds"), "Embeds:")
 
         RELOAD_ERROR =
             builder.comment("""Template for the error message sent to Discord when reloading fails.

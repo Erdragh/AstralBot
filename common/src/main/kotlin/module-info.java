@@ -14,6 +14,8 @@ module Minecraft.astralbot.common.main {
 
   // For Discord Interaction
   requires net.dv8tion.jda;
+  // For message parsing
+  requires org.commonmark;
 
   // For Minecraft itself
   requires authlib;

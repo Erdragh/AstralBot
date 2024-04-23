@@ -4,7 +4,7 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import net.dv8tion.jda.api.EmbedBuilder
+import dev.erdragh.astralbot.util.*
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -17,13 +17,9 @@ import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.TooltipFlag
-import java.awt.Color
 import java.text.DecimalFormat
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
 
@@ -40,15 +36,6 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
     companion object {
         private val numberFormat = DecimalFormat("###.##")
-
-        // Pattern for recognizing a URL, based off RFC 3986
-        // Source: https://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
-        private val urlPattern: Pattern = Pattern.compile(
-            "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
-                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
-                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-            Pattern.CASE_INSENSITIVE or Pattern.MULTILINE or Pattern.DOTALL
-        )
     }
 
     /**
@@ -133,82 +120,6 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return server.profileCache?.get(name)?.getOrNull()
     }
 
-    private fun formatComponentToMarkdown(comp: Component): String {
-        return comp.toFlatList()
-            .map {
-                var formatted = it.string
-
-                if (it.style.isBold) {
-                    formatted = "**$formatted**"
-                }
-                if (it.style.isItalic) {
-                    formatted = "_${formatted}_"
-                }
-                it.style.clickEvent?.let { clickEvent ->
-                    if (clickEvent.action == ClickEvent.Action.OPEN_URL) {
-                        formatted = "[$formatted](${clickEvent.value})"
-                    }
-                }
-
-                val matcher = urlPattern.matcher(formatted)
-                val replaced = matcher.replaceAll { match ->
-                    val group = match.group()
-                    if (AstralBotConfig.urlAllowed(group)) {
-                        return@replaceAll group
-                    } else {
-                        return@replaceAll "`URL BLOCKED`"
-                    }
-                }
-                formatted = replaced
-
-                return@map formatted
-            }
-            .joinToString("")
-    }
-
-    private fun formatHoverText(text: Component): MessageEmbed {
-        return EmbedBuilder()
-            .setDescription(text.string)
-            .let { builder: EmbedBuilder ->
-                text.style.color?.value?.let { color -> builder.setColor(color) }
-                builder
-            }
-            .build()
-    }
-
-    private fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>): MessageEmbed? {
-        if (knownItems.contains(stack)) return null
-        knownItems.add(stack)
-        val tooltip = stack.getTooltipLines(notchPlayer, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
-        return EmbedBuilder()
-            .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
-            .setDescription(tooltip.drop(1).let {
-                if (stack.hasCustomHoverName()) {
-                    listOf(stack.item.description.string).plus(it)
-                } else it
-            }.joinToString("\n"))
-            .let { builder: EmbedBuilder ->
-                stack.rarity.color.color?.let { color -> builder.setColor(color) }
-                builder
-            }
-            .build()
-    }
-
-    private fun formatHoverEntity(entity: HoverEvent.EntityTooltipInfo): MessageEmbed? {
-        if (entity.type == EntityType.PLAYER) return null
-        return EmbedBuilder()
-            .setTitle(entity.name?.string)
-            .setDescription(entity.type.description.string)
-            .let { builder: EmbedBuilder ->
-                val mobCategory = entity.type.category
-                if (mobCategory.isFriendly) {
-                    builder.setColor(Color.GREEN)
-                }
-                builder
-            }
-            .build()
-    }
-
     /**
      * Sends a message into the configured Discord channel based on
      * the Chat [message] the [player] sent.
@@ -230,7 +141,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                 formattedEmbeds.add(formatHoverText(it))
             }
             attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
-                formatHoverItems(it, items)?.let(formattedEmbeds::add)
+                formatHoverItems(it, items, notchPlayer)?.let(formattedEmbeds::add)
             }
             attachment.getValue(HoverEvent.Action.SHOW_ENTITY)?.let {
                 formatHoverEntity(it)?.let(formattedEmbeds::add)
@@ -304,7 +215,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         val messageContents = Component.empty()
         // This is the actual message content
-        val actualMessage = Component.literal(message.contentDisplay)
+        val actualMessage = formatMarkdownToComponent(message.contentDisplay)
         // If it's enabled in the config you can click on a message and get linked to said message
         // in the actual Discord client
         if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
@@ -423,7 +334,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         val comp = Component.empty()
         // Adds a newline with space if there are embeds and the message isn't empty
         if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append(
-            "\n "
+            "\n ${AstralBotTextConfig.DISCORD_EMBEDS.get()} "
         )
         var i = 0
         message.embeds.forEach {
@@ -469,14 +380,19 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                 embedComponent.withStyle { style ->
                     if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                        style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                        style.withColor(ChatFormatting.BLUE)
+                            .withUnderlined(true)
                             .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.nullToEmpty(url)))
                     } else style
                 }
             }
             comp.append(embedComponent)
         } else {
-            comp.append(Component.literal("BLOCKED").withStyle(ChatFormatting.RED))
+            comp.append(
+                Component.literal(AstralBotTextConfig.GENERIC_BLOCKED.get())
+                    .withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE)
+            )
         }
         return comp
     }
