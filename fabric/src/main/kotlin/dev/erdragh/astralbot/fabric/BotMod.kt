@@ -29,7 +29,7 @@ object BotMod : ModInitializer {
         }
 
         ServerMessageEvents.CHAT_MESSAGE.register { message, player, _ ->
-            minecraftHandler?.sendChatToDiscord(player, message.decoratedContent())
+            minecraftHandler?.sendChatToDiscord(player, message.serverContent())
         }
         ServerMessageEvents.GAME_MESSAGE.register { _, message, _ ->
             if (message !is DiscordMessageComponent) {

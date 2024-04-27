@@ -81,7 +81,7 @@ fun formatHoverText(text: Component): MessageEmbed {
 fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, player: Player?): MessageEmbed? {
     if (knownItems.contains(stack)) return null
     knownItems.add(stack)
-    val tooltip = stack.getTooltipLines(player, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
+    val tooltip = stack.getTooltipLines(player, TooltipFlag.Default.NORMAL).map(::formatComponentToMarkdown)
     return EmbedBuilder()
         .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
         .setDescription(tooltip.drop(1).let {
