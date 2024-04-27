@@ -81,6 +81,12 @@ object AstralBotConfig {
      */
     val ENABLED_COMMANDS: ForgeConfigSpec.ConfigValue<List<String>>
 
+    /**
+     * Enables parsing Discord messages into Minecraft's Chat Components.
+     * This includes making links clickable, etc.
+     */
+    val ENABLE_MARKDOWN_PARSING: ForgeConfigSpec.BooleanValue
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -150,6 +156,9 @@ object AstralBotConfig {
                 }
                 return@defineList true
             }
+
+        ENABLE_MARKDOWN_PARSING = builder.comment("Parse Discord messages into Minecraft's Chat Components")
+            .define("enableMarkdownParsing", true)
 
         SPEC = builder.build()
     }

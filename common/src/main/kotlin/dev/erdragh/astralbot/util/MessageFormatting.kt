@@ -26,6 +26,8 @@ val urlPattern: Pattern = Pattern.compile(
 )
 
 fun formatMarkdownToComponent(md: String): MutableComponent {
+    if (!AstralBotConfig.ENABLE_MARKDOWN_PARSING.get()) return Component.literal(md)
+
     val parser = Parser.builder().build()
     val parsed = parser.parse(md)
     val renderer = ComponentRenderer()
