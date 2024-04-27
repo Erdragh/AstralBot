@@ -7,12 +7,12 @@ import java.nio.charset.StandardCharsets
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.4-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
     // The shadow plugin is used in both Architectury and when including JDA and Exposed
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
@@ -67,6 +67,7 @@ subprojects {
     val jdaVersion: String by project
     val exposedVersion: String by project
     val sqliteJDBCVersion: String by project
+    val commonmarkVersion: String by project
 
     // This array gets used at multiple places, so it's easier to
     // just specify all dependencies at once and re-use them. This
@@ -85,7 +86,10 @@ subprojects {
         // Database driver that allows Exposed to communicate with
         // the SQLite database. This will not be in the JAR and needs to be provided
         // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
-        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
+        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion",
+
+        // Markdown parser used for formatting Discord messages in Minecraft
+        "org.commonmark:commonmark:$commonmarkVersion",
     )
 
     dependencies {
@@ -229,4 +233,12 @@ tasks.register<Task>("prepareChangelog") {
     var changelog = file.readText(StandardCharsets.UTF_8)
     changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
     println(changelog.trim())
+}
+
+// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
 }
