@@ -121,7 +121,7 @@ jobs:
           path: "./gradle.properties"
           properties: "version enabledPlatforms minecraftVersion"
 
-      - name: Upload Forge Releases (Curse/Modrinth/Github)
+      - name: Upload Forge Releases (Curse/Modrinth)
         id: forge_release
         if: contains(steps.properties.outputs.enabledPlatforms, 'forge')
         uses: Kir-Antipov/mc-publish@v3.3.0
@@ -147,7 +147,7 @@ jobs:
             sqlite-jdbc(optional)
             kotlin-for-forge(required)
 
-      - name: Upload Fabric Releases (Curse/Modrinth/Github)
+      - name: Upload Fabric Releases (Curse/Modrinth)
         id: fabric_release
         if: contains(steps.properties.outputs.enabledPlatforms, 'fabric')
         uses: Kir-Antipov/mc-publish@v3.3.0
@@ -169,10 +169,12 @@ jobs:
           curseforge-dependencies: |
             fabric-api(required)
             fabric-language-kotlin(required)
+            forge-config-api-port-fabric(required)
             sqlite-jdbc(optional)
             ledger(optional)
           modrinth-dependencies: |
             fabric-api(required)
             fabric-language-kotlin(required)
+            forge-config-api-port(required)
             sqlite-jdbc(optional)
             ledger(optional)
