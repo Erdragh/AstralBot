@@ -1,4 +1,4 @@
-# Indev
+# 1.3.0
 - Message Embeds to better represent Minecraft messages on Discord
 - Fix `/link` Minecraft command not being registered on Forge
 - Implement Markdown parsing for Discord to Minecraft message sync
