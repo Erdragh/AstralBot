@@ -127,7 +127,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     fun sendChatToDiscord(player: ServerPlayer?, message: Component) {
         if (shuttingDown.get()) return
 
-        val attachments = message.toFlatList().mapNotNull {
+        val attachments = message.toFlatList(message.style).mapNotNull {
             it.style.hoverEvent
         }
 

@@ -4,10 +4,7 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent
-import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.*
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -26,7 +23,7 @@ val urlPattern: Pattern = Pattern.compile(
 )
 
 fun formatMarkdownToComponent(md: String): MutableComponent {
-    if (!AstralBotConfig.ENABLE_MARKDOWN_PARSING.get()) return Component.literal(md)
+    if (!AstralBotConfig.ENABLE_MARKDOWN_PARSING.get()) return TextComponent(md)
 
     val parser = Parser.builder().build()
     val parsed = parser.parse(md)
@@ -36,7 +33,7 @@ fun formatMarkdownToComponent(md: String): MutableComponent {
 }
 
 fun formatComponentToMarkdown(comp: Component): String {
-    return comp.toFlatList()
+    return comp.toFlatList(comp.style)
         .map {
             var formatted = it.string
 
@@ -81,7 +78,7 @@ fun formatHoverText(text: Component): MessageEmbed {
 fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, player: Player?): MessageEmbed? {
     if (knownItems.contains(stack)) return null
     knownItems.add(stack)
-    val tooltip = stack.getTooltipLines(player, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
+    val tooltip = stack.getTooltipLines(player, TooltipFlag.Default.NORMAL).map(::formatComponentToMarkdown)
     return EmbedBuilder()
         .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
         .setDescription(tooltip.drop(1).let {

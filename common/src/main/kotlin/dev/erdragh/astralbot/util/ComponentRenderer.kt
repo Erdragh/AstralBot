@@ -3,13 +3,10 @@ package dev.erdragh.astralbot.util
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.minecraft.ChatFormatting
-import net.minecraft.network.chat.ClickEvent
-import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent
-import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.*
 import org.commonmark.node.*
 import org.commonmark.renderer.NodeRenderer
-import java.util.Stack
+import java.util.*
 
 class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     companion object {
@@ -25,7 +22,7 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
         }
     }
 
-    private var currentComponent: MutableComponent = Component.empty()
+    private var currentComponent: MutableComponent = TextComponent("")
     private val prefixes: Stack<Component> = Stack()
     private var listHolder: ListHolder? = null
     private var shouldAddBlock: Boolean = false
@@ -77,14 +74,14 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
         if (heading == null) return
 
         block()
-        childIntoCurrent(Component.empty().withStyle(ChatFormatting.BOLD)) {
+        childIntoCurrent(TextComponent("").withStyle(ChatFormatting.BOLD)) {
             visitChildren(heading)
         }
         block()
     }
 
     override fun visit(emphasis: Emphasis?) {
-        childIntoCurrent(Component.empty().withStyle(ChatFormatting.ITALIC)) {
+        childIntoCurrent(TextComponent("").withStyle(ChatFormatting.ITALIC)) {
             super.visit(emphasis)
         }
     }
@@ -100,7 +97,7 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     }
 
     override fun visit(strongEmphasis: StrongEmphasis?) {
-        childIntoCurrent(Component.empty().withStyle(ChatFormatting.BOLD)) {
+        childIntoCurrent(TextComponent("").withStyle(ChatFormatting.BOLD)) {
             super.visit(strongEmphasis)
         }
     }
@@ -126,9 +123,9 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     }
 
     override fun visit(blockQuote: BlockQuote?) {
-        prefixes.push(Component.literal("> ").withStyle(ChatFormatting.DARK_GRAY).withStyle { it.withItalic(false) })
+        prefixes.push(TextComponent("> ").withStyle(ChatFormatting.DARK_GRAY).withStyle { it.withItalic(false) })
         block()
-        childIntoCurrent(Component.empty().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)) {
+        childIntoCurrent(TextComponent("").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)) {
             visitChildren(blockQuote)
         }
         prefixes.pop()
@@ -138,19 +135,19 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     override fun visit(code: Code?) {
         if (code == null) return
         append(
-            Component.literal("`${code.literal}`")
+            TextComponent("`${code.literal}`")
                 .withStyle(ChatFormatting.YELLOW)
         )
     }
 
     override fun visit(fencedCodeBlock: FencedCodeBlock?) {
         if (fencedCodeBlock == null) return
-        append(Component.literal(fencedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
+        append(TextComponent(fencedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
     }
 
     override fun visit(indentedCodeBlock: IndentedCodeBlock?) {
         if (indentedCodeBlock == null) return
-        append(Component.literal(indentedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
+        append(TextComponent(indentedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
     }
 
     override fun visit(bulletList: BulletList?) {
@@ -193,7 +190,7 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
         val contentIndent = listItem.contentIndent
         append(marker)
         append(" ".repeat(contentIndent - marker.length))
-        prefixes.push(Component.literal(" ".repeat(contentIndent)))
+        prefixes.push(TextComponent(" ".repeat(contentIndent)))
 
         if (listItem.firstChild != null) {
             // not an empty list
@@ -226,17 +223,17 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     }
 
     private fun formatLink(node: Node?, title: String?, destination: String) {
-        childIntoCurrent(Component.empty()
+        childIntoCurrent(TextComponent("")
             .withStyle(ChatFormatting.BLUE, ChatFormatting.UNDERLINE)
             .withStyle {
                 if (AstralBotConfig.urlAllowed(destination)) {
                     it
                         .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, destination))
-                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(destination)))
+                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent(destination)))
                 } else {
                     it
                         .withColor(ChatFormatting.RED)
-                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(AstralBotTextConfig.GENERIC_BLOCKED.get())))
+                        .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, TextComponent(AstralBotTextConfig.GENERIC_BLOCKED.get())))
                 }
             }
         ) {
@@ -260,6 +257,6 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     }
 
     private fun append(literal: String) {
-        append(Component.literal(literal))
+        append(TextComponent(literal))
     }
 }
