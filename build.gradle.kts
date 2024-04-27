@@ -67,6 +67,7 @@ subprojects {
     val jdaVersion: String by project
     val exposedVersion: String by project
     val sqliteJDBCVersion: String by project
+    val commonmarkVersion: String by project
 
     // This array gets used at multiple places, so it's easier to
     // just specify all dependencies at once and re-use them. This
@@ -85,7 +86,10 @@ subprojects {
         // Database driver that allows Exposed to communicate with
         // the SQLite database. This will not be in the JAR and needs to be provided
         // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
-        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
+        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion",
+
+        // Markdown parser used for formatting Discord messages in Minecraft
+        "org.commonmark:commonmark:$commonmarkVersion",
     )
 
     dependencies {

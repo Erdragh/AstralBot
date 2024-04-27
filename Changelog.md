@@ -1,3 +1,10 @@
+# Indev
+- Message Embeds to better represent Minecraft messages on Discord
+- Fix `/link` Minecraft command not being registered on Forge
+- Implement Markdown parsing for Discord to Minecraft message sync
+- Implement automatically converting URLs to clickable links in Minecraft chat
+- Replace blocked URLs before sending Minecraft chat to Discord
+
 # 1.2.1
 Allow providing token via config
 

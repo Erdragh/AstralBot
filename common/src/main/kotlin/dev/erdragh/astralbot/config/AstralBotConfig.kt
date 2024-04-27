@@ -81,6 +81,18 @@ object AstralBotConfig {
      */
     val ENABLED_COMMANDS: ForgeConfigSpec.ConfigValue<List<String>>
 
+    /**
+     * Enables parsing Discord messages into Minecraft's Chat Components.
+     * This includes making links clickable, etc.
+     */
+    val ENABLE_MARKDOWN_PARSING: ForgeConfigSpec.BooleanValue
+
+    /**
+     * Enables converting detected URLs into clickable links, requires
+     * [ENABLE_MARKDOWN_PARSING] to be enabled to do anything
+     */
+    val ENABLE_AUTO_LINKS: ForgeConfigSpec.BooleanValue
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -117,7 +129,9 @@ object AstralBotConfig {
                         "https://pornhub.com",
                         "https://xhamster.com",
                         "https://xvideos.com",
-                        "https://rule34.xyz"
+                        "https://rule34.xyz",
+                        "https://rule34.xxx",
+                        "https://discord.gg"
                     )
                 )
             ) {
@@ -149,6 +163,11 @@ object AstralBotConfig {
                 return@defineList true
             }
 
+        ENABLE_MARKDOWN_PARSING = builder.comment("Parse Discord messages into Minecraft's Chat Components")
+            .define(listOf("markdown", "enabled"), true)
+        ENABLE_AUTO_LINKS = builder.comment("Automatically convert detected URLs into clickable links")
+            .define(listOf("markdown", "autoLinks"), true)
+
         SPEC = builder.build()
     }
 
@@ -163,7 +182,7 @@ object AstralBotConfig {
         try {
             val parsedURL = URL(url)
             for (blockedURL in URL_BLOCKLIST.get()) {
-                if (parsedURL.host.equals(URL(blockedURL).host)) return false
+                if (parsedURL.host == URL(blockedURL).host) return false
             }
         } catch (e: Exception) {
             LOGGER.warn("URL $url", e)
