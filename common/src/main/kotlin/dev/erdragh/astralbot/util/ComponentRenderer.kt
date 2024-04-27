@@ -110,6 +110,11 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
 
         val literal = text.literal
 
+        if (!AstralBotConfig.ENABLE_AUTO_LINKS.get()) {
+            append(literal)
+            return
+        }
+
         val matcher = urlPattern.matcher(text.literal)
         var lastEnd = 0
         for (result in matcher.results()) {

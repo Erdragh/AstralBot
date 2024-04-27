@@ -87,6 +87,12 @@ object AstralBotConfig {
      */
     val ENABLE_MARKDOWN_PARSING: ForgeConfigSpec.BooleanValue
 
+    /**
+     * Enables converting detected URLs into clickable links, requires
+     * [ENABLE_MARKDOWN_PARSING] to be enabled to do anything
+     */
+    val ENABLE_AUTO_LINKS: ForgeConfigSpec.BooleanValue
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -158,7 +164,9 @@ object AstralBotConfig {
             }
 
         ENABLE_MARKDOWN_PARSING = builder.comment("Parse Discord messages into Minecraft's Chat Components")
-            .define("enableMarkdownParsing", true)
+            .define(listOf("markdown", "enabled"), true)
+        ENABLE_AUTO_LINKS = builder.comment("Automatically convert detected URLs into clickable links")
+            .define(listOf("markdown", "autoLinks"), true)
 
         SPEC = builder.build()
     }
