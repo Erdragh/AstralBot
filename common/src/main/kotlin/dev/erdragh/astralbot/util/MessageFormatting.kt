@@ -55,10 +55,10 @@ fun formatComponentToMarkdown(comp: Component): String {
             val matcher = urlPattern.matcher(formatted)
             val replaced = matcher.replaceAll { match ->
                 val group = match.group()
-                if (AstralBotConfig.urlAllowed(group)) {
-                    return@replaceAll group
+                return@replaceAll if (AstralBotConfig.urlAllowed(group)) {
+                    group
                 } else {
-                    return@replaceAll AstralBotTextConfig.GENERIC_BLOCKED.get()
+                    AstralBotTextConfig.GENERIC_BLOCKED.get()
                 }
             }
             formatted = replaced

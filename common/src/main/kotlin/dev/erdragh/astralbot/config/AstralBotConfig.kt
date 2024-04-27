@@ -174,7 +174,7 @@ object AstralBotConfig {
         try {
             val parsedURL = URL(url)
             for (blockedURL in URL_BLOCKLIST.get()) {
-                if (parsedURL.host.equals(URL(blockedURL).host)) return false
+                if (parsedURL.host == URL(blockedURL).host) return false
             }
         } catch (e: Exception) {
             LOGGER.warn("URL $url", e)
