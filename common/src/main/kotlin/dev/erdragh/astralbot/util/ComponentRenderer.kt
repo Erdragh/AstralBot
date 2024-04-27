@@ -203,7 +203,6 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
         currentComponent.append("\n")
         for (prefix in prefixes.asIterable()) {
             currentComponent.append(prefix)
-            println("applying prefix $prefix")
         }
     }
 
