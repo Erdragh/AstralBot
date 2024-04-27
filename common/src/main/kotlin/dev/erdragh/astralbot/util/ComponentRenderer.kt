@@ -42,11 +42,13 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
             BlockQuote::class.java,
             Code::class.java,
             FencedCodeBlock::class.java,
+            IndentedCodeBlock::class.java,
             BulletList::class.java,
             OrderedList::class.java,
             ListItem::class.java,
             SoftLineBreak::class.java,
-            HardLineBreak::class.java
+            HardLineBreak::class.java,
+            ThematicBreak::class.java
         )
     }
 
@@ -141,6 +143,11 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
         append(Component.literal(fencedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
     }
 
+    override fun visit(indentedCodeBlock: IndentedCodeBlock?) {
+        if (indentedCodeBlock == null) return
+        append(Component.literal(indentedCodeBlock.literal).withStyle(ChatFormatting.YELLOW))
+    }
+
     override fun visit(bulletList: BulletList?) {
         if (bulletList == null) return
         listHolder = BulletListHolder(listHolder, bulletList)
@@ -197,6 +204,13 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
     override fun visit(hardLineBreak: HardLineBreak?) {
         currentComponent.append("  ")
         newline()
+    }
+
+    override fun visit(thematicBreak: ThematicBreak?) {
+        if (thematicBreak == null) return
+        block()
+        append(thematicBreak.literal)
+        block()
     }
 
     private fun newline() {
