@@ -172,7 +172,7 @@ class ComponentRenderer : AbstractVisitor(), NodeRenderer {
                 holder.number++
             }
             else -> {
-                throw IllegalStateException("Unknown list holder type: $listHolder")
+                error("Unknown list holder type: $listHolder")
             }
         }
 
