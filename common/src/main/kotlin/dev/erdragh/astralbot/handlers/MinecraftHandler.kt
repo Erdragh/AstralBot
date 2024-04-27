@@ -4,8 +4,10 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
+import dev.erdragh.astralbot.util.*
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.minecraft.ChatFormatting
@@ -13,6 +15,7 @@ import net.minecraft.Util
 import net.minecraft.network.chat.*
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -25,7 +28,9 @@ import kotlin.math.min
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
-    private val playerNames = HashSet<String>(server.maxPlayers)
+    private val playerNames = HashSet<String>(server.maxPlayers);
+    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
+
 
     companion object {
         private val numberFormat = DecimalFormat("###.##")
@@ -119,19 +124,40 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param player the Player who sent the message
      * @param message the String contents of the message
      */
-    fun sendChatToDiscord(player: ServerPlayer?, message: String) {
+    fun sendChatToDiscord(player: ServerPlayer?, message: Component) {
         if (shuttingDown.get()) return
+
+        val attachments = message.toFlatList().mapNotNull {
+            it.style.hoverEvent
+        }
+
+        val formattedEmbeds: MutableList<MessageEmbed> = mutableListOf()
+        val items: MutableList<ItemStack> = mutableListOf()
+
+        for (attachment in attachments) {
+            attachment.getValue(HoverEvent.Action.SHOW_TEXT)?.let {
+                formattedEmbeds.add(formatHoverText(it))
+            }
+            attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
+                formatHoverItems(it, items, notchPlayer)?.let(formattedEmbeds::add)
+            }
+            attachment.getValue(HoverEvent.Action.SHOW_ENTITY)?.let {
+                formatHoverEntity(it)?.let(formattedEmbeds::add)
+            }
+        }
+
         val escape = { it: String -> it.replace("_", "\\_") }
         textChannel?.sendMessage(
             if (player != null)
                 AstralBotTextConfig.PLAYER_MESSAGE.get()
-                    .replace("{{message}}", escape(message))
+                    .replace("{{message}}", formatComponentToMarkdown(message))
                     .replace("{{fullName}}", escape(player.displayName.string))
                     .replace("{{name}}", escape(player.name.string))
-            else escape(message)
+            else escape(message.string)
         )
+            ?.addEmbeds(formattedEmbeds)
             ?.setSuppressedNotifications(true)
-            ?.setSuppressEmbeds(true)?.queue()
+            ?.queue()
     }
 
     /**
@@ -187,7 +213,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
 
         val messageContents = TextComponent("")
         // This is the actual message content
-        val actualMessage = TextComponent(message.contentDisplay)
+        val actualMessage = formatMarkdownToComponent(message.contentDisplay)
         // If it's enabled in the config you can click on a message and get linked to said message
         // in the actual Discord client
         if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
@@ -305,7 +331,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun formatEmbeds(message: Message): MutableComponent {
         val comp = TextComponent("")
         // Adds a newline with space if there are embeds and the message isn't empty
-        if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append("\n ")
+        if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append(
+            "\n ${AstralBotTextConfig.DISCORD_EMBEDS.get()} "
+        )
         var i = 0
         message.embeds.forEach {
             if (i++ != 0) comp.append(", ")
@@ -350,14 +378,19 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                 embedComponent.withStyle { style ->
                     if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
-                        style.withColor(ChatFormatting.BLUE).withUnderlined(true)
+                        style.withColor(ChatFormatting.BLUE)
+                            .withUnderlined(true)
                             .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.nullToEmpty(url)))
                     } else style
                 }
             }
             comp.append(embedComponent)
         } else {
-            comp.append(TextComponent("BLOCKED").withStyle(ChatFormatting.RED))
+            comp.append(
+                TextComponent(AstralBotTextConfig.GENERIC_BLOCKED.get())
+                    .withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE)
+            )
         }
         return comp
     }

@@ -29,6 +29,7 @@ object BotMod {
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
         FORGE_BUS.addListener(::onSystemMessage)
+        FORGE_BUS.addListener(::onCommandRegistration)
 
         FORGE_BUS.addListener(::onPlayerJoin)
         FORGE_BUS.addListener(::onPlayerLeave)
@@ -49,7 +50,7 @@ object BotMod {
 
     private fun onSystemMessage(event: SystemMessageEvent) {
         if (event.component !is DiscordMessageComponent) {
-            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message)
+            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.component)
         }
     }
 
