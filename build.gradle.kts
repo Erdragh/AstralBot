@@ -1,13 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import dev.architectury.plugin.ArchitectPluginExtension
-import net.fabricmc.loom.api.LoomGradleExtensionAPI
-import net.fabricmc.loom.task.RemapJarTask
 import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.util.*
 
 plugins {
-    // This is an Architectury repository, as such the relevant plugins are needed
-    id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     // The shadow plugin is used in both Architectury and when including JDA and Exposed
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
@@ -16,17 +12,12 @@ plugins {
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
-}
-
-architectury {
-    val minecraftVersion: String by project
-    minecraft = minecraftVersion
+    // Required for NeoGradle
+    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
 }
 
 subprojects {
-    // All subprojects need Architectury and Kotlin
-    apply(plugin = "dev.architectury.loom")
-    apply(plugin = "architectury-plugin")
+    apply(plugin = "java")
     apply(plugin = "kotlin")
     apply(plugin = "org.jetbrains.dokka")
 
@@ -34,7 +25,9 @@ subprojects {
     // sub- and root projects
     val minecraftVersion: String by project
     val modLoader = project.name
-    val modId = rootProject.name
+    val modId: String by project
+    val modName = rootProject.name
+    val modAuthor: String by project
     val isCommon = modLoader == rootProject.projects.common.name
 
     base {
@@ -42,14 +35,16 @@ subprojects {
         archivesName.set("$modId-$modLoader-$minecraftVersion")
     }
 
-    configure<LoomGradleExtensionAPI> {
-        silentMojangMappingsLicense()
+    extensions.configure<JavaPluginExtension> {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+        withSourcesJar()
     }
 
     repositories {
         mavenCentral()
         maven(url = "https://maven.neoforged.net/releases/")
-        maven(url = "https://maven.architectury.dev/")
+        maven("https://repo.spongepowered.org/repository/maven-public/") { name = "Sponge / Mixin" }
+        maven("https://maven.blamejared.com") { name = "BlameJared Maven (JEI / CraftTweaker / Bookshelf)" }
         // For the parchment mappings
         maven(url = "https://maven.parchmentmc.org")
         maven(url = "https://maven.resourcefulbees.com/repository/maven-public/")
@@ -94,25 +89,6 @@ subprojects {
     )
 
     dependencies {
-        // Minecraft Mod dependencies
-        "minecraft"("::$minecraftVersion")
-
-        @Suppress("UnstableApiUsage")
-        "mappings"(project.the<LoomGradleExtensionAPI>().layered {
-            val parchmentVersion: String by project
-
-            officialMojangMappings()
-
-            parchment(
-                create(
-                    group = "org.parchmentmc.data",
-                    name = "parchment-$minecraftVersion",
-                    version = parchmentVersion
-                )
-            )
-        })
-        compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
-
         // Discord Bot dependencies
         botDependencies.forEach {
             implementation(it) {
@@ -136,19 +112,68 @@ subprojects {
     tasks.jar {
         // Results in the not remapped jars having a -dev at the end
         archiveClassifier.set("dev")
-    }
 
-    tasks.named<RemapJarTask>("remapJar") {
-        // Results in the remapped jar not having any extra bit in
-        // its file name, identifying it as the main distribution
-        archiveClassifier.set(null as String?)
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_$modId" }
+        }
+
+        manifest {
+            attributes(
+                "Specification-Title" to modId,
+                "Specification-Vendor" to modAuthor,
+                "Specification-Version" to archiveVersion,
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to archiveVersion,
+                "Implementation-Vendor" to modAuthor,
+                "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
+                "Timestamp" to System.currentTimeMillis(),
+                "Built-On-Java" to "${System.getProperty("java.vm.version")} (${System.getProperty("java.vm.vendor")})",
+                "Built-On-Minecraft" to minecraftVersion
+            )
+        }
     }
 
     tasks.processResources {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        filesMatching(listOf("META-INF/mods.toml", "fabric.mod.json")) {
-            expand("version" to project.version)
+        val version: String by project
+        val group: String by project
+        val forgeVersion: String by project
+        val kffLoaderRange: String by project
+        val forgeVersionRange: String by project
+        val minecraftVersionRange: String by project
+        val fabricApiVersion: String by project
+        val fabricLoaderVersion: String by project
+        val fabricKotlinVersion: String by project
+        val license: String by project
+        val description: String by project
+        val neoVersion: String by project
+        val neoVersionRange: String by project
+        val credits: String by project
+
+        val expandProps = mapOf(
+            "version" to version,
+            "group" to group, //Else we target the task's group.
+            "minecraft_version" to minecraftVersion,
+            "forge_version" to forgeVersion,
+            "kff_loader_range" to kffLoaderRange,
+            "forge_version_range" to forgeVersionRange,
+            "minecraft_version_range" to minecraftVersionRange,
+            "fabric_version" to fabricApiVersion,
+            "fabric_loader_version" to fabricLoaderVersion,
+            "fabric_kotlin_version" to fabricKotlinVersion,
+            "mod_name" to modName,
+            "mod_author" to modAuthor,
+            "mod_id" to modId,
+            "license" to license,
+            "description" to description,
+            "neoforge_version" to neoVersion,
+            "neoforge_loader_version_range" to neoVersionRange,
+            "credits" to credits
+        )
+
+        filesMatching(listOf("pack.mcmeta", "*.mixins.json", "META-INF/mods.toml", "fabric.mod.json")) {
+            expand(expandProps)
         }
+        inputs.properties(expandProps)
     }
 
     if (!isCommon) {
@@ -156,10 +181,6 @@ subprojects {
         // project and the dependencies shadowed into the jar, so the
         // plugin is used here.
         apply(plugin = "com.github.johnrengelman.shadow")
-
-        configure<ArchitectPluginExtension> {
-            platformSetupLoomIde()
-        }
 
         // This shadowCommon configuration is used to both shadow the
         // common project and shadow the dependencies into the final
@@ -210,16 +231,16 @@ subprojects {
                 exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
                 exclude("**/org/slf4j/**")
             }
-
-            "remapJar"(RemapJarTask::class) {
-                // This results in the remapped JAR being based on the JAR
-                // with the dependencies and common project shadowed into it.
-                dependsOn("shadowJar")
-                inputFile.set(named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
-            }
         }
     } else {
         sourceSets.main.get().resources.srcDir("src/main/generated/resources")
+    }
+
+    // Disables Gradle's custom module metadata from being published to maven. The
+    // metadata includes mapped dependencies which are not reasonably consumable by
+    // other mod developers.
+    tasks.withType<GenerateModuleMetadata> {
+        enabled = false
     }
 }
 

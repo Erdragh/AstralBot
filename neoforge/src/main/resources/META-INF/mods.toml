@@ -1,6 +1,6 @@
 modLoader = "kotlinforforge"
-loaderVersion = "[4.10,)"
-license = "MIT License"
+loaderVersion = "${kff_loader_range}"
+license = "${license}"
 issueTrackerURL = "https://github.com/Erdragh/AstralBot/issues"
 
 [[mixins]]
@@ -9,24 +9,24 @@ config = "astralbot-common.mixins.json"
 config = "astralbot.mixins.json"
 
 [[mods]]
-modId = "astralbot"
+modId = "${mod_id}"
 version = "${version}"
-displayName = "AstralBot"
+displayName = "${mod_name}"
 displayURL = "https://modrinth.com/mod/astralbot"
 logoFile = "icon.png"
-authors = "Erdragh"
-description = "Discord Bot and Minecraft Mod in one bundle."
+authors = "${mod_author}"
+description = "${description}"
 
-[[dependencies.astralbot]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
-versionRange = "[47,)"
+versionRange = "${neoforge_loader_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.astralbot]]
+[[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.20,)"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"

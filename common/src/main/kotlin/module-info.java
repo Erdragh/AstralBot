@@ -19,9 +19,10 @@ module Minecraft.astralbot.common.main {
 
   // For Minecraft itself
   requires authlib;
-  requires minecraft.merged;
   requires transitive org.slf4j;
   requires brigadier;
+  requires joined;
+  requires org.spongepowered.mixin;
 
   // For accessing the config
   requires forgeconfigapiport.common.neoforgeapi;

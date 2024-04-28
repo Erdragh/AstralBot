@@ -1,53 +1,76 @@
-architectury {
-    neoForge()
+plugins {
+    idea
+    `maven-publish`
+    id("net.neoforged.gradle.userdev") version "7.0.109"
 }
 
-loom {
-    // This sets up data generation. At the time of writing this
-    // Comment, this is useless, as there are no resources to be
-    // generated. I want to keep it in as a reference tho.
-    runs {
-        create("data") {
-            data()
-            programArgs("--all", "--mod", "astralbot")
-            programArgs("--output", project(":common").file("src/main/generated/resources").absolutePath)
-            programArgs("--existing", project(":common").file("src/main/resources").absolutePath)
-        }
+val modId: String by project
+
+// Automatically enable neoforge AccessTransformers if the file exists
+// This location is hardcoded in FML and can not be changed.
+// https://github.com/neoforged/FancyModLoader/blob/a952595eaaddd571fbc53f43847680b00894e0c1/loader/src/main/java/net/neoforged/fml/loading/moddiscovery/ModFile.java#L118
+val transformerFile = file("src/main/resources/META-INF/accesstransformer.cfg")
+if (transformerFile.exists())
+    minecraft.accessTransformers.file(transformerFile)
+
+runs {
+    configureEach { modSource(project.sourceSets.main.get()) }
+
+    create("client") { systemProperty("neoforge.enabledGameTestNamespaces", modId) }
+
+    create("server") {
+        systemProperty("neoforge.enabledGameTestNamespaces", modId)
+        programArgument("--nogui")
+    }
+
+    create("gameTestServer") { systemProperty("neoforge.enabledGameTestNamespaces", modId) }
+
+    create("data") {
+        programArguments.addAll(
+            "--mod", modId,
+            "--all",
+            "--output", file("src/generated/resources").absolutePath,
+            "--existing", file("src/main/resources/").absolutePath
+        )
     }
 }
 
-val common: Configuration by configurations.creating {
-    configurations.compileClasspath.get().extendsFrom(this)
-    configurations.runtimeClasspath.get().extendsFrom(this)
-    configurations["developmentNeoForge"].extendsFrom(this)
-}
+sourceSets.main.get().resources.srcDir("src/generated/resources")
 
 dependencies {
-    common(project(":common", configuration = "namedElements")) {
-        isTransitive = false
-    }
-    shadowCommon(project(path = ":common", configuration = "transformProductionNeoForge")) {
-        isTransitive = false
-    }
+    compileOnly(project(":common"))
 
     val minecraftVersion: String by project
     val neoVersion: String by project
     val kotlinForgeVersion: String by project
 
-    neoForge(group = "net.neoforged", name = "neoforge", version = neoVersion)
+    implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
     // Adds KFF as dependency and Kotlin libs
-    "thedarkcolour:kotlinforforge:$kotlinForgeVersion".let {
-        implementation(it)
-        forgeRuntimeLibrary(it)
+    implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
+}
+
+// NeoGradle compiles the game, but we don't want to add our common code to the game's code
+val notNeoTask: Spec<Task> = Spec { !it.name.startsWith("neo") }
+
+tasks {
+    withType<JavaCompile>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allSource) }
+
+    withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
+
+    named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }
+
+    processResources { from(project(":common").sourceSets.main.get().resources) }
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            artifactId = base.archivesName.get()
+            artifact(tasks.jar)
+        }
     }
 
-    val jdaVersion: String by project
-
-    // This *should* theoretically fix the Forge development environment not having
-    // access to certain classes, but I haven't gotten it to work just yet.
-    forgeRuntimeLibrary("net.dv8tion:JDA:$jdaVersion") {
-        exclude(module = "opus-java")
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.slf4j")
+    repositories {
+        maven("file://${System.getenv("local_maven")}")
     }
 }
