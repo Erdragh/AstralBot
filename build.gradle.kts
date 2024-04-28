@@ -48,6 +48,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven(url = "https://maven.neoforged.net/releases/")
         maven(url = "https://maven.architectury.dev/")
         // For the parchment mappings
         maven(url = "https://maven.parchmentmc.org")
@@ -110,6 +111,7 @@ subprojects {
                 )
             )
         })
+        compileOnly("org.jetbrains.kotlin:kotlin-stdlib")
 
         // Discord Bot dependencies
         botDependencies.forEach {
