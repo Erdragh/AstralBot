@@ -25,3 +25,10 @@ mandatory = true
 versionRange = "[1.20,)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.astralbot]]
+modId = "forgeconfigapiport"
+mandatory = true
+versionRange = "[20,)"
+ordering = "NONE"
+side = "BOTH"

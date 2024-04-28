@@ -68,11 +68,11 @@ object LinkCommand : HandledSlashCommand {
             } else {
                 WhitelistHandler.whitelist(event.user, minecraftID)
                 waitForSetup()
-                guild?.getRoleById(AstralBotConfig.DISCORD_ROLE.get())?.let {
+                guild?.getRoleById(AstralBotConfig.DISCORD_ROLE.get())?.let { role ->
                     try {
-                        guild?.addRoleToMember(event.user, it)?.queue()
+                        guild?.addRoleToMember(event.user, role)?.queue()
                     } catch (e: Exception) {
-                        LOGGER.error("Failed to add role ${it.name} to member ${event.user.asMention}", e)
+                        LOGGER.error("Failed to add role ${role.name} to member ${event.user.asMention}", e)
                     }
                 }
                 event.hook.setEphemeral(true)

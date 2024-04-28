@@ -37,6 +37,7 @@ dependencies {
     val minecraftVersion: String by project
     val forgeVersion: String by project
     val kotlinForgeVersion: String by project
+    val forgeConfigAPIVersion: String by project
 
     forge(group = "net.minecraftforge", name = "forge", version = "$minecraftVersion-$forgeVersion")
     // Adds KFF as dependency and Kotlin libs
@@ -51,4 +52,9 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
         exclude(group = "org.slf4j")
     }
+
+    // On 1.20.2 upwards, the forge config api port either reimplements neo's
+    // or lexforge's config API. I chose to use Neo's by default, resulting in
+    // an additional dependency on the lexforge side.
+    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-forge:$forgeConfigAPIVersion")
 }

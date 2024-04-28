@@ -24,6 +24,7 @@ module Minecraft.astralbot.common.main {
   requires brigadier;
 
   // For accessing the config
-  requires forgeconfigapiport.common;
+  requires forgeconfigapiport.common.neoforgeapi;
+
   requires java.desktop;
 }

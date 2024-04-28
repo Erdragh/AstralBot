@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.6-SNAPSHOT" apply false
     // The shadow plugin is used in both Architectury and when including JDA and Exposed
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such

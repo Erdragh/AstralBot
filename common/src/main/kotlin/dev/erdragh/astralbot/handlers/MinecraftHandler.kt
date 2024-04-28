@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ClientInformation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
 import java.text.DecimalFormat
@@ -31,7 +32,7 @@ import kotlin.math.min
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
     private val playerNames = HashSet<String>(server.maxPlayers);
-    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
+    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it, ClientInformation.createDefault()) }
 
 
     companion object {
@@ -83,12 +84,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime))
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTimeNanos * 1000))
             .replace(
                 "{{tps}}", numberFormat.format(
                     min(
                         20.0,
-                        1000.0 / server.averageTickTime
+                        1000.0 / (server.averageTickTimeNanos * 1000)
                     )
                 )
             )
@@ -153,7 +154,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             if (player != null)
                 AstralBotTextConfig.PLAYER_MESSAGE.get()
                     .replace("{{message}}", formatComponentToMarkdown(message))
-                    .replace("{{fullName}}", escape(player.displayName.string))
+                    .replace("{{fullName}}", escape(player.displayName?.string ?: player.name.string))
                     .replace("{{name}}", escape(player.name.string))
             else escape(message.string)
         )

@@ -15,6 +15,7 @@ import net.minecraft.world.item.TooltipFlag
 import org.commonmark.parser.Parser
 import java.awt.Color
 import java.util.regex.Pattern
+import kotlin.jvm.optionals.getOrNull
 
 // Pattern for recognizing a URL, based off RFC 3986
 // Source: https://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
@@ -99,7 +100,7 @@ fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, playe
 fun formatHoverEntity(entity: HoverEvent.EntityTooltipInfo): MessageEmbed? {
     if (entity.type == EntityType.PLAYER) return null
     return EmbedBuilder()
-        .setTitle(entity.name?.string)
+        .setTitle(entity.name.map(Component::getString).getOrNull())
         .setDescription(entity.type.description.string)
         .let { builder: EmbedBuilder ->
             val mobCategory = entity.type.category

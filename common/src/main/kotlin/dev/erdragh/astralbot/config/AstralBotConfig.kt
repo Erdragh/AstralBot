@@ -2,7 +2,7 @@ package dev.erdragh.astralbot.config
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.discord.allCommands
-import net.minecraftforge.common.ForgeConfigSpec
+import net.neoforged.neoforge.common.ModConfigSpec
 import java.net.URL
 
 /**
@@ -12,89 +12,89 @@ import java.net.URL
  * @author Erdragh
  */
 object AstralBotConfig {
-    val SPEC: ForgeConfigSpec
+    val SPEC: ModConfigSpec
 
     /**
      * If the `DISCORD_TOKEN` environment variable isn't set, the bot will
      * look for a token in this config option.
      */
-    val DISCORD_TOKEN: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_TOKEN: ModConfigSpec.ConfigValue<String>
 
     /**
      * Whether the default whitelisting process is respected or ignored.
      * Setting this to `true` will *force* every user who wants to join
      * the server to link their account, even Operators.
      */
-    val REQUIRE_LINK_FOR_WHITELIST: ForgeConfigSpec.BooleanValue
+    val REQUIRE_LINK_FOR_WHITELIST: ModConfigSpec.BooleanValue
 
     /**
      * The link to the Discord servers where users can run the /link command.
      * Gets used when formatting the message shown to users who try to log in
      * without being whitelisted.
      */
-    val DISCORD_LINK: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_LINK: ModConfigSpec.ConfigValue<String>
 
     /**
      * The ID of the discord channel where the messages are synchronized
      */
-    val DISCORD_CHANNEL: ForgeConfigSpec.ConfigValue<Long>
+    val DISCORD_CHANNEL: ModConfigSpec.ConfigValue<Long>
 
     /**
      * The ID of the Discord Guild (server) where this bot will be active.
      * This is used to get the chat sync channel etc.
      */
-    val DISCORD_GUILD: ForgeConfigSpec.ConfigValue<Long>
+    val DISCORD_GUILD: ModConfigSpec.ConfigValue<Long>
 
     /**
      * The ID of the Discord role given to linked members
      */
-    val DISCORD_ROLE: ForgeConfigSpec.ConfigValue<Long>
+    val DISCORD_ROLE: ModConfigSpec.ConfigValue<Long>
 
     /**
      * If this is set to true the message sent into the Minecraft chat
      * will be clickable and take you to the relevant message on Discord
      */
-    val CLICKABLE_MESSAGES: ForgeConfigSpec.BooleanValue
+    val CLICKABLE_MESSAGES: ModConfigSpec.BooleanValue
 
     /**
      * If this is on the embeds and attached files on a message will be
      * handled and possibly displayed in messages sent to the players
      */
-    val HANDLE_EMBEDS: ForgeConfigSpec.BooleanValue
+    val HANDLE_EMBEDS: ModConfigSpec.BooleanValue
 
     /**
      * If this is on embeds that have a URL associated with them will
      * be clickable.
      */
-    val CLICKABLE_EMBEDS: ForgeConfigSpec.BooleanValue
+    val CLICKABLE_EMBEDS: ModConfigSpec.BooleanValue
 
     /**
      * List of Strings containing the URLs that are blocked by default.
      * If you read this and want to add more to the default list, feel
      * free to open an Issue or Pull Request.
      */
-    private val URL_BLOCKLIST: ForgeConfigSpec.ConfigValue<List<String>>
+    private val URL_BLOCKLIST: ModConfigSpec.ConfigValue<List<String>>
 
     /**
      * List of the names of the commands that are enabled by default.
      * On first startup of a server, it will be all available commands.
      */
-    val ENABLED_COMMANDS: ForgeConfigSpec.ConfigValue<List<String>>
+    val ENABLED_COMMANDS: ModConfigSpec.ConfigValue<List<String>>
 
     /**
      * Enables parsing Discord messages into Minecraft's Chat Components.
      * This includes making links clickable, etc.
      */
-    val ENABLE_MARKDOWN_PARSING: ForgeConfigSpec.BooleanValue
+    val ENABLE_MARKDOWN_PARSING: ModConfigSpec.BooleanValue
 
     /**
      * Enables converting detected URLs into clickable links, requires
      * [ENABLE_MARKDOWN_PARSING] to be enabled to do anything
      */
-    val ENABLE_AUTO_LINKS: ForgeConfigSpec.BooleanValue
+    val ENABLE_AUTO_LINKS: ModConfigSpec.BooleanValue
 
     init {
-        val builder = ForgeConfigSpec.Builder()
+        val builder = ModConfigSpec.Builder()
 
         builder.comment("AstralBot Config")
 
