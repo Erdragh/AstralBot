@@ -1,10 +1,10 @@
-package dev.erdragh.astralbot.forge
+package dev.erdragh.astralbot.neoforge
 
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.forge.event.SystemMessageEvent
+import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.bus.api.IEventBus

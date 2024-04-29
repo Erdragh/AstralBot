@@ -1,10 +1,10 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    // The shadow plugin is used in both Architectury and when including JDA and Exposed
+    // The shadow plugin is used by the fabric subproject to include dependencies
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
@@ -14,6 +14,10 @@ plugins {
     java
     // Required for NeoGradle
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
+}
+
+repositories {
+    mavenCentral()
 }
 
 subprojects {
@@ -110,9 +114,6 @@ subprojects {
     }
 
     tasks.jar {
-        // Results in the not remapped jars having a -dev at the end
-        archiveClassifier.set("dev")
-
         from(rootProject.file("LICENSE")) {
             rename { "${it}_$modId" }
         }
@@ -177,22 +178,16 @@ subprojects {
     }
 
     if (!isCommon) {
-        // The subprojects for the actual mod loaders need the common
-        // project and the dependencies shadowed into the jar, so the
-        // plugin is used here.
-        apply(plugin = "com.github.johnrengelman.shadow")
-
-        // This shadowCommon configuration is used to both shadow the
-        // common project and shadow the dependencies into the final
-        // JARs
-        val shadowCommon by configurations.creating {
-            isCanBeConsumed = false
-            isCanBeResolved = true
-        }
+        // This config includes the bot dependencies in the final jar
+        val botDep by configurations.creating
+        configurations.implementation.extendsFrom(configurations.named("botDep"))
 
         dependencies {
+            testImplementation(project(":common"))
+            implementation(project(":common"))
+
             botDependencies.forEach {
-                if (!it.contains("sqlite-jdbc")) shadowCommon(it) {
+                if (!it.contains("sqlite-jdbc")) botDep(it) {
                     // opus-java is for audio, which this bot doesn't need
                     exclude(module = "opus-java")
                     // Kotlin would be included as a transitive dependency
@@ -203,33 +198,6 @@ subprojects {
                     // Minecraft already ships with a logging system
                     exclude(group = "org.slf4j")
                 }
-            }
-        }
-
-        tasks {
-            "shadowJar"(ShadowJar::class) {
-                // The resulting JAR of this task will be named ...-dev-shadow,
-                // as it has the dependencies shadowed into it, but hasn't been
-                // remapped yet.
-                archiveClassifier.set("dev-shadow")
-                configurations = listOf(shadowCommon)
-
-                // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
-                mergeServiceFiles()
-
-                // Forge restricts loading certain classes for security reasons.
-                // Luckily, shadow can relocate them to a different package.
-                relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
-
-                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
-                relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
-
-                // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
-                relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
-
-                exclude(".cache/**") //Remove datagen cache from jar.
-                exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
-                exclude("**/org/slf4j/**")
             }
         }
     } else {

@@ -1,14 +1,17 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     java
     idea
     `maven-publish`
     id("fabric-loom") version "1.6-SNAPSHOT"
+    id("com.github.johnrengelman.shadow")
 }
 
 val modId: String by project
 
 dependencies {
-    compileOnly(project(":common"))
     mappings(loom.officialMojangMappings())
     val minecraftVersion: String by project
     val fabricLoaderVersion: String by project
@@ -48,10 +51,31 @@ loom {
     }
 }
 
+val botDep: Configuration by configurations.getting
+
 tasks {
-    withType<JavaCompile> { source(project(":common").sourceSets.main.get().allSource) }
+    withType<JavaCompile> {
+        source(project(":common").sourceSets.main.get().allSource)
+    }
+    withType<KotlinCompile> {
+        source(project(":common").sourceSets.main.get().allSource)
+    }
 
     javadoc { source(project(":common").sourceSets.main.get().allJava) }
+
+    jar {
+        archiveClassifier.set("dev")
+    }
+
+    withType<ShadowJar> {
+        archiveClassifier.set("dev-shadow")
+        configurations = listOf(botDep)
+    }
+
+    remapJar {
+        inputFile.set(named<ShadowJar>("shadowJar").get().archiveFile)
+        dependsOn("shadowJar")
+    }
 
     named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }
 

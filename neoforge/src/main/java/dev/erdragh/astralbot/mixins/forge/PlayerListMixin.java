@@ -1,6 +1,6 @@
 package dev.erdragh.astralbot.mixins.forge;
 
-import dev.erdragh.astralbot.forge.event.SystemMessageEvent;
+import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;

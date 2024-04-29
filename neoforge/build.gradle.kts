@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     idea
     `maven-publish`
@@ -5,6 +7,8 @@ plugins {
 }
 
 val modId: String by project
+
+jarJar.enable()
 
 // Automatically enable neoforge AccessTransformers if the file exists
 // This location is hardcoded in FML and can not be changed.
@@ -38,8 +42,6 @@ runs {
 sourceSets.main.get().resources.srcDir("src/generated/resources")
 
 dependencies {
-    compileOnly(project(":common"))
-
     val minecraftVersion: String by project
     val neoVersion: String by project
     val kotlinForgeVersion: String by project
@@ -47,6 +49,11 @@ dependencies {
     implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
     // Adds KFF as dependency and Kotlin libs
     implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
+
+    val botDep by configurations.getting
+    botDep.dependencies.forEach {
+        jarJar(it)
+    }
 }
 
 // NeoGradle compiles the game, but we don't want to add our common code to the game's code
@@ -54,6 +61,9 @@ val notNeoTask: Spec<Task> = Spec { !it.name.startsWith("neo") }
 
 tasks {
     withType<JavaCompile>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allSource) }
+    withType<KotlinCompile>().matching(notNeoTask).configureEach {
+        source(project(":common").sourceSets.main.get().allSource)
+    }
 
     withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
 

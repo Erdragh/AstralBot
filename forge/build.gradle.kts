@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     idea
     `maven-publish`
@@ -13,6 +15,8 @@ mixin {
     config("$modId-common.mixins.json")
     config("$modId.mixins.json")
 }
+
+jarJar.enable()
 
 minecraft {
     mappings("official", minecraftVersion)
@@ -80,7 +84,6 @@ minecraft {
 sourceSets.main.get().resources.srcDir("src/generated/resources")
 
 dependencies {
-    compileOnly(project(":common"))
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 
     val minecraftVersion: String by project
@@ -96,10 +99,32 @@ dependencies {
     // or lexforge's config API. I chose to use Neo's by default, resulting in
     // an additional dependency on the lexforge side.
     implementation("fuzs.forgeconfigapiport:forgeconfigapiport-forge:$forgeConfigAPIVersion")
+
+    val botDep by configurations.getting
+    botDep.dependencies.forEach {
+        val versionRange = if (!it.version!!.contains("-")) "[0,${it.version}]" else "[0,${it.version!!.substring(0, it.version!!.indexOf("-"))}]"
+        jarJar(name = it.name, group = it.group, version = versionRange) {
+            jarJar.pin(this, it.version)
+            // opus-java is for audio, which this bot doesn't need
+            exclude(module = "opus-java")
+            // Kotlin would be included as a transitive dependency
+            // on JDA and Exposed, but is already provided by the
+            // respective Kotlin implementation of the mod loaders
+            exclude(group = "org.jetbrains.kotlin")
+            exclude(group = "org.jetbrains.kotlinx")
+            // Minecraft already ships with a logging system
+            exclude(group = "org.slf4j")
+        }
+    }
 }
 
 tasks {
-    withType<JavaCompile> { source(project(":common").sourceSets.main.get().allSource) }
+    withType<JavaCompile> {
+        source(project(":common").sourceSets.main.get().allSource)
+    }
+    withType<KotlinCompile> {
+        source(project(":common").sourceSets.main.get().allSource)
+    }
 
     javadoc { source(project(":common").sourceSets.main.get().allJava) }
 
