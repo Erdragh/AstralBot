@@ -112,7 +112,6 @@ subprojects {
                 // on JDA and Exposed, but is already provided by the
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
-                exclude(group = "org.jetbrains.kotlinx")
                 // Minecraft already ships with a logging system
                 exclude(group = "org.slf4j")
             }
@@ -190,6 +189,10 @@ subprojects {
 
     if (isCommon) {
         sourceSets.main.get().resources.srcDir("src/main/generated/resources")
+    } else {
+        dependencies {
+            implementation(project(":common"))
+        }
     }
 
     // Disables Gradle's custom module metadata from being published to maven. The
