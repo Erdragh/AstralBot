@@ -1,3 +1,4 @@
+import net.minecraftforge.gradle.patcher.tasks.ReobfuscateJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -5,18 +6,20 @@ plugins {
     `maven-publish`
     id("net.minecraftforge.gradle") version "6.0.22"
     id("org.spongepowered.mixin") version "0.7-SNAPSHOT"
+    id("com.github.johnrengelman.shadow")
 }
 
 val modId: String by project
 val minecraftVersion: String by project
+
+val botDep: Configuration by configurations.getting
+val runtimeLib: Configuration by configurations.getting
 
 mixin {
     add(sourceSets.main.get(), "$modId.refmap.json")
     config("$modId-common.mixins.json")
     config("$modId.mixins.json")
 }
-
-jarJar.enable()
 
 minecraft {
     mappings("official", minecraftVersion)
@@ -43,6 +46,11 @@ minecraft {
                     source(project(":common").sourceSets.main.get())
                 }
             }
+
+            dependencies {
+                botDep.dependencies.configureEach { minecraftLibrary(this) }
+                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
+            }
         }
 
         create("server") {
@@ -56,6 +64,11 @@ minecraft {
                     source(sourceSets.main.get())
                     source(project(":common").sourceSets.main.get())
                 }
+            }
+
+            dependencies {
+                botDep.dependencies.configureEach { minecraftLibrary(this) }
+                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
             }
         }
 
@@ -76,6 +89,11 @@ minecraft {
                     source(sourceSets.main.get())
                     source(project(":common").sourceSets.main.get())
                 }
+            }
+
+            dependencies {
+                botDep.dependencies.configureEach { minecraftLibrary(this) }
+                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
             }
         }
     }
@@ -99,23 +117,6 @@ dependencies {
     // or lexforge's config API. I chose to use Neo's by default, resulting in
     // an additional dependency on the lexforge side.
     implementation("fuzs.forgeconfigapiport:forgeconfigapiport-forge:$forgeConfigAPIVersion")
-
-    val botDep by configurations.getting
-    botDep.dependencies.forEach {
-        val versionRange = if (!it.version!!.contains("-")) "[0,${it.version}]" else "[0,${it.version!!.substring(0, it.version!!.indexOf("-"))}]"
-        jarJar(name = it.name, group = it.group, version = versionRange) {
-            jarJar.pin(this, it.version)
-            // opus-java is for audio, which this bot doesn't need
-            exclude(module = "opus-java")
-            // Kotlin would be included as a transitive dependency
-            // on JDA and Exposed, but is already provided by the
-            // respective Kotlin implementation of the mod loaders
-            exclude(group = "org.jetbrains.kotlin")
-            exclude(group = "org.jetbrains.kotlinx")
-            // Minecraft already ships with a logging system
-            exclude(group = "org.slf4j")
-        }
-    }
 }
 
 tasks {
@@ -132,7 +133,43 @@ tasks {
 
     processResources { from(project(":common").sourceSets.main.get().resources) }
 
-    jar { finalizedBy("reobfJar") }
+    jar {
+        archiveClassifier.set("dev")
+        finalizedBy(shadowJar)
+    }
+
+    shadowJar {
+        archiveClassifier.set("dev-shadow")
+
+        configurations = listOf(botDep)
+
+        // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+        mergeServiceFiles()
+
+        // Forge restricts loading certain classes for security reasons.
+        // Luckily, shadow can relocate them to a different package.
+        relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
+
+        // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+        relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+
+        // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
+        relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
+
+        exclude(".cache/**") //Remove datagen cache from jar.
+        exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
+        exclude("**/org/slf4j/**")
+
+        exclude("kotlinx/**")
+        exclude("_COROUTINE/**")
+        exclude("**/org/jetbrains/annotations/*")
+        exclude("**/org/intellij/**")
+    }
+
+    withType<ReobfuscateJar> {
+        input.set(shadowJar.get().archiveFile)
+        dependsOn(shadowJar)
+    }
 }
 
 publishing {

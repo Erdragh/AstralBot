@@ -75,6 +75,7 @@ subprojects {
     val botDependencies = arrayOf(
         // Library used to communicate with Discord, see https://jda.wiki
         "net.dv8tion:JDA:$jdaVersion",
+        // -- JDA's dependencies
 
         // Library to interact with the SQLite database,
         // see: https://github.com/JetBrains/Exposed
@@ -83,19 +84,29 @@ subprojects {
         "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
         "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
 
-        // Database driver that allows Exposed to communicate with
-        // the SQLite database. This will not be in the JAR and needs to be provided
-        // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
-        "org.xerial:sqlite-jdbc:$sqliteJDBCVersion",
-
         // Markdown parser used for formatting Discord messages in Minecraft
         "org.commonmark:commonmark:$commonmarkVersion",
     )
 
+
+    // This config includes the bot dependencies in the final jar
+    val botDep by configurations.creating {
+        isTransitive = true
+    }
+    val runtimeLib by configurations.creating {
+        isTransitive = true
+    }
+    configurations.implementation.extendsFrom(configurations.named("botDep"))
+    configurations.implementation.extendsFrom(configurations.named("runtimeLib"))
+
     dependencies {
         // Discord Bot dependencies
+        // Database driver that allows Exposed to communicate with
+        // the SQLite database. This will not be in the JAR and needs to be provided
+        // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
+        runtimeLib("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
         botDependencies.forEach {
-            implementation(it) {
+            botDep(it) {
                 // opus-java is for audio, which this bot doesn't need
                 exclude(module = "opus-java")
                 // Kotlin would be included as a transitive dependency
@@ -177,30 +188,7 @@ subprojects {
         inputs.properties(expandProps)
     }
 
-    if (!isCommon) {
-        // This config includes the bot dependencies in the final jar
-        val botDep by configurations.creating
-        configurations.implementation.extendsFrom(configurations.named("botDep"))
-
-        dependencies {
-            testImplementation(project(":common"))
-            implementation(project(":common"))
-
-            botDependencies.forEach {
-                if (!it.contains("sqlite-jdbc")) botDep(it) {
-                    // opus-java is for audio, which this bot doesn't need
-                    exclude(module = "opus-java")
-                    // Kotlin would be included as a transitive dependency
-                    // on JDA and Exposed, but is already provided by the
-                    // respective Kotlin implementation of the mod loaders
-                    exclude(group = "org.jetbrains.kotlin")
-                    exclude(group = "org.jetbrains.kotlinx")
-                    // Minecraft already ships with a logging system
-                    exclude(group = "org.slf4j")
-                }
-            }
-        }
-    } else {
+    if (isCommon) {
         sourceSets.main.get().resources.srcDir("src/main/generated/resources")
     }
 

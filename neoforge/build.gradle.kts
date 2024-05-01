@@ -1,14 +1,19 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
     `maven-publish`
+    java
     id("net.neoforged.gradle.userdev") version "7.0.109"
+    id("com.github.johnrengelman.shadow")
 }
 
 val modId: String by project
 
-jarJar.enable()
+val botDep: Configuration by configurations.getting
+val runtimeLib: Configuration by configurations.getting
 
 // Automatically enable neoforge AccessTransformers if the file exists
 // This location is hardcoded in FML and can not be changed.
@@ -20,14 +25,30 @@ if (transformerFile.exists())
 runs {
     configureEach { modSource(project.sourceSets.main.get()) }
 
-    create("client") { systemProperty("neoforge.enabledGameTestNamespaces", modId) }
+    create("client") {
+        systemProperty("neoforge.enabledGameTestNamespaces", modId)
+        dependencies {
+            botDep.dependencies.configureEach { runtime(this) }
+            runtimeLib.dependencies.configureEach { runtime(this) }
+        }
+    }
 
     create("server") {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
         programArgument("--nogui")
+        dependencies {
+            botDep.dependencies.configureEach { runtime(this) }
+            runtimeLib.dependencies.configureEach { runtime(this) }
+        }
     }
 
-    create("gameTestServer") { systemProperty("neoforge.enabledGameTestNamespaces", modId) }
+    create("gameTestServer") {
+        systemProperty("neoforge.enabledGameTestNamespaces", modId)
+        dependencies {
+            botDep.dependencies.configureEach { runtime(this) }
+            runtimeLib.dependencies.configureEach { runtime(this) }
+        }
+    }
 
     create("data") {
         programArguments.addAll(
@@ -36,6 +57,10 @@ runs {
             "--output", file("src/generated/resources").absolutePath,
             "--existing", file("src/main/resources/").absolutePath
         )
+        dependencies {
+            botDep.dependencies.configureEach { runtime(this) }
+            runtimeLib.dependencies.configureEach { runtime(this) }
+        }
     }
 }
 
@@ -48,12 +73,7 @@ dependencies {
 
     implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
     // Adds KFF as dependency and Kotlin libs
-    implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
-
-    val botDep by configurations.getting
-    botDep.dependencies.forEach {
-        jarJar(it)
-    }
+    implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForgeVersion")
 }
 
 // NeoGradle compiles the game, but we don't want to add our common code to the game's code
@@ -66,6 +86,37 @@ tasks {
     }
 
     withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
+
+    shadowJar {
+        configurations = listOf(botDep)
+
+        // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+        mergeServiceFiles()
+
+        // Forge restricts loading certain classes for security reasons.
+        // Luckily, shadow can relocate them to a different package.
+        relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
+
+        // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+        relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+
+        // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
+        relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
+
+        exclude(".cache/**") //Remove datagen cache from jar.
+        exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
+        exclude("**/org/slf4j/**")
+
+        exclude("kotlinx/**")
+        exclude("_COROUTINE/**")
+        exclude("**/org/jetbrains/annotations/*")
+        exclude("**/org/intellij/**")
+    }
+
+    assemble {
+        inputs.file(shadowJar.get().archiveFile)
+        dependsOn("shadowJar")
+    }
 
     named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }
 
