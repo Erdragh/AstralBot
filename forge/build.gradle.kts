@@ -135,11 +135,10 @@ tasks {
 
     jar {
         archiveClassifier.set("dev")
-        finalizedBy(shadowJar)
     }
 
     shadowJar {
-        archiveClassifier.set("dev-shadow")
+        archiveClassifier.set(null as String?)
 
         configurations = listOf(botDep)
 
@@ -166,9 +165,11 @@ tasks {
         exclude("**/org/intellij/**")
     }
 
-    withType<ReobfuscateJar> {
-        input.set(shadowJar.get().archiveFile)
-        dependsOn(shadowJar)
+    reobf.configureEach {
+        if (this.name == "reobfJar") {
+            input.set(shadowJar.get().archiveFile)
+            dependsOn(shadowJar)
+        }
     }
 }
 
