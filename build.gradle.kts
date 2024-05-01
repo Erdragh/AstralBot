@@ -75,7 +75,6 @@ subprojects {
     val botDependencies = arrayOf(
         // Library used to communicate with Discord, see https://jda.wiki
         "net.dv8tion:JDA:$jdaVersion",
-        // -- JDA's dependencies
 
         // Library to interact with the SQLite database,
         // see: https://github.com/JetBrains/Exposed
@@ -113,6 +112,7 @@ subprojects {
                 // on JDA and Exposed, but is already provided by the
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "org.jetbrains.kotlinx")
                 // Minecraft already ships with a logging system
                 exclude(group = "org.slf4j")
             }
