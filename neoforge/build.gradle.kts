@@ -1,6 +1,4 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
@@ -87,7 +85,13 @@ tasks {
 
     withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
 
+    jar {
+        archiveClassifier.set("slim")
+    }
+
     shadowJar {
+        archiveClassifier.set(null as String?)
+
         configurations = listOf(botDep)
 
         // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
@@ -113,8 +117,7 @@ tasks {
         exclude("**/org/intellij/**")
     }
 
-    assemble {
-        inputs.file(shadowJar.get().archiveFile)
+    build {
         dependsOn("shadowJar")
     }
 
