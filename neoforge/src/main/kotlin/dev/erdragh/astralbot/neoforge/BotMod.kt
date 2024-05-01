@@ -7,7 +7,6 @@ import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import net.minecraft.server.level.ServerPlayer
-import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
@@ -16,20 +15,21 @@ import net.neoforged.neoforge.event.ServerChatEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
+import thedarkcolour.kotlinforforge.neoforge.forge.FORGE_BUS
 
 @Mod("astralbot")
-class BotMod(eventBus: IEventBus) {
+object BotMod {
     init {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
-        eventBus.addListener(::onServerStart)
-        eventBus.addListener(::onServerStop)
-        eventBus.addListener(::onChatMessage)
-        eventBus.addListener(::onSystemMessage)
-        eventBus.addListener(::onCommandRegistration)
+        FORGE_BUS.addListener(::onServerStart)
+        FORGE_BUS.addListener(::onServerStop)
+        FORGE_BUS.addListener(::onChatMessage)
+        FORGE_BUS.addListener(::onSystemMessage)
+        FORGE_BUS.addListener(::onCommandRegistration)
 
-        eventBus.addListener(::onPlayerJoin)
-        eventBus.addListener(::onPlayerLeave)
+        FORGE_BUS.addListener(::onPlayerJoin)
+        FORGE_BUS.addListener(::onPlayerLeave)
     }
 
     private fun onServerStart(event: ServerStartedEvent) {
