@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
@@ -25,9 +26,10 @@ runs {
 
     create("client") {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
+
         dependencies {
-            botDep.dependencies.configureEach { runtime(this) }
-            runtimeLib.dependencies.configureEach { runtime(this) }
+            botDep.dependencies.forEach { runtime(it) }
+            runtimeLib.dependencies.forEach { runtime(it) }
         }
     }
 
@@ -35,16 +37,16 @@ runs {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
         programArgument("--nogui")
         dependencies {
-            botDep.dependencies.configureEach { runtime(this) }
-            runtimeLib.dependencies.configureEach { runtime(this) }
+            botDep.dependencies.forEach { runtime(it) }
+            runtimeLib.dependencies.forEach { runtime(it) }
         }
     }
 
     create("gameTestServer") {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
         dependencies {
-            botDep.dependencies.configureEach { runtime(this) }
-            runtimeLib.dependencies.configureEach { runtime(this) }
+            botDep.dependencies.forEach { runtime(it) }
+            runtimeLib.dependencies.forEach { runtime(it) }
         }
     }
 
@@ -56,8 +58,8 @@ runs {
             "--existing", file("src/main/resources/").absolutePath
         )
         dependencies {
-            botDep.dependencies.configureEach { runtime(this) }
-            runtimeLib.dependencies.configureEach { runtime(this) }
+            botDep.dependencies.forEach { runtime(it) }
+            runtimeLib.dependencies.forEach { runtime(it) }
         }
     }
 }
