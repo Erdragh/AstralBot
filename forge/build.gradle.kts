@@ -1,5 +1,5 @@
-import net.minecraftforge.gradle.patcher.tasks.ReobfuscateJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
@@ -47,10 +47,8 @@ minecraft {
                 }
             }
 
-            dependencies {
-                botDep.dependencies.configureEach { minecraftLibrary(this) }
-                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
-            }
+            configurations.minecraftLibrary.extendsFrom(configurations.botDep)
+            configurations.minecraftLibrary.extendsFrom(configurations.runtimeLib)
         }
 
         create("server") {
@@ -66,10 +64,8 @@ minecraft {
                 }
             }
 
-            dependencies {
-                botDep.dependencies.configureEach { minecraftLibrary(this) }
-                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
-            }
+            configurations.minecraftLibrary.extendsFrom(configurations.botDep)
+            configurations.minecraftLibrary.extendsFrom(configurations.runtimeLib)
         }
 
         create("data") {
@@ -91,10 +87,8 @@ minecraft {
                 }
             }
 
-            dependencies {
-                botDep.dependencies.configureEach { minecraftLibrary(this) }
-                runtimeLib.dependencies.configureEach { minecraftLibrary(this) }
-            }
+            configurations.minecraftLibrary.extendsFrom(configurations.botDep)
+            configurations.minecraftLibrary.extendsFrom(configurations.runtimeLib)
         }
     }
 }
