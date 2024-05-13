@@ -11,6 +11,9 @@ plugins {
 
 val modId: String by project
 
+val includeBotDep: Configuration by configurations.getting
+val shadowBotDep: Configuration by configurations.getting
+
 dependencies {
     mappings(loom.officialMojangMappings())
     val minecraftVersion: String by project
@@ -26,6 +29,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
 
     modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
+
+    includeBotDep.dependencies.forEach { include(it) }
 }
 
 loom {
@@ -51,8 +56,6 @@ loom {
     }
 }
 
-val botDep: Configuration by configurations.getting
-
 tasks {
     withType<JavaCompile> {
         source(project(":common").sourceSets.main.get().allSource)
@@ -70,7 +73,7 @@ tasks {
     shadowJar {
         archiveClassifier.set("dev-shadow")
 
-        configurations = listOf(botDep)
+        configurations = listOf(shadowBotDep)
 
         // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
         mergeServiceFiles()

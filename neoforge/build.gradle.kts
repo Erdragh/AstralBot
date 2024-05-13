@@ -5,13 +5,16 @@ plugins {
     idea
     `maven-publish`
     java
-    id("net.neoforged.gradle.userdev") version "7.0.109"
+    id("net.neoforged.gradle.userdev") version "7.0.120"
     id("com.github.johnrengelman.shadow")
 }
 
 val modId: String by project
 
-val botDep: Configuration by configurations.getting
+jarJar.enable()
+
+val includeBotDep: Configuration by configurations.getting
+val shadowBotDep: Configuration by configurations.getting
 val runtimeLib: Configuration by configurations.getting
 
 // Automatically enable neoforge AccessTransformers if the file exists
@@ -28,8 +31,7 @@ runs {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
 
         dependencies {
-            botDep.dependencies.forEach { runtime(it) }
-            runtimeLib.dependencies.forEach { runtime(it) }
+            runtime(runtimeLib)
         }
     }
 
@@ -37,16 +39,14 @@ runs {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
         programArgument("--nogui")
         dependencies {
-            botDep.dependencies.forEach { runtime(it) }
-            runtimeLib.dependencies.forEach { runtime(it) }
+            runtime(runtimeLib)
         }
     }
 
     create("gameTestServer") {
         systemProperty("neoforge.enabledGameTestNamespaces", modId)
         dependencies {
-            botDep.dependencies.forEach { runtime(it) }
-            runtimeLib.dependencies.forEach { runtime(it) }
+            runtime(runtimeLib)
         }
     }
 
@@ -58,8 +58,7 @@ runs {
             "--existing", file("src/main/resources/").absolutePath
         )
         dependencies {
-            botDep.dependencies.forEach { runtime(it) }
-            runtimeLib.dependencies.forEach { runtime(it) }
+            runtime(runtimeLib)
         }
     }
 }
@@ -74,6 +73,8 @@ dependencies {
     implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
     // Adds KFF as dependency and Kotlin libs
     implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForgeVersion")
+
+    includeBotDep.dependencies.forEach { jarJar(it) }
 }
 
 // NeoGradle compiles the game, but we don't want to add our common code to the game's code
@@ -87,14 +88,9 @@ tasks {
 
     withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
 
-    jar {
-        archiveClassifier.set("slim")
-    }
-
     shadowJar {
-        archiveClassifier.set(null as String?)
-
-        configurations = listOf(botDep)
+        archiveClassifier = null
+        configurations = listOf(shadowBotDep)
 
         // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
         mergeServiceFiles()
@@ -119,8 +115,8 @@ tasks {
         exclude("**/org/intellij/**")
     }
 
-    build {
-        dependsOn("shadowJar")
+    jarJar.configure {
+        dependsOn(shadowJar)
     }
 
     named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }

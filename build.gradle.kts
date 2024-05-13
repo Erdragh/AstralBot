@@ -69,43 +69,42 @@ subprojects {
     val sqliteJDBCVersion: String by project
     val commonmarkVersion: String by project
 
-    // This array gets used at multiple places, so it's easier to
-    // just specify all dependencies at once and re-use them. This
-    // also makes changing them later on easier.
-    val botDependencies = arrayOf(
-        // Library used to communicate with Discord, see https://jda.wiki
-        "net.dv8tion:JDA:$jdaVersion",
-
-        // Library to interact with the SQLite database,
-        // see: https://github.com/JetBrains/Exposed
-        "org.jetbrains.exposed:exposed-core:$exposedVersion",
-        "org.jetbrains.exposed:exposed-dao:$exposedVersion",
-        "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
-        "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
-
-        // Markdown parser used for formatting Discord messages in Minecraft
-        "org.commonmark:commonmark:$commonmarkVersion",
-    )
-
-
-    // This config includes the bot dependencies in the final jar
-    val botDep by configurations.creating {
+    // Configuration for shaded dependencies, get relocated to dev.erdragh.astralbot.shadowed
+    val shadowBotDep by configurations.creating {
         isTransitive = true
     }
+    // Configuration for JiJ-ed dependencies
+    val includeBotDep by configurations.creating {
+        isTransitive = false
+    }
+    // Configuration for libraries that are needed at runtime
     val runtimeLib by configurations.creating {
         isTransitive = true
     }
-    configurations.implementation.extendsFrom(configurations.named("botDep"))
+    configurations.implementation.extendsFrom(configurations.named("shadowBotDep"))
+    configurations.implementation.extendsFrom(configurations.named("includeBotDep"))
     configurations.implementation.extendsFrom(configurations.named("runtimeLib"))
 
     dependencies {
-        // Discord Bot dependencies
-        // Database driver that allows Exposed to communicate with
-        // the SQLite database. This will not be in the JAR and needs to be provided
-        // otherwise (e.g. https://www.curseforge.com/minecraft/mc-mods/sqlite-jdbc)
         runtimeLib("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
-        botDependencies.forEach {
-            botDep(it) {
+        includeBotDep("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
+
+        runtimeLib("org.commonmark:commonmark:$commonmarkVersion")
+        includeBotDep("org.commonmark:commonmark:$commonmarkVersion")
+
+
+        arrayOf(
+            // Library used to communicate with Discord, see https://jda.wiki
+            "net.dv8tion:JDA:$jdaVersion",
+
+            // Library to interact with the SQLite database,
+            // see: https://github.com/JetBrains/Exposed
+            "org.jetbrains.exposed:exposed-core:$exposedVersion",
+            "org.jetbrains.exposed:exposed-dao:$exposedVersion",
+            "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
+            "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
+        ).forEach {
+            runtimeLib(it) {
                 // opus-java is for audio, which this bot doesn't need
                 exclude(module = "opus-java")
                 // Kotlin would be included as a transitive dependency
@@ -113,6 +112,11 @@ subprojects {
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
                 // Minecraft already ships with a logging system
+                exclude(group = "org.slf4j")
+            }
+            shadowBotDep(it) {
+                exclude(module = "opus-java")
+                exclude(group = "org.jetbrains.kotlin")
                 exclude(group = "org.slf4j")
             }
         }

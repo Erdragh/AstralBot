@@ -50,12 +50,12 @@ jobs:
         with:
           name: build-fabric
           path: fabric/build/libs
-      - name: Capture Forge Artifacts
+      - name: Capture Neo Artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
         uses: actions/upload-artifact@v4
         with:
-          name: build-forge
-          path: forge/build/libs
+          name: build-neo
+          path: neoforge/build/libs
       - name: Capture Changelog
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
         uses: actions/upload-artifact@v4
@@ -78,11 +78,11 @@ jobs:
           path: build/fabric
           pattern: build-fabric
           merge-multiple: true
-      - name: Download Forge artifacts
+      - name: Download Neo artifacts
         uses: actions/download-artifact@v4
         with:
-          path: build/forge
-          pattern: build-forge
+          path: build/neo
+          pattern: build-neo
           merge-multiple: true
       - name: Download Changelog
         uses: actions/download-artifact@v4
@@ -102,9 +102,9 @@ jobs:
           path: "./gradle.properties"
           properties: "version enabledPlatforms minecraftVersion"
 
-      - name: Upload Forge Releases (Curse/Modrinth)
-        id: forge_release
-        if: contains(steps.properties.outputs.enabledPlatforms, 'forge')
+      - name: Upload Neo Releases (Curse/Modrinth)
+        id: neo_release
+        if: contains(steps.properties.outputs.enabledPlatforms, 'neoforge')
         uses: Kir-Antipov/mc-publish@v3.3.0
         with:
           curseforge-id: ${{ vars.CURSE_ID }}
@@ -114,7 +114,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
 
           files: ./build/forge/!(*-@(dev|sources|dev-shadow)).jar
-          name: "AstralBot ${{ steps.properties.outputs.version }} Forge ${{ steps.properties.output.minecraftVersion }}"
+          name: "AstralBot ${{ steps.properties.outputs.version }} NeoForge ${{ steps.properties.output.minecraftVersion }}"
           version: ${{ steps.properties.outputs.version }}
           version-type: release
           changelog-file: build-changelog/prepared_changelog.md
@@ -122,11 +122,9 @@ jobs:
           game-versions: ${{ steps.properties.outputs.minecraftVersion }}
 
           curseforge-dependencies: |
-            sqlite-jdbc(optional)
             kotlin-for-forge(required)
             forge-config-api-port-fabric(required)
           modrinth-dependencies: |
-            sqlite-jdbc(optional)
             kotlin-for-forge(required)
             forge-config-api-port(required)
 
