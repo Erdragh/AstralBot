@@ -151,11 +151,7 @@ jobs:
             fabric-api(required)
             fabric-language-kotlin(required)
             forge-config-api-port-fabric(required)
-            sqlite-jdbc(optional)
-            ledger(optional)
           modrinth-dependencies: |
             fabric-api(required)
             fabric-language-kotlin(required)
             forge-config-api-port(required)
-            sqlite-jdbc(optional)
-            ledger(optional)
