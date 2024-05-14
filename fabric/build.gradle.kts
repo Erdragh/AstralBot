@@ -6,7 +6,7 @@ plugins {
     idea
     `maven-publish`
     id("fabric-loom") version "1.6-SNAPSHOT"
-    id("com.github.johnrengelman.shadow")
+    id("io.github.goooler.shadow")
 }
 
 val modId: String by project

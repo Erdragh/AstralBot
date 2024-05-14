@@ -5,7 +5,9 @@ import java.util.*
 
 plugins {
     // The shadow plugin is used by the fabric subproject to include dependencies
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
+    // see: https://github.com/johnrengelman/shadow/issues/911
+    id("io.github.goooler.shadow") version "8.1.7" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
     kotlin("jvm") version "1.9.23"
@@ -199,6 +201,12 @@ subprojects {
     // other mod developers.
     tasks.withType<GenerateModuleMetadata> {
         enabled = false
+    }
+
+    tasks.withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        targetCompatibility = JavaVersion.VERSION_17.majorVersion
+        sourceCompatibility = JavaVersion.VERSION_17.majorVersion
     }
 }
 
