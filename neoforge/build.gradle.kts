@@ -5,7 +5,7 @@ plugins {
     idea
     `maven-publish`
     java
-    id("net.neoforged.gradle.userdev") version "7.0.120"
+    id("net.neoforged.gradle.userdev") version "7.0.126"
     id("com.github.johnrengelman.shadow")
 }
 

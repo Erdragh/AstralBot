@@ -102,21 +102,20 @@ subprojects {
             "org.jetbrains.exposed:exposed-core:$exposedVersion",
             "org.jetbrains.exposed:exposed-dao:$exposedVersion",
             "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
-            "org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion",
         ).forEach {
             runtimeLib(it) {
+                exclude(module = "opus-java")
+                exclude(group = "org.slf4j")
+            }
+            shadowBotDep(it) {
                 // opus-java is for audio, which this bot doesn't need
                 exclude(module = "opus-java")
                 // Kotlin would be included as a transitive dependency
                 // on JDA and Exposed, but is already provided by the
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "kotlinx")
                 // Minecraft already ships with a logging system
-                exclude(group = "org.slf4j")
-            }
-            shadowBotDep(it) {
-                exclude(module = "opus-java")
-                exclude(group = "org.jetbrains.kotlin")
                 exclude(group = "org.slf4j")
             }
         }
@@ -151,37 +150,33 @@ subprojects {
     tasks.processResources {
         val version: String by project
         val group: String by project
-        val forgeVersion: String by project
-        val kffLoaderRange: String by project
-        val forgeVersionRange: String by project
         val minecraftVersionRange: String by project
         val fabricApiVersion: String by project
         val fabricLoaderVersion: String by project
         val fabricKotlinVersion: String by project
-        val license: String by project
-        val description: String by project
         val neoVersion: String by project
         val neoVersionRange: String by project
+        val kffLoaderRange: String by project
+        val license: String by project
+        val description: String by project
         val credits: String by project
 
         val expandProps = mapOf(
             "version" to version,
             "group" to group, //Else we target the task's group.
             "minecraft_version" to minecraftVersion,
-            "forge_version" to forgeVersion,
-            "kff_loader_range" to kffLoaderRange,
-            "forge_version_range" to forgeVersionRange,
             "minecraft_version_range" to minecraftVersionRange,
             "fabric_version" to fabricApiVersion,
             "fabric_loader_version" to fabricLoaderVersion,
             "fabric_kotlin_version" to fabricKotlinVersion,
+            "neoforge_version" to neoVersion,
+            "neoforge_loader_version_range" to neoVersionRange,
+            "kff_loader_range" to kffLoaderRange,
             "mod_name" to modName,
             "mod_author" to modAuthor,
             "mod_id" to modId,
             "license" to license,
             "description" to description,
-            "neoforge_version" to neoVersion,
-            "neoforge_loader_version_range" to neoVersionRange,
             "credits" to credits
         )
 
