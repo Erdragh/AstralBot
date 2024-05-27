@@ -22,7 +22,7 @@ public abstract class PlayerListMixin {
         astralbot$onBroadcast(message, chatType);
     }
 
-    @Inject(method = "broadcastMessage(Lnet/minecraft/network/chat/Component;Ljava/util/function/Function;Lnet/minecraft/network/chat/ChatType;Ljava/util/UUID;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "broadcastMessage(Lnet/minecraft/network/chat/Component;Ljava/util/function/Function;Lnet/minecraft/network/chat/ChatType;Ljava/util/UUID;)V", at = @At("HEAD"))
     private void mc$onBroadcast(Component message, Function<ServerPlayer, Component> filter, ChatType chatType, UUID uuid, CallbackInfo ci) {
         astralbot$onBroadcast(message, chatType);
     }
@@ -30,7 +30,7 @@ public abstract class PlayerListMixin {
     @Unique
     private void astralbot$onBroadcast(Component message, ChatType chatType) {
         if (chatType == ChatType.SYSTEM) {
-            MinecraftForge.EVENT_BUS.post(new SystemMessageEvent(message.getString(), message));
+            MinecraftForge.EVENT_BUS.post(new SystemMessageEvent(message));
         }
     }
 }

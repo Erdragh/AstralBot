@@ -1,3 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 architectury {
     fabric()
 }
@@ -43,5 +49,36 @@ configurations.configureEach {
         if (requested.module.name == "fabric-loader" && requested.group.startsWith("net.fabricmc")) {
             useVersion(fabricLoaderVersion)
         }
+    }
+}
+
+publishMods {
+    val minecraftVersion: String by project
+    val title: String by project
+    val version: String by project
+
+    val titles: Map<String, String> by extra
+    val curseforgePublish: Provider<CurseforgeOptions> by extra
+    val modrinthPublish: Provider<ModrinthOptions> by extra
+
+    changelog = extra.get("changelog") as String
+    type = extra.get("type") as ReleaseType
+
+    curseforge("curseFabric") {
+        from(curseforgePublish)
+        modLoaders.add(project.name)
+        file.set(tasks.remapJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
+    }
+
+    modrinth("modrinthFabric") {
+        from(modrinthPublish)
+        modLoaders.add(project.name)
+        file.set(tasks.remapJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
     }
 }

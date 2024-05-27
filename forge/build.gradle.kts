@@ -1,3 +1,8 @@
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 architectury {
     forge()
 }
@@ -26,6 +31,8 @@ val common: Configuration by configurations.creating {
     configurations["developmentForge"].extendsFrom(this)
 }
 
+val runtimeLib by configurations.getting
+
 dependencies {
     common(project(":common", configuration = "namedElements")) {
         isTransitive = false
@@ -42,13 +49,38 @@ dependencies {
     // Adds KFF as dependency and Kotlin libs
     implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
 
-    val jdaVersion: String by project
-
     // This *should* theoretically fix the Forge development environment not having
     // access to certain classes, but I haven't gotten it to work just yet.
-    forgeRuntimeLibrary("net.dv8tion:JDA:$jdaVersion") {
-        exclude(module = "opus-java")
-        exclude(group = "org.jetbrains.kotlin")
-        exclude(group = "org.slf4j")
+    runtimeLib.dependencies.forEach(::forgeRuntimeLibrary)
+}
+
+publishMods {
+    val minecraftVersion: String by project
+    val title: String by project
+    val version: String by project
+
+    val titles: Map<String, String> by extra
+    val curseforgePublish: Provider<CurseforgeOptions> by extra
+    val modrinthPublish: Provider<ModrinthOptions> by extra
+
+    changelog = extra.get("changelog") as String
+    type = extra.get("type") as ReleaseType
+
+    curseforge("curseForge") {
+        from(curseforgePublish)
+        modLoaders.add(project.name)
+        file.set(tasks.remapJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
+    }
+
+    modrinth("modrinthForge") {
+        from(modrinthPublish)
+        modLoaders.add(project.name)
+        file.set(tasks.remapJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
     }
 }
