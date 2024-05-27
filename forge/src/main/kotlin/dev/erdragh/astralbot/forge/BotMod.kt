@@ -51,8 +51,8 @@ object BotMod {
     }
 
     private fun onSystemMessage(event: SystemMessageEvent) {
-        if (event.component !is DiscordMessageComponent) {
-            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.component)
+        if (event.message !is DiscordMessageComponent) {
+            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message)
         }
     }
 
