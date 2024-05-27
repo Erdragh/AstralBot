@@ -37,6 +37,9 @@ object BotMod {
         startAstralbot(event.server)
     }
 
+    // Unused parameter suppressed to keep type
+    // information about Server stop event.
+    @Suppress("UNUSED_PARAMETER")
     private fun onServerStop(event: ServerStoppingEvent) {
         stopAstralbot()
     }
