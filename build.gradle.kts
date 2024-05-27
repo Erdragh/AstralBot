@@ -10,7 +10,7 @@ plugins {
     id("io.github.goooler.shadow") version "8.1.7" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
