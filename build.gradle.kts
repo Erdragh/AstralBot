@@ -108,6 +108,8 @@ subprojects {
             runtimeLib(it) {
                 exclude(module = "opus-java")
                 exclude(group = "org.slf4j")
+                exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "kotlinx")
             }
             shadowBotDep(it) {
                 // opus-java is for audio, which this bot doesn't need
