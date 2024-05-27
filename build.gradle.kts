@@ -16,7 +16,11 @@ plugins {
     java
     // Required for NeoGradle
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
+    // For publishing the mod
+    id("me.modmuss50.mod-publish-plugin") version "0.5.1"
 }
+
+val minecraftVersion: String by project
 
 repositories {
     mavenCentral()
@@ -26,10 +30,10 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "kotlin")
     apply(plugin = "org.jetbrains.dokka")
+    apply(plugin = "me.modmuss50.mod-publish-plugin")
 
     // Gets some values from the gradle.properties files in the
     // sub- and root projects
-    val minecraftVersion: String by project
     val modLoader = project.name
     val modId: String by project
     val modName = rootProject.name
@@ -209,19 +213,54 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_17.majorVersion
         sourceCompatibility = JavaVersion.VERSION_17.majorVersion
     }
+
+    // Publishing settings
+    publishMods {
+        // These titles get used based on subproject name
+        val titles by extra {
+            mapOf(
+                "fabric" to "Fabric",
+                "neoforge" to "NeoForge",
+                "forge" to "Forge",
+                "quilt" to "Quilt"
+            )
+        }
+        val curseforgePublish by extra {
+            curseforgeOptions {
+                accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+                minecraftVersions.add(minecraftVersion)
+                projectId = providers.environmentVariable("CURSEFORGE_ID")
+                embeds("sqlite-jdbc")
+            }
+        }
+        val modrinthPublish by extra {
+            modrinthOptions {
+                accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+                minecraftVersions.add(minecraftVersion)
+                projectId = providers.environmentVariable("MODRINTH_ID")
+                embeds("sqlite-jdbc")
+            }
+        }
+        val changelog by extra {
+            // Only gets the lines for the latest version from the Changelog
+            // file. This allows me to keep all previous changes in the file
+            // without having to worry about them being included on new file
+            // uploads.
+            File("CHANGELOG.md")
+                .readText(StandardCharsets.UTF_8)
+                .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
+                .trim()
+        }
+        val type by extra {
+            STABLE
+        }
+    }
 }
 
 kotlin {
     jvmToolchain(17)
 }
 
-tasks.register<Task>("prepareChangelog") {
-    group = "common"
-    description = "Prepares the changelog by removing irrelevant parts from Changelog.md"
-    var changelog = File("Changelog.md").readText(StandardCharsets.UTF_8)
-    changelog = changelog.replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
-    println(changelog.trim())
-}
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {

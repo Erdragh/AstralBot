@@ -1,3 +1,6 @@
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -133,5 +136,36 @@ publishing {
 
     repositories {
         maven("file://${System.getenv("local_maven")}")
+    }
+}
+
+publishMods {
+    val minecraftVersion: String by project
+    val title: String by project
+    val version: String by project
+
+    val titles: Map<String, String> by extra
+    val curseforgePublish: Provider<CurseforgeOptions> by extra
+    val modrinthPublish: Provider<ModrinthOptions> by extra
+
+    changelog = extra.get("changelog") as String
+    type = extra.get("type") as ReleaseType
+
+    curseforge("curseNeo") {
+        from(curseforgePublish)
+        modLoaders.add(project.name)
+        file.set(tasks.jarJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
+    }
+
+    modrinth("modrinthNeo") {
+        from(modrinthPublish)
+        modLoaders.add(project.name)
+        file.set(tasks.jarJar.get().archiveFile)
+        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
     }
 }
