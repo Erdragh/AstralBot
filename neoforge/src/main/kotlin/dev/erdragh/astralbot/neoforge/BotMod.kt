@@ -33,7 +33,7 @@ object BotMod {
     }
 
     private fun onServerStart(event: ServerStartedEvent) {
-        LOGGER.info("AstralBot starting on Forge")
+        LOGGER.info("AstralBot starting on NeoForge")
         startAstralbot(event.server)
     }
 
