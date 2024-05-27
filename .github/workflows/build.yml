@@ -30,7 +30,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build --stacktrace --info --debug
+          arguments: build --stacktrace --info
 
       - name: Publish with Gradle
         if: ${{ github.event.inputs.publish }}
