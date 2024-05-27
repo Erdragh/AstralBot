@@ -155,6 +155,7 @@ publishMods {
         from(curseforgePublish)
         modLoaders.add(project.name)
         file.set(tasks.jarJar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("kotlin-for-forge")
@@ -164,6 +165,7 @@ publishMods {
         from(modrinthPublish)
         modLoaders.add(project.name)
         file.set(tasks.jarJar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("kotlin-for-forge")
