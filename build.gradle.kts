@@ -109,7 +109,7 @@ subprojects {
                 exclude(module = "opus-java")
                 exclude(group = "org.slf4j")
                 exclude(group = "org.jetbrains.kotlin")
-                exclude(group = "kotlinx")
+                exclude(group = "org.jetbrains.kotlinx")
             }
             shadowBotDep(it) {
                 // opus-java is for audio, which this bot doesn't need
@@ -118,7 +118,6 @@ subprojects {
                 // on JDA and Exposed, but is already provided by the
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
-                exclude(group = "kotlinx")
                 // Minecraft already ships with a logging system
                 exclude(group = "org.slf4j")
             }
