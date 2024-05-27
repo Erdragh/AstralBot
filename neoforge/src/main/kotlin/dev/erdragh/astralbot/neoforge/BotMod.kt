@@ -6,6 +6,7 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
+import dev.erdragh.astralbot.neoforge.event.CommandMessageEvent
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.Mod
@@ -26,6 +27,7 @@ object BotMod {
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
         FORGE_BUS.addListener(::onSystemMessage)
+        FORGE_BUS.addListener(::onCommandMessage)
         FORGE_BUS.addListener(::onCommandRegistration)
 
         FORGE_BUS.addListener(::onPlayerJoin)
@@ -49,6 +51,12 @@ object BotMod {
     }
 
     private fun onSystemMessage(event: SystemMessageEvent) {
+        if (event.message !is DiscordMessageComponent) {
+            minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message)
+        }
+    }
+
+    private fun onCommandMessage(event: CommandMessageEvent) {
         if (event.message !is DiscordMessageComponent) {
             minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, event.message)
         }

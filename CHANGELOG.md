@@ -2,6 +2,7 @@
 - Port to 1.20.4 and NeoForge
 - Removed Forge as a supported Platform for Minecraft > 1.20.1
 - JiJ SQLite and Commonmark dependencies, allowing better compatibility and removing the SQLite JDBC dependency
+- Handle messages sent by commands too (i.e. `say hello`)
 
 # 1.3.0
 - Message Embeds to better represent Minecraft messages on Discord

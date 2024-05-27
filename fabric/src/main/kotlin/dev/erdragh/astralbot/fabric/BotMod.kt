@@ -36,6 +36,12 @@ object BotMod : ModInitializer {
                 minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, message)
             }
         }
+        ServerMessageEvents.COMMAND_MESSAGE.register { message, _, _ ->
+            val content = message.decoratedContent()
+            if (content !is DiscordMessageComponent) {
+                minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, content)
+            }
+        }
 
         ServerPlayConnectionEvents.JOIN.register { packet, _, _ ->
             minecraftHandler?.onPlayerJoin(packet.player.name.string)
