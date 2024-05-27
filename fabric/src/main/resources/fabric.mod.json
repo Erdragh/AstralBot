@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "id": "astralbot",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "AstralBot",
-  "description": "Discord Bot and Minecraft mod in one bundle.",
+  "name": "${mod_name}",
+  "description": "${description}",
   "authors": [
-    "Erdragh"
+    "${mod_author}"
   ],
   "contact": {
     "website": "https://modrinth.com/mod/astralbot",
     "repo": "https://github.com/Erdragh/AstralBot",
     "issues": "https://github.com/Erdragh/AstralBot/issues"
   },
-  "license": "MIT Licence",
+  "license": "${license}",
   "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
@@ -29,9 +29,9 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.19.2",
+    "minecraft": ">=${minecraft_version}",
     "java": ">=17",
-    "fabric-language-kotlin": ">=1.9.0",
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "forgeconfigapiport": ">=4.2.11"
   }
 }

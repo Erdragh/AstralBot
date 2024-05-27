@@ -1,0 +1,26 @@
+name: build
+on:
+  push:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: write
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup jdk 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Build with Gradle and generate dependency Graph
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: dependencies
+          dependency-graph: 'generate-and-submit'

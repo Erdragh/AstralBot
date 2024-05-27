@@ -19,8 +19,7 @@ to see how much is already implemented.
 
 This mod has a few dependencies, some of which are not specified directly as they're technically optional:
 - The Kotlin Implementation for the platform you're running. (e.g. [Kotlin For Forge](https://modrinth.com/mod/kotlin-for-forge) or [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin))
-- The Forge Config API (Included in Forge, [extra mod for Fabric](https://modrinth.com/mod/forge-config-api-port))
-- The SQLite Database Driver. (This is included in [Ledger](https://modrinth.com/mod/ledger) but also [available separately](https://modrinth.com/plugin/sqlite-jdbc))
+- The (Neo-)Forge Config API (Included in NeoForge, [extra mod for Fabric](https://modrinth.com/mod/forge-config-api-port))
 
 ## Implementation
 - [JDA](https://jda.wiki) library to communicate with the Discord API.
