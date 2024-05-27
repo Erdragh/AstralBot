@@ -100,7 +100,7 @@ fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, playe
 fun formatHoverEntity(entity: HoverEvent.EntityTooltipInfo): MessageEmbed? {
     if (entity.type == EntityType.PLAYER) return null
     return EmbedBuilder()
-        .setTitle(entity.name.map(Component::getString).getOrNull())
+        .setTitle(entity.name?.toFlatList()?.joinToString(transform = Component::getString))
         .setDescription(entity.type.description.string)
         .let { builder: EmbedBuilder ->
             val mobCategory = entity.type.category

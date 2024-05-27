@@ -16,7 +16,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.level.ClientInformation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
 import java.text.DecimalFormat
@@ -32,7 +31,7 @@ import kotlin.math.min
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
     private val playerNames = HashSet<String>(server.maxPlayers);
-    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it, ClientInformation.createDefault()) }
+    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
 
 
     companion object {
@@ -84,12 +83,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTimeNanos * 1000))
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime * 1000))
             .replace(
                 "{{tps}}", numberFormat.format(
                     min(
                         20.0,
-                        1000.0 / (server.averageTickTimeNanos * 1000)
+                        1000.0 / (server.averageTickTime * 1000)
                     )
                 )
             )

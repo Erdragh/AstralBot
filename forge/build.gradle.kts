@@ -1,38 +1,57 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 architectury {
-    fabric()
+    forge()
+}
+
+loom {
+    forge {
+        mixinConfig("astralbot-common.mixins.json")
+        mixinConfig("astralbot.mixins.json")
+    }
+    // This sets up data generation. At the time of writing this
+    // Comment, this is useless, as there are no resources to be
+    // generated. I want to keep it in as a reference tho.
+    runs {
+        create("data") {
+            data()
+            programArgs("--all", "--mod", "astralbot")
+            programArgs("--output", project(":common").file("src/main/generated/resources").absolutePath)
+            programArgs("--existing", project(":common").file("src/main/resources").absolutePath)
+        }
+    }
 }
 
 val common: Configuration by configurations.creating {
     configurations.compileClasspath.get().extendsFrom(this)
     configurations.runtimeClasspath.get().extendsFrom(this)
-    configurations["developmentFabric"].extendsFrom(this)
+    configurations["developmentForge"].extendsFrom(this)
 }
+
+val runtimeLib by configurations.getting
 
 dependencies {
     common(project(":common", configuration = "namedElements")) {
         isTransitive = false
     }
-    shadowCommon(project(path = ":common", configuration = "transformProductionFabric")) {
+    shadowCommon(project(path = ":common", configuration = "transformProductionForge")) {
         isTransitive = false
     }
 
     val minecraftVersion: String by project
-    val fabricLoaderVersion: String by project
-    val fabricApiVersion: String by project
-    val fabricKotlinVersion: String by project
-    val forgeConfigAPIVersion: String by project
+    val forgeVersion: String by project
+    val kotlinForgeVersion: String by project
 
-    modImplementation(group = "net.fabricmc", name = "fabric-loader", version = fabricLoaderVersion)
-    modApi(group = "net.fabricmc.fabric-api", name = "fabric-api", version = "$fabricApiVersion+$minecraftVersion")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+    forge(group = "net.minecraftforge", name = "forge", version = "$minecraftVersion-$forgeVersion")
+    // Adds KFF as dependency and Kotlin libs
+    implementation("thedarkcolour:kotlinforforge:$kotlinForgeVersion")
 
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
+    // This *should* theoretically fix the Forge development environment not having
+    // access to certain classes, but I haven't gotten it to work just yet.
+    runtimeLib.dependencies.forEach(::forgeRuntimeLibrary)
 }
 
 publishMods {
@@ -47,21 +66,21 @@ publishMods {
     changelog = extra.get("changelog") as String
     type = extra.get("type") as ReleaseType
 
-    curseforge("curseFabric") {
+    curseforge("curseForge") {
         from(curseforgePublish)
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
-        requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
+        requires("kotlin-for-forge")
     }
 
-    modrinth("modrinthFabric") {
+    modrinth("modrinthForge") {
         from(modrinthPublish)
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
-        requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
+        requires("kotlin-for-forge")
     }
 }

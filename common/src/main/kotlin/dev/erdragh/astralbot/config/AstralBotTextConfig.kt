@@ -1,42 +1,42 @@
 package dev.erdragh.astralbot.config
 
-import net.neoforged.neoforge.common.ModConfigSpec
+import net.minecraftforge.common.ForgeConfigSpec
 
 object AstralBotTextConfig {
-    val SPEC: ModConfigSpec
+    val SPEC: ForgeConfigSpec
 
-    val GENERIC_ERROR: ModConfigSpec.ConfigValue<String>
-    val GENERIC_SUCCESS: ModConfigSpec.ConfigValue<String>
-    val GENERIC_BLOCKED: ModConfigSpec.ConfigValue<String>
+    val GENERIC_ERROR: ForgeConfigSpec.ConfigValue<String>
+    val GENERIC_SUCCESS: ForgeConfigSpec.ConfigValue<String>
+    val GENERIC_BLOCKED: ForgeConfigSpec.ConfigValue<String>
 
-    val FAQ_ERROR: ModConfigSpec.ConfigValue<String>
-    val FAQ_NO_REGISTERED: ModConfigSpec.ConfigValue<String>
+    val FAQ_ERROR: ForgeConfigSpec.ConfigValue<String>
+    val FAQ_NO_REGISTERED: ForgeConfigSpec.ConfigValue<String>
 
-    val TICK_REPORT: ModConfigSpec.ConfigValue<String>
+    val TICK_REPORT: ForgeConfigSpec.ConfigValue<String>
 
-    val PLAYER_MESSAGE: ModConfigSpec.ConfigValue<String>
+    val PLAYER_MESSAGE: ForgeConfigSpec.ConfigValue<String>
 
-    val DISCORD_MESSAGE: ModConfigSpec.ConfigValue<String>
-    val DISCORD_REPLY: ModConfigSpec.ConfigValue<String>
-    val DISCORD_EMBEDS: ModConfigSpec.ConfigValue<String>
+    val DISCORD_MESSAGE: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_REPLY: ForgeConfigSpec.ConfigValue<String>
+    val DISCORD_EMBEDS: ForgeConfigSpec.ConfigValue<String>
 
-    val RELOAD_ERROR: ModConfigSpec.ConfigValue<String>
-    val RELOAD_SUCCESS: ModConfigSpec.ConfigValue<String>
+    val RELOAD_ERROR: ForgeConfigSpec.ConfigValue<String>
+    val RELOAD_SUCCESS: ForgeConfigSpec.ConfigValue<String>
 
-    val LINK_NO_MINECRAFT: ModConfigSpec.ConfigValue<String>
-    val LINK_MINECRAFT_TAKEN: ModConfigSpec.ConfigValue<String>
-    val LINK_DISCORD_TAKEN: ModConfigSpec.ConfigValue<String>
-    val LINK_SUCCESSFUL: ModConfigSpec.ConfigValue<String>
-    val LINK_ERROR: ModConfigSpec.ConfigValue<String>
+    val LINK_NO_MINECRAFT: ForgeConfigSpec.ConfigValue<String>
+    val LINK_MINECRAFT_TAKEN: ForgeConfigSpec.ConfigValue<String>
+    val LINK_DISCORD_TAKEN: ForgeConfigSpec.ConfigValue<String>
+    val LINK_SUCCESSFUL: ForgeConfigSpec.ConfigValue<String>
+    val LINK_ERROR: ForgeConfigSpec.ConfigValue<String>
 
-    val LINK_COMMAND_MESSAGE: ModConfigSpec.ConfigValue<String>
-    val LINK_COMMAND_ALREADY_LINKED: ModConfigSpec.ConfigValue<String>
+    val LINK_COMMAND_MESSAGE: ForgeConfigSpec.ConfigValue<String>
+    val LINK_COMMAND_ALREADY_LINKED: ForgeConfigSpec.ConfigValue<String>
 
-    val UNLINK_UNLINKED: ModConfigSpec.ConfigValue<String>
-    val UNLINK_NOPERMS: ModConfigSpec.ConfigValue<String>
+    val UNLINK_UNLINKED: ForgeConfigSpec.ConfigValue<String>
+    val UNLINK_NOPERMS: ForgeConfigSpec.ConfigValue<String>
 
     init {
-        val builder = ModConfigSpec.Builder()
+        val builder = ForgeConfigSpec.Builder()
         val whitespaceRegex = Regex("\n[ \t]+")
 
         GENERIC_ERROR = builder.comment("Generic error message sent to Discord")

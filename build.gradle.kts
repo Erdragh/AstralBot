@@ -2,8 +2,15 @@ import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
+import dev.architectury.plugin.ArchitectPluginExtension
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import net.fabricmc.loom.task.RemapJarTask
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+    // This is an Architectury repository, as such the relevant plugins are needed
+    id("architectury-plugin") version "3.4-SNAPSHOT"
+    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
     // The shadow plugin is used by the fabric subproject to include dependencies
     // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
     // see: https://github.com/johnrengelman/shadow/issues/911
@@ -14,19 +21,23 @@ plugins {
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
-    // Required for NeoGradle
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     // For publishing the mod
     id("me.modmuss50.mod-publish-plugin") version "0.5.1"
 }
 
 val minecraftVersion: String by project
 
+architectury {
+    minecraft = minecraftVersion
+}
+
 repositories {
     mavenCentral()
 }
 
 subprojects {
+    apply(plugin = "dev.architectury.loom")
+    apply(plugin = "architectury-plugin")
     apply(plugin = "java")
     apply(plugin = "kotlin")
     apply(plugin = "org.jetbrains.dokka")
@@ -45,6 +56,10 @@ subprojects {
         archivesName.set("$modId-$modLoader-$minecraftVersion")
     }
 
+    configure<LoomGradleExtensionAPI> {
+        silentMojangMappingsLicense()
+    }
+
     extensions.configure<JavaPluginExtension> {
         toolchain.languageVersion.set(JavaLanguageVersion.of(17))
         withSourcesJar()
@@ -52,7 +67,7 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven(url = "https://maven.neoforged.net/releases/")
+        maven(url = "https://maven.architectury.dev/")
         maven("https://repo.spongepowered.org/repository/maven-public/") { name = "Sponge / Mixin" }
         maven("https://maven.blamejared.com") { name = "BlameJared Maven (JEI / CraftTweaker / Bookshelf)" }
         // For the parchment mappings
@@ -79,25 +94,43 @@ subprojects {
     val shadowBotDep by configurations.creating {
         isTransitive = true
     }
-    // Configuration for JiJ-ed dependencies
-    val includeBotDep by configurations.creating {
-        isTransitive = false
+    // This shadowCommon configuration is used to shade the
+    // common project
+    val shadowCommon by configurations.creating {
+        isCanBeConsumed = false
+        isCanBeResolved = true
     }
     // Configuration for libraries that are needed at runtime
     val runtimeLib by configurations.creating {
         isTransitive = true
     }
     configurations.implementation.extendsFrom(configurations.named("shadowBotDep"))
-    configurations.implementation.extendsFrom(configurations.named("includeBotDep"))
     configurations.implementation.extendsFrom(configurations.named("runtimeLib"))
 
     dependencies {
+        // Minecraft Mod dependencies
+        "minecraft"("::$minecraftVersion")
+
+        @Suppress("UnstableApiUsage")
+        "mappings"(project.the<LoomGradleExtensionAPI>().layered {
+            val parchmentVersion: String by project
+
+            officialMojangMappings()
+
+            parchment(
+                create(
+                    group = "org.parchmentmc.data",
+                    name = "parchment-$minecraftVersion",
+                    version = parchmentVersion
+                )
+            )
+        })
+
         runtimeLib("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
-        includeBotDep("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
+        if (!isCommon) "include"("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
 
         runtimeLib("org.commonmark:commonmark:$commonmarkVersion")
-        includeBotDep("org.commonmark:commonmark:$commonmarkVersion")
-
+        if (!isCommon) "include"("org.commonmark:commonmark:$commonmarkVersion")
 
         arrayOf(
             // Library used to communicate with Discord, see https://jda.wiki
@@ -134,6 +167,9 @@ subprojects {
     }
 
     tasks.jar {
+        // Results in the not remapped jars having a -dev at the end
+        archiveClassifier.set("dev")
+
         from(rootProject.file("LICENSE")) {
             rename { "${it}_$modId" }
         }
@@ -157,34 +193,28 @@ subprojects {
     tasks.processResources {
         val version: String by project
         val group: String by project
-        val minecraftVersionRange: String by project
         val fabricApiVersion: String by project
         val fabricLoaderVersion: String by project
         val fabricKotlinVersion: String by project
-        val neoVersion: String by project
-        val neoVersionRange: String by project
-        val kffLoaderRange: String by project
         val license: String by project
         val description: String by project
         val credits: String by project
+        val title: String by project
 
         val expandProps = mapOf(
             "version" to version,
             "group" to group, //Else we target the task's group.
             "minecraft_version" to minecraftVersion,
-            "minecraft_version_range" to minecraftVersionRange,
             "fabric_version" to fabricApiVersion,
             "fabric_loader_version" to fabricLoaderVersion,
             "fabric_kotlin_version" to fabricKotlinVersion,
-            "neoforge_version" to neoVersion,
-            "neoforge_loader_version_range" to neoVersionRange,
-            "kff_loader_range" to kffLoaderRange,
             "mod_name" to modName,
             "mod_author" to modAuthor,
             "mod_id" to modId,
             "license" to license,
             "description" to description,
-            "credits" to credits
+            "credits" to credits,
+            "title" to title
         )
 
         filesMatching(listOf("pack.mcmeta", "*.mixins.json", "META-INF/mods.toml", "fabric.mod.json")) {
@@ -193,12 +223,52 @@ subprojects {
         inputs.properties(expandProps)
     }
 
-    if (isCommon) {
-        sourceSets.main.get().resources.srcDir("src/main/generated/resources")
-    } else {
-        dependencies {
-            implementation(project(":common"))
+    if (!isCommon) {
+        apply(plugin = "io.github.goooler.shadow")
+
+        configure<ArchitectPluginExtension> {
+            platformSetupLoomIde()
         }
+
+        tasks {
+            named<ShadowJar>("shadowJar") {
+                archiveClassifier.set("dev-shadow")
+
+                configurations = listOf(shadowBotDep, shadowCommon)
+
+                // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+                mergeServiceFiles()
+
+                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+                relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+
+                // Forge restricts loading certain classes for security reasons.
+                // Luckily, shadow can relocate them to a different package.
+                relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
+
+                // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
+                relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
+
+                exclude(".cache/**") //Remove datagen cache from jar.
+                exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
+                exclude("**/org/slf4j/**")
+
+                exclude("kotlinx/**")
+                exclude("_COROUTINE/**")
+                exclude("**/org/jetbrains/annotations/*")
+                exclude("**/org/intellij/**")
+            }
+
+            named<RemapJarTask>("remapJar") {
+                inputFile.set(named<ShadowJar>("shadowJar").get().archiveFile)
+                dependsOn("shadowJar")
+                // Results in the remapped jar not having any extra bit in
+                // its file name, identifying it as the main distribution
+                archiveClassifier.set(null as String?)
+            }
+        }
+    } else {
+        sourceSets.main.get().resources.srcDir("src/main/generated/resources")
     }
 
     // Disables Gradle's custom module metadata from being published to maven. The

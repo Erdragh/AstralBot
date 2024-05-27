@@ -1,32 +1,27 @@
 modLoader = "kotlinforforge"
-loaderVersion = "${kff_loader_range}"
+loaderVersion = "[4.6,)"
 license = "${license}"
 issueTrackerURL = "https://github.com/Erdragh/AstralBot/issues"
-
-[[mixins]]
-config = "astralbot-common.mixins.json"
-[[mixins]]
-config = "astralbot.mixins.json"
 
 [[mods]]
 modId = "${mod_id}"
 version = "${version}"
-displayName = "${mod_name}"
+displayName = "${title}"
 displayURL = "https://modrinth.com/mod/astralbot"
 logoFile = "icon.png"
-authors = "${mod_author}"
+authors = "${credits}"
 description = "${description}"
 
 [[dependencies.${mod_id}]]
-modId = "neoforge"
-type = "required"
-versionRange = "${neoforge_loader_version_range}"
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"
-type = "required"
-versionRange = "${minecraft_version_range}"
+mandatory = true
+versionRange = "[1.20.1,1.20.2)"
 ordering = "NONE"
 side = "BOTH"
