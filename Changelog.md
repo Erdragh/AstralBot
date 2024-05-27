@@ -1,3 +1,8 @@
+# 1.4.0
+- Port to 1.20.4 and NeoForge
+- Removed Forge as a supported Platform for Minecraft > 1.20.1
+- JiJ SQLite and Commonmark dependencies, allowing better compatibility and removing the SQLite JDBC dependency
+
 # 1.3.0
 - Message Embeds to better represent Minecraft messages on Discord
 - Fix `/link` Minecraft command not being registered on Forge

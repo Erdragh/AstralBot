@@ -1,14 +1,36 @@
-architectury {
-    val enabledPlatforms: String by rootProject
-    common(enabledPlatforms.split(","))
+plugins {
+    idea
+    java
+    `maven-publish`
+    id ("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
+}
+
+val minecraftVersion: String by project
+val modId: String by project
+
+minecraft {
+    version(minecraftVersion)
+    if (file("src/main/resources/${modId}.accesswidener").exists())
+        accessWideners(file("src/main/resources/${modId}.accesswidener"))
 }
 
 dependencies {
     val fabricLoaderVersion: String by project
     val forgeConfigAPIVersion: String by project
-    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-    // Do NOT use other classes from fabric loader
-    modImplementation("net.fabricmc:fabric-loader:${fabricLoaderVersion}")
 
     api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forgeConfigAPIVersion")
+    compileOnly("org.spongepowered:mixin:0.8.5")
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            artifactId = base.archivesName.get()
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        maven("file://${System.getenv("local_maven")}")
+    }
 }
