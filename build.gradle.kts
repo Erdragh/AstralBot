@@ -213,44 +213,47 @@ subprojects {
     }
 
     // Publishing settings
-    publishMods {
-        // These titles get used based on subproject name
-        val titles by extra {
-            mapOf(
-                "fabric" to "Fabric",
-                "neoforge" to "NeoForge",
-                "forge" to "Forge",
-                "quilt" to "Quilt"
-            )
-        }
-        val curseforgePublish by extra {
-            curseforgeOptions {
-                accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-                minecraftVersions.add(minecraftVersion)
-                projectId = providers.environmentVariable("CURSEFORGE_ID")
-                embeds("sqlite-jdbc")
+    if (!isCommon) {
+        publishMods {
+            dryRun = true
+            // These titles get used based on subproject name
+            val titles by extra {
+                mapOf(
+                    "fabric" to "Fabric",
+                    "neoforge" to "NeoForge",
+                    "forge" to "Forge",
+                    "quilt" to "Quilt"
+                )
             }
-        }
-        val modrinthPublish by extra {
-            modrinthOptions {
-                accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-                minecraftVersions.add(minecraftVersion)
-                projectId = providers.environmentVariable("MODRINTH_ID")
-                embeds("sqlite-jdbc")
+            val curseforgePublish by extra {
+                curseforgeOptions {
+                    accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+                    minecraftVersions.add(minecraftVersion)
+                    projectId = providers.environmentVariable("CURSEFORGE_ID")
+                    embeds("sqlite-jdbc")
+                }
             }
-        }
-        val changelog by extra {
-            // Only gets the lines for the latest version from the Changelog
-            // file. This allows me to keep all previous changes in the file
-            // without having to worry about them being included on new file
-            // uploads.
-            File("CHANGELOG.md")
-                .readText(StandardCharsets.UTF_8)
-                .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
-                .trim()
-        }
-        val type by extra {
-            STABLE
+            val modrinthPublish by extra {
+                modrinthOptions {
+                    accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+                    minecraftVersions.add(minecraftVersion)
+                    projectId = providers.environmentVariable("MODRINTH_ID")
+                    embeds("sqlite-jdbc")
+                }
+            }
+            val changelog by extra {
+                // Only gets the lines for the latest version from the Changelog
+                // file. This allows me to keep all previous changes in the file
+                // without having to worry about them being included on new file
+                // uploads.
+                File("CHANGELOG.md")
+                    .readText(StandardCharsets.UTF_8)
+                    .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
+                    .trim()
+            }
+            val type by extra {
+                STABLE
+            }
         }
     }
 }
