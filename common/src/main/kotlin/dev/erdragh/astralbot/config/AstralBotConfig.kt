@@ -21,6 +21,25 @@ object AstralBotConfig {
     val DISCORD_TOKEN: ModConfigSpec.ConfigValue<String>
 
     /**
+     * Used for sending more appealing messages
+     */
+    val WEBHOOK_URL: ModConfigSpec.ConfigValue<String>
+    /**
+     * Whether the configured [WEBHOOK_URL] should actually be used,
+     * useful in case somebody wants to temporarily disable using
+     * the webhook without removing the URL
+     */
+    val WEBHOOK_ENABLED: ModConfigSpec.BooleanValue
+
+    /**
+     * Whether the chat messages sent via the webhook should
+     * imitate the sender's Discord account or their Minecraft
+     * account. If this is on, the linked Discord account will
+     * be used.
+     */
+    val WEBHOOK_USE_LINKED: ModConfigSpec.BooleanValue
+
+    /**
      * Whether the default whitelisting process is respected or ignored.
      * Setting this to `true` will *force* every user who wants to join
      * the server to link their account, even Operators.
@@ -100,6 +119,13 @@ object AstralBotConfig {
 
         DISCORD_TOKEN = builder.comment("Discord token for the bot. Can also be supplied via DISCORD_TOKEN environment variable")
             .define("token", "")
+
+        WEBHOOK_URL = builder.comment("URL to the webhook where the messages will be sent from")
+            .define(listOf("webhook", "url"), "")
+        WEBHOOK_ENABLED = builder.comment("Whether to use the configured webhook for sending messages")
+            .define(listOf("webhook", "enabled"), true)
+        WEBHOOK_USE_LINKED = builder.comment("Whether to imitate user's linked Discord accounts when sending messages from MC to DC")
+            .define(listOf("webhook", "useLinked"), false)
 
         REQUIRE_LINK_FOR_WHITELIST = builder.comment("Whether to require being linked to be whitelisted")
             .define("requireLinkForWhitelist", false)
@@ -189,5 +215,9 @@ object AstralBotConfig {
             return false
         }
         return true
+    }
+
+    fun useWebhooks(): Boolean {
+        return WEBHOOK_ENABLED.get() && WEBHOOK_URL.get() != ""
     }
 }

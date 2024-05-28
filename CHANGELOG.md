@@ -1,3 +1,6 @@
+# indev
+- Introduce webhook chat sync, allowing for user imitation
+
 # 1.4.0
 - Port to 1.20.4 and NeoForge
 - Removed Forge as a supported Platform for Minecraft > 1.20.1

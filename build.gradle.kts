@@ -71,6 +71,7 @@ subprojects {
 
     // Bot dependencies
     val jdaVersion: String by project
+    val dcWebhooksVersion: String by project
     val exposedVersion: String by project
     val sqliteJDBCVersion: String by project
     val commonmarkVersion: String by project
@@ -102,6 +103,8 @@ subprojects {
         arrayOf(
             // Library used to communicate with Discord, see https://jda.wiki
             "net.dv8tion:JDA:$jdaVersion",
+            // Library used for sending messages via Discord Webhooks
+            "club.minnced:discord-webhooks:$dcWebhooksVersion",
 
             // Library to interact with the SQLite database,
             // see: https://github.com/JetBrains/Exposed

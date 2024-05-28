@@ -28,7 +28,7 @@ var minecraftHandler: MinecraftHandler? = null
 
 var textChannel: TextChannel? = null
 var guild: Guild? = null
-private var jda: JDA? = null
+var jda: JDA? = null
 var applicationId by Delegates.notNull<Long>()
 
 var baseDirectory: File? = null
