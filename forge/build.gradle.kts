@@ -1,7 +1,6 @@
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 architectury {
     forge()

@@ -17,7 +17,7 @@ plugins {
     id("io.github.goooler.shadow") version "8.1.7" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
@@ -267,8 +267,6 @@ subprojects {
                 archiveClassifier.set(null as String?)
             }
         }
-    } else {
-        sourceSets.main.get().resources.srcDir("src/main/generated/resources")
     }
 
     // Disables Gradle's custom module metadata from being published to maven. The
@@ -285,44 +283,46 @@ subprojects {
     }
 
     // Publishing settings
-    publishMods {
-        // These titles get used based on subproject name
-        val titles by extra {
-            mapOf(
-                "fabric" to "Fabric",
-                "neoforge" to "NeoForge",
-                "forge" to "Forge",
-                "quilt" to "Quilt"
-            )
-        }
-        val curseforgePublish by extra {
-            curseforgeOptions {
-                accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-                minecraftVersions.add(minecraftVersion)
-                projectId = providers.environmentVariable("CURSEFORGE_ID")
-                embeds("sqlite-jdbc")
+    if (!isCommon) {
+        publishMods {
+            // These titles get used based on subproject name
+            val titles by extra {
+                mapOf(
+                    "fabric" to "Fabric",
+                    "neoforge" to "NeoForge",
+                    "forge" to "Forge",
+                    "quilt" to "Quilt"
+                )
             }
-        }
-        val modrinthPublish by extra {
-            modrinthOptions {
-                accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-                minecraftVersions.add(minecraftVersion)
-                projectId = providers.environmentVariable("MODRINTH_ID")
-                embeds("sqlite-jdbc")
+            val curseforgePublish by extra {
+                curseforgeOptions {
+                    accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+                    minecraftVersions.add(minecraftVersion)
+                    projectId = providers.environmentVariable("CURSEFORGE_ID")
+                    embeds("sqlite-jdbc")
+                }
             }
-        }
-        val changelog by extra {
-            // Only gets the lines for the latest version from the Changelog
-            // file. This allows me to keep all previous changes in the file
-            // without having to worry about them being included on new file
-            // uploads.
-            File("CHANGELOG.md")
-                .readText(StandardCharsets.UTF_8)
-                .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
-                .trim()
-        }
-        val type by extra {
-            STABLE
+            val modrinthPublish by extra {
+                modrinthOptions {
+                    accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+                    minecraftVersions.add(minecraftVersion)
+                    projectId = providers.environmentVariable("MODRINTH_ID")
+                    embeds("sqlite-jdbc")
+                }
+            }
+            val changelog by extra {
+                // Only gets the lines for the latest version from the Changelog
+                // file. This allows me to keep all previous changes in the file
+                // without having to worry about them being included on new file
+                // uploads.
+                File("CHANGELOG.md")
+                    .readText(StandardCharsets.UTF_8)
+                    .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
+                    .trim()
+            }
+            val type by extra {
+                STABLE
+            }
         }
     }
 }
