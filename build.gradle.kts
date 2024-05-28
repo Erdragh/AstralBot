@@ -215,7 +215,6 @@ subprojects {
     // Publishing settings
     if (!isCommon) {
         publishMods {
-            dryRun = true
             // These titles get used based on subproject name
             val titles by extra {
                 mapOf(
