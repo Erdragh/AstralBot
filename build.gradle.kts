@@ -193,9 +193,7 @@ subprojects {
         inputs.properties(expandProps)
     }
 
-    if (isCommon) {
-        sourceSets.main.get().resources.srcDir("src/main/generated/resources")
-    } else {
+    if (!isCommon) {
         dependencies {
             implementation(project(":common"))
         }
