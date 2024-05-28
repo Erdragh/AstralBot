@@ -32,6 +32,11 @@ object AstralBotConfig {
     val WEBHOOK_ENABLED: ModConfigSpec.BooleanValue
 
     /**
+     * URL template for getting avatars from Minecraft users
+     */
+    val WEBHOOK_MC_AVATAR_URL: ModConfigSpec.ConfigValue<String>
+
+    /**
      * Whether the chat messages sent via the webhook should
      * imitate the sender's Discord account or their Minecraft
      * account. If this is on, the linked Discord account will
@@ -126,6 +131,8 @@ object AstralBotConfig {
             .define(listOf("webhook", "enabled"), true)
         WEBHOOK_USE_LINKED = builder.comment("Whether to imitate user's linked Discord accounts when sending messages from MC to DC")
             .define(listOf("webhook", "useLinked"), false)
+        WEBHOOK_MC_AVATAR_URL = builder.comment("API that returns images based on Minecraft users. {{uuid}} and {{name}} can be used")
+            .define(listOf("webhook", "mcAvatarUrl"), "https://mc-heads.net/head/{{uuid}}")
 
         REQUIRE_LINK_FOR_WHITELIST = builder.comment("Whether to require being linked to be whitelisted")
             .define("requireLinkForWhitelist", false)

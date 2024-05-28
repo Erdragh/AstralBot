@@ -197,7 +197,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                         .build()
                 })
                 .setContent(content)
-                .setUsername(messageSenderInfo.name)
+                .setUsername(
+                    AstralBotTextConfig.WEBHOOK_NAME_TEMPLATE.get()
+                        .replace("{{primary}}", messageSenderInfo.primaryName)
+                        .replace("{{secondary}}", messageSenderInfo.secondaryName ?: "Unlinked")
+                )
                 .setAvatarUrl(messageSenderInfo.avatar)
                 .build()
 
