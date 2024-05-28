@@ -1,4 +1,4 @@
-name: build
+name: dependencies
 on:
   push:
     branches: [ "main", "develop" ]
@@ -10,17 +10,14 @@ jobs:
   dependencies:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: setup jdk 17
+      - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
 
-      - name: Build with Gradle and generate dependency Graph
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: dependencies
-          dependency-graph: 'generate-and-submit'
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v3

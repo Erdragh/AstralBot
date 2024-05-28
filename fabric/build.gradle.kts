@@ -68,6 +68,7 @@ publishMods {
         from(curseforgePublish)
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
@@ -77,6 +78,7 @@ publishMods {
         from(modrinthPublish)
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
