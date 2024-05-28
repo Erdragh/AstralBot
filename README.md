@@ -12,7 +12,7 @@ while allowing true complexity for power users.
 These features are the core of what this bot will do. See [the Status section](#status)
 to see how much is already implemented.
 - Discord and Minecraft account linking, optionally requiring this to be whitelisted
-- Discord and Minecraft chat synchronization
+- Discord and Minecraft chat synchronization, optionally via webhook for improved readability
 - FAQ commands using Markdown files without needing to restart the server
 
 ## Dependencies
@@ -45,10 +45,10 @@ The following things will be configurable:
   - [x] Reading Markdown files
   - [x] Updating suggestions without restart
   - [ ] Management/Creation via commands
-- [ ] Chat synchronization
+- [x] Chat synchronization
   - [x] Minecraft to Discord
   - [x] Discord to Minecraft
-  - [ ] User imitation on Discord
+  - [x] User imitation on Discord. Either uses Minecraft avatars or Discord avatars
 
 ## Running
 There is no public instance of this bot/mod available. To use it, create a new Application
