@@ -31,7 +31,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace --info
+        if: ${{ !github.event.inputs.publish }}
+        run: ./gradlew build
 
       - name: Publish with Gradle
         if: ${{ github.event.inputs.publish }}
@@ -41,4 +42,4 @@ jobs:
 
           MODRINTH_ID: ${{vars.MODRINTH_ID}}
           CURSEFORGE_ID: ${{vars.CURSE_ID}}
-        run: ./gradlew publishMods
+        run: ./gradlew build publishMods
