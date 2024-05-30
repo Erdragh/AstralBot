@@ -25,6 +25,8 @@ object AstralBotTextConfig {
     val RELOAD_ERROR: ModConfigSpec.ConfigValue<String>
     val RELOAD_SUCCESS: ModConfigSpec.ConfigValue<String>
 
+    val WHITELIST_LINKED_NOT_ALLOWED: ModConfigSpec.ConfigValue<String>
+
     val LINK_NO_MINECRAFT: ModConfigSpec.ConfigValue<String>
     val LINK_MINECRAFT_TAKEN: ModConfigSpec.ConfigValue<String>
     val LINK_DISCORD_TAKEN: ModConfigSpec.ConfigValue<String>
@@ -100,6 +102,13 @@ object AstralBotTextConfig {
                 .define(mutableListOf("reload", "error"), "Something went wrong: {{error}}")
         RELOAD_SUCCESS = builder.comment("Message sent to Discord after a successful reload")
             .define(mutableListOf("reload", "success"), "Reloaded commands for guild")
+
+        WHITELIST_LINKED_NOT_ALLOWED = builder.comment("""
+            The message the user gets shown if they are already linked, but have not
+            yet been whitelisted by another means (i.e. being an operator, being on the vanilla whitelist, etc.)
+            The Minecraft username is accessible via {{name}}
+            """.replace(whitespaceRegex, "\n"))
+            .define(listOf("whitelist", "linkedNotAllowed"), "Hi {{mc}}! You're already linked, but not yet whitelisted.")
 
         LINK_NO_MINECRAFT =
             builder.comment("""

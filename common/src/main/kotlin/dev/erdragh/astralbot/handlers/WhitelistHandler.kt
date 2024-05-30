@@ -4,7 +4,9 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import net.dv8tion.jda.api.entities.User
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -250,10 +252,19 @@ object WhitelistHandler {
      * - `{{DISCORD}}` with the link to the Discord server
      * configured in the [AstralBotConfig]
      */
-    fun writeWhitelistMessage(user: GameProfile): Component {
+    fun writeWhitelistMessage(user: GameProfile): Optional<Component> {
+        // This value represents whether the user is whitelisted in the DB. If this is the
+        // case the config to require linking is on and the user hasn't yet been whitelisted
+        // by another means.
+        val isDbWhitelisted = checkWhitelist(user.id) != null
+
+        if (isDbWhitelisted) return Optional.of(Component.literal(AstralBotTextConfig.WHITELIST_LINKED_NOT_ALLOWED.get().replace("{{name}}", user.name)))
+
+        val linkCode = getWhitelistCode(user.id) ?: return Optional.empty()
+
         val template = whitelistTemplate.readText()
             .replace("{{USER}}", user.name)
-            .replace("{{CODE}}", getWhitelistCode(user.id).toString())
+            .replace("{{CODE}}", linkCode.toString())
             .split("{{DISCORD}}")
 
         // Throws an error if the template is malformed
@@ -266,9 +277,9 @@ object WhitelistHandler {
             component.append(template[i])
             if (discordLink.isNotEmpty() && i + 1 < template.size) {
                 // TODO: Make this clickable. Using `withStyle` and a ClickEvent did not seem to work
-                component.append(Component.literal(discordLink))
+                component.append(Component.literal(discordLink).withStyle {it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, discordLink))})
             }
         }
-        return component
+        return Optional.of(component)
     }
 }
