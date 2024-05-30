@@ -97,6 +97,9 @@ private fun setupFromJDA(api: JDA) {
     textChannel = ch
     guild = g
 
+    // Text channel was fetched, now the minecraftHandler can fetch its webhook stuff
+    minecraftHandler?.updateWebhookClient()
+
     ch.sendMessage("Server Started!").queue()
 }
 
@@ -115,10 +118,6 @@ fun startAstralbot(server: MinecraftServer) {
     if (token == null || token == "") {
         LOGGER.warn("Not starting AstralBot because no token was not provided")
         return
-    }
-
-    if (AstralBotConfig.WEBHOOK_ENABLED.get() && AstralBotConfig.WEBHOOK_URL.get() == "") {
-        LOGGER.warn("Webhooks enabled, but no URL provided, chat synchronization will fallback to default implementation.")
     }
 
     minecraftHandler = MinecraftHandler(server)

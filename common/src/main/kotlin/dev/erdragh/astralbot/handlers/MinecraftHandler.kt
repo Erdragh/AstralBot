@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot.handlers
 
 import club.minnced.discord.webhook.WebhookClient
+import club.minnced.discord.webhook.external.JDAWebhookClient
 import club.minnced.discord.webhook.send.WebhookEmbed
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import club.minnced.discord.webhook.send.WebhookMessageBuilder
@@ -39,9 +40,9 @@ import kotlin.math.min
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
-    private val playerNames = HashSet<String>(server.maxPlayers);
+    private val playerNames = HashSet<String>(server.maxPlayers)
     private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it, ClientInformation.createDefault()) }
-    private var webhookClient: WebhookClient? = AstralBotConfig.WEBHOOK_URL.get().let { if (it != "") WebhookClient.withUrl(it) else null }
+    private var webhookClient: WebhookClient? = null
 
     /**
      * Method that maybe creates a new webhook client if one wasn't configured before.
@@ -51,6 +52,29 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         val url = AstralBotConfig.WEBHOOK_URL.get()
         if (webhookClient == null || url != webhookClient?.url) {
             webhookClient = url.let { if (it != "") WebhookClient.withUrl(it) else null }
+        }
+        if (webhookClient == null) {
+            textChannel?.retrieveWebhooks()?.submit()?.whenComplete { webhooks, error ->
+                if (error != null) {
+                    LOGGER.error("Failed to fetch webhooks for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
+                } else {
+                    if (webhooks.size > 1) {
+                        LOGGER.warn("Multiple webhooks available for channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will use the first one. If you want to use a specific one, set the webhook.url config option.")
+                        webhookClient = JDAWebhookClient.from(webhooks[0])
+                    } else if (webhooks.size == 1) {
+                        webhookClient = JDAWebhookClient.from(webhooks[0])
+                    } else {
+                        LOGGER.info("No webhook found in channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will try to create one.")
+                        textChannel!!.createWebhook("AstralBot Chat synchronization").submit().whenComplete { webhook, error ->
+                            if (error != null) {
+                                LOGGER.error("Failed to create webhook for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
+                            } else {
+                                webhookClient = JDAWebhookClient.from(webhook)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -168,7 +192,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             }
         }
 
-        val messageSenderInfo = if(AstralBotConfig.useWebhooks()) MessageSenderLookup.getMessageSenderInfo(player, AstralBotConfig.WEBHOOK_USE_LINKED.get()) else null
+        val messageSenderInfo = if(useWebhooks()) MessageSenderLookup.getMessageSenderInfo(player, AstralBotConfig.WEBHOOK_USE_LINKED.get()) else null
         val escape = { it: String -> it.replace("_", "\\_") }
         val content = if (messageSenderInfo != null) {
             formatComponentToMarkdown(message)
@@ -181,7 +205,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             formatComponentToMarkdown(message)
         }
 
-        if (!AstralBotConfig.useWebhooks() || webhookClient == null || messageSenderInfo == null) {
+        if (!useWebhooks() || webhookClient == null || messageSenderInfo == null) {
             val createdMessage = MessageCreateBuilder()
                 .addEmbeds(formattedEmbeds)
                 .setContent(content)
@@ -461,5 +485,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             )
         }
         return comp
+    }
+
+    private fun useWebhooks(): Boolean {
+        return AstralBotConfig.WEBHOOK_ENABLED.get() && webhookClient != null
     }
 }

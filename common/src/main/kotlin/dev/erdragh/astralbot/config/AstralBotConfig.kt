@@ -3,7 +3,10 @@ package dev.erdragh.astralbot.config
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.discord.allCommands
 import net.neoforged.neoforge.common.ModConfigSpec
+import java.net.URI
 import java.net.URL
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 /**
  * Config for the AstralBot mod. This uses Forge's config system
@@ -169,15 +172,15 @@ object AstralBotConfig {
                 )
             ) {
                 if (it !is String) {
-                    LOGGER.warn("$it in URL blocklist is not a String")
+                    LOGGER.warn("$it in URI blocklist is not a String")
                     return@defineList false
                 }
                 // TODO: Replace with better way to check for URL
                 try {
-                    URL(it)
+                    URI(it)
                     return@defineList true
                 } catch (e: Exception) {
-                    LOGGER.warn("Failed to parse URL on blocklist: $it", e)
+                    LOGGER.warn("Failed to parse URI on blocklist: $it", e)
                     return@defineList false
                 }
             }
@@ -213,18 +216,14 @@ object AstralBotConfig {
     fun urlAllowed(url: String?): Boolean {
         if (url == null) return true
         try {
-            val parsedURL = URL(url)
+            val parsedURL = URI(url)
             for (blockedURL in URL_BLOCKLIST.get()) {
-                if (parsedURL.host == URL(blockedURL).host) return false
+                if (parsedURL.host == URI(blockedURL).host) return false
             }
         } catch (e: Exception) {
-            LOGGER.warn("URL $url", e)
+            LOGGER.warn("URI $url", e)
             return false
         }
         return true
-    }
-
-    fun useWebhooks(): Boolean {
-        return WEBHOOK_ENABLED.get() && WEBHOOK_URL.get() != ""
     }
 }
