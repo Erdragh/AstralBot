@@ -1,3 +1,9 @@
+# 1.5.0
+- Introduce webhook chat sync, allowing for user imitation
+  
+  **IMPORTANT INFO**: If you don't want to manually set the webhook URL, the
+  bot needs to have the MANAGE_WEBHOOKS permission
+
 # 1.4.0
 - Port to 1.20.4 and NeoForge
 - Removed Forge as a supported Platform for Minecraft > 1.20.1

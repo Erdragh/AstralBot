@@ -1,11 +1,10 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
-import net.fabricmc.loom.task.RemapJarTask
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
@@ -86,6 +85,7 @@ subprojects {
 
     // Bot dependencies
     val jdaVersion: String by project
+    val dcWebhooksVersion: String by project
     val exposedVersion: String by project
     val sqliteJDBCVersion: String by project
     val commonmarkVersion: String by project
@@ -135,6 +135,8 @@ subprojects {
         arrayOf(
             // Library used to communicate with Discord, see https://jda.wiki
             "net.dv8tion:JDA:$jdaVersion",
+            // Library used for sending messages via Discord Webhooks
+            "club.minnced:discord-webhooks:$dcWebhooksVersion",
 
             // Library to interact with the SQLite database,
             // see: https://github.com/JetBrains/Exposed
@@ -142,6 +144,10 @@ subprojects {
             "org.jetbrains.exposed:exposed-dao:$exposedVersion",
             "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
         ).forEach {
+            implementation(it) {
+                exclude(module = "opus-java")
+                exclude(group = "org.slf4j")
+            }
             runtimeLib(it) {
                 exclude(module = "opus-java")
                 exclude(group = "org.slf4j")
@@ -155,6 +161,7 @@ subprojects {
                 // on JDA and Exposed, but is already provided by the
                 // respective Kotlin implementation of the mod loaders
                 exclude(group = "org.jetbrains.kotlin")
+                exclude(group = "org.jetbrains.kotlinx")
                 // Minecraft already ships with a logging system
                 exclude(group = "org.slf4j")
             }
@@ -230,42 +237,41 @@ subprojects {
             platformSetupLoomIde()
         }
 
-        tasks {
-            named<ShadowJar>("shadowJar") {
-                archiveClassifier.set("dev-shadow")
+        tasks.named<ShadowJar>("shadowJar") {
+            // The shadowBotDep configuration was explicitly made to be shaded in, this is where that happens
+            configurations.clear()
+            configurations = listOf(shadowBotDep)
 
-                configurations = listOf(shadowBotDep, shadowCommon)
+            // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
+            mergeServiceFiles()
 
-                // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
-                mergeServiceFiles()
+            // Forge restricts loading certain classes for security reasons.
+            // Luckily, shadow can relocate them to a different package.
+            relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
-                // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
-                relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
+            // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
+            relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
 
-                // Forge restricts loading certain classes for security reasons.
-                // Luckily, shadow can relocate them to a different package.
-                relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
+            // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
+            relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
 
-                // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
-                relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
+            // relocate discord interaction stuff to maybe allow other discord integrations mods to work
+            relocate("club.minnced.discord", "dev.erdragh.shadowed.club.minnced.discord")
+            relocate("net.dv8tion.jda", "dev.erdragh.shadowed.net.dv8tion.jda")
 
-                exclude(".cache/**") //Remove datagen cache from jar.
-                exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
-                exclude("**/org/slf4j/**")
+            // relocate dependencies of discord stuff
+            relocate("okhttp3", "dev.erdragh.shadowed.okhttp3")
+            relocate("okio", "dev.erdragh.shadowed.okio")
+            relocate("gnu.trove", "dev.erdragh.shadowed.gnu.trove")
+            relocate("com.iwebpp.crypto", "dev.erdragh.shadowed.com.iwebpp.crypto")
+            relocate("com.neovisionaries.ws", "dev.erdragh.shadowed.com.neovisionaries.ws")
+            relocate("org.json", "dev.erdragh.shadowed.org.json")
+            relocate("net.bytebuddy", "dev.erdragh.net.bytebuddy")
 
-                exclude("kotlinx/**")
-                exclude("_COROUTINE/**")
-                exclude("**/org/jetbrains/annotations/*")
-                exclude("**/org/intellij/**")
-            }
+            exclude("**/org/slf4j/**")
 
-            named<RemapJarTask>("remapJar") {
-                inputFile.set(named<ShadowJar>("shadowJar").get().archiveFile)
-                dependsOn("shadowJar")
-                // Results in the remapped jar not having any extra bit in
-                // its file name, identifying it as the main distribution
-                archiveClassifier.set(null as String?)
-            }
+            exclude("**/org/jetbrains/annotations/*")
+            exclude("**/org/intellij/**")
         }
     }
 
