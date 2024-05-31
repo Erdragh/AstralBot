@@ -77,6 +77,7 @@ After starting the server, you can go into the OAuth2 URL builder on the Discord
 Developer Portal and generate a URL with the `bot` and `applications.command` permissions.
 Use the generated URL to have the bot join your server.
 
-To be able to use user imitation, which makes the chat synchronization more readable, you will have to add a
-webhook to your Discord server that uses the same chat you configured for the normal chat synchronization. Copy its
-URL and add it to the `webhook.url` key in the config.
+To be able to use user imitation, which makes the chat synchronization more readable, the bot will try and create a webhook
+in the configured chat synchronization channel. This means it will need to have the permission to manage webhooks. If you
+don't want that you can manually create a webhook in the channel where you want the messages synchronized and set it in the
+`webhook.url` option in the config for the mod.
