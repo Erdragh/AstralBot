@@ -24,7 +24,6 @@ This mod has a few dependencies, some of which are not specified directly as the
 ## Implementation
 - [JDA](https://jda.wiki) library to communicate with the Discord API.
 - Kotlin for the improved development experience over Java
-- Architectury for multiplatform development
 - [JetBrains Exposed](https://github.com/JetBrains/Exposed) to communicate with the Database
 
 ## Configuration
