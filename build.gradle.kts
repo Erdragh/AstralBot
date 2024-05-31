@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import dev.architectury.plugin.ArchitectPluginExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
@@ -240,7 +241,7 @@ subprojects {
         tasks.named<ShadowJar>("shadowJar") {
             // The shadowBotDep configuration was explicitly made to be shaded in, this is where that happens
             configurations.clear()
-            configurations = listOf(shadowBotDep)
+            configurations = listOf(shadowBotDep, shadowCommon)
 
             // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
             mergeServiceFiles()
@@ -272,6 +273,14 @@ subprojects {
 
             exclude("**/org/jetbrains/annotations/*")
             exclude("**/org/intellij/**")
+        }
+
+        tasks.named<RemapJarTask>("remapJar") {
+            inputFile.set(tasks.named<ShadowJar>("shadowJar").get().archiveFile)
+            dependsOn("shadowJar")
+            // Results in the remapped jar not having any extra bit in
+            // its file name, identifying it as the main distribution
+            archiveClassifier.set(null as String?)
         }
     }
 
