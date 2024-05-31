@@ -1,3 +1,6 @@
+# 1.5.1
+Hotfix for Versions 1.18.2 - 1.20.1 fixing missing classes
+
 # 1.5.0
 - Introduce webhook chat sync, allowing for user imitation
   
