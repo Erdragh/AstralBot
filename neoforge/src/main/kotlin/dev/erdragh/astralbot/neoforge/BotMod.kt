@@ -1,28 +1,35 @@
 package dev.erdragh.astralbot.neoforge
 
-import dev.erdragh.astralbot.*
+import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
+import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.neoforge.event.CommandMessageEvent
+import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
+import dev.erdragh.astralbot.startAstralbot
+import dev.erdragh.astralbot.stopAstralbot
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
+import net.neoforged.fml.event.config.ModConfigEvent
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.ServerChatEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
 import thedarkcolour.kotlinforforge.neoforge.forge.FORGE_BUS
+import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
 @Mod("astralbot")
 object BotMod {
     init {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        MOD_BUS.addListener(::onConfigReloaded)
+
         FORGE_BUS.addListener(::onServerStart)
         FORGE_BUS.addListener(::onServerStop)
         FORGE_BUS.addListener(::onChatMessage)
@@ -32,6 +39,14 @@ object BotMod {
 
         FORGE_BUS.addListener(::onPlayerJoin)
         FORGE_BUS.addListener(::onPlayerLeave)
+    }
+
+    // Unused parameter suppressed to keep type
+    // information about Server stop event.
+    @Suppress("UNUSED_PARAMETER")
+    private fun onConfigReloaded(event: ModConfigEvent.Reloading) {
+        // Updates the webhook client if the URL changed
+        minecraftHandler?.updateWebhookClient()
     }
 
     private fun onServerStart(event: ServerStartedEvent) {

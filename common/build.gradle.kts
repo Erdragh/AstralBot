@@ -1,3 +1,5 @@
+import org.spongepowered.gradle.vanilla.repository.MinecraftPlatform
+
 plugins {
     idea
     java
@@ -10,6 +12,7 @@ val modId: String by project
 
 minecraft {
     version(minecraftVersion)
+    platform(MinecraftPlatform.SERVER)
     if (file("src/main/resources/${modId}.accesswidener").exists())
         accessWideners(file("src/main/resources/${modId}.accesswidener"))
 }

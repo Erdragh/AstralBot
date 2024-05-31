@@ -16,12 +16,16 @@ object AstralBotTextConfig {
 
     val PLAYER_MESSAGE: ModConfigSpec.ConfigValue<String>
 
+    val WEBHOOK_NAME_TEMPLATE: ModConfigSpec.ConfigValue<String>
+
     val DISCORD_MESSAGE: ModConfigSpec.ConfigValue<String>
     val DISCORD_REPLY: ModConfigSpec.ConfigValue<String>
     val DISCORD_EMBEDS: ModConfigSpec.ConfigValue<String>
 
     val RELOAD_ERROR: ModConfigSpec.ConfigValue<String>
     val RELOAD_SUCCESS: ModConfigSpec.ConfigValue<String>
+
+    val WHITELIST_LINKED_NOT_ALLOWED: ModConfigSpec.ConfigValue<String>
 
     val LINK_NO_MINECRAFT: ModConfigSpec.ConfigValue<String>
     val LINK_MINECRAFT_TAKEN: ModConfigSpec.ConfigValue<String>
@@ -63,11 +67,18 @@ object AstralBotTextConfig {
                 .define("tickReport", "Average Tick Time: {{mspt}} MSPT (TPS: {{tps}})")
 
         PLAYER_MESSAGE =
-            builder.comment("""Template for how Minecraft chat messages are sent to Discord.
+            builder.comment("""Template for how Minecraft chat messages are sent to Discord if webhooks aren't used
                 The player's name can be accessed via {{name}} and its name with pre- and suffix
                 via {{fullName}}. The message itself is accessed via {{message}}.
             """.replace(whitespaceRegex, "\n"))
                 .define(mutableListOf("messages", "minecraft"), "<{{fullName}}> {{message}}")
+
+        WEBHOOK_NAME_TEMPLATE =
+            builder.comment("""Template for how chat synchronization using Webhooks formats
+                the message author's name.
+                The player's primary name can be accessed via {{primary}} and the secondary name via {{secondary}}.
+            """.replace(whitespaceRegex, "\n"))
+                .define(mutableListOf("webhook", "name"), "{{primary}} ({{secondary}})")
 
         DISCORD_MESSAGE =
             builder.comment("""Template for how Discord messages are synchronized to Minecraft.
@@ -91,6 +102,13 @@ object AstralBotTextConfig {
                 .define(mutableListOf("reload", "error"), "Something went wrong: {{error}}")
         RELOAD_SUCCESS = builder.comment("Message sent to Discord after a successful reload")
             .define(mutableListOf("reload", "success"), "Reloaded commands for guild")
+
+        WHITELIST_LINKED_NOT_ALLOWED = builder.comment("""
+            The message the user gets shown if they are already linked, but have not
+            yet been whitelisted by another means (i.e. being an operator, being on the vanilla whitelist, etc.)
+            The Minecraft username is accessible via {{name}}
+            """.replace(whitespaceRegex, "\n"))
+            .define(listOf("whitelist", "linkedNotAllowed"), "Hi {{mc}}! You're already linked, but not yet whitelisted.")
 
         LINK_NO_MINECRAFT =
             builder.comment("""

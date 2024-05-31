@@ -6,11 +6,13 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.client.resources.SkinManager
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.fml.config.ModConfig
 
@@ -18,6 +20,11 @@ object BotMod : ModInitializer {
     override fun onInitialize() {
         NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
         NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+
+        NeoForgeModConfigEvents.reloading(MODID).register {
+            // Updates the webhook client if the URL changed
+            minecraftHandler?.updateWebhookClient()
+        }
 
         ServerLifecycleEvents.SERVER_STARTED.register {
             LOGGER.info("Starting AstralBot on Fabric")

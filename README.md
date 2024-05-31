@@ -12,7 +12,7 @@ while allowing true complexity for power users.
 These features are the core of what this bot will do. See [the Status section](#status)
 to see how much is already implemented.
 - Discord and Minecraft account linking, optionally requiring this to be whitelisted
-- Discord and Minecraft chat synchronization
+- Discord and Minecraft chat synchronization, optionally via webhook for improved readability
 - FAQ commands using Markdown files without needing to restart the server
 
 ## Dependencies
@@ -35,7 +35,7 @@ The following things will be configurable:
   2. (If possible) Minecraft user imitation (The Minecraft usernames and heads will be used for messages)
   3. (Only available if requiring linking for whitelist) Discord user imitation (The messages will be written under the linked Discord name)
   
-  Default: No user imitation
+  Default: Minecraft user imitation (if webhook URL is set, otherwise no imitation)
 - Managing FAQs through a command interface (default: `off`)
 - Database connection. Uses an SQLite database by default
 
@@ -45,10 +45,10 @@ The following things will be configurable:
   - [x] Reading Markdown files
   - [x] Updating suggestions without restart
   - [ ] Management/Creation via commands
-- [ ] Chat synchronization
+- [x] Chat synchronization
   - [x] Minecraft to Discord
   - [x] Discord to Minecraft
-  - [ ] User imitation on Discord
+  - [x] User imitation on Discord. Either uses Minecraft avatars or Discord avatars
 
 ## Running
 There is no public instance of this bot/mod available. To use it, create a new Application
@@ -56,9 +56,9 @@ on the [Discord Developer Portal](https://discord.com/developers/applications) a
 to have the three privileged gateway intents: `PRESENCE`, `SERVER MEMBERS` and `MESSAGE CONTENT`.
 
 Copy the bot token and store it somewhere safe (like a Password Manager) and never show it to
-anybody else. To make sure the token gets read by the bot, it has to be in an [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable)
-`DISCORD_TOKEN` where the running Minecraft server can access it. You could for example modify a `start.sh` script
-on a Unix-like system to `export` it or start the shell script with it set directly:
+anybody else. To make sure the token gets read by the bot, it has to be in either an [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable)
+`DISCORD_TOKEN` where the running Minecraft server can access it or in the config file under the key `token`.
+You could for example modify a `start.sh` script on a Unix-like system to `export` it or start the shell script with it set directly:
 
 `startmc.sh`:
 ```shell
@@ -76,3 +76,8 @@ DISCORD_TOKEN=<place token here> startmc.sh # Start the script with the env vari
 After starting the server, you can go into the OAuth2 URL builder on the Discord
 Developer Portal and generate a URL with the `bot` and `applications.command` permissions.
 Use the generated URL to have the bot join your server.
+
+To be able to use user imitation, which makes the chat synchronization more readable, the bot will try and create a webhook
+in the configured chat synchronization channel. This means it will need to have the permission to manage webhooks. If you
+don't want that you can manually create a webhook in the channel where you want the messages synchronized and set it in the
+`webhook.url` option in the config for the mod.

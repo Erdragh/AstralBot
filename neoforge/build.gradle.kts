@@ -92,29 +92,6 @@ tasks {
 
     shadowJar {
         archiveClassifier = null
-        configurations = listOf(shadowBotDep)
-
-        // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
-        mergeServiceFiles()
-
-        // Forge restricts loading certain classes for security reasons.
-        // Luckily, shadow can relocate them to a different package.
-        relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
-
-        // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
-        relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
-
-        // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
-        relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
-
-        exclude(".cache/**") //Remove datagen cache from jar.
-        exclude("**/astralbot/datagen/**") //Remove data gen code from jar.
-        exclude("**/org/slf4j/**")
-
-        exclude("kotlinx/**")
-        exclude("_COROUTINE/**")
-        exclude("**/org/jetbrains/annotations/*")
-        exclude("**/org/intellij/**")
     }
 
     jarJar.configure {
