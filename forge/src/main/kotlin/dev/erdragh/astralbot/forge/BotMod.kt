@@ -7,14 +7,12 @@ import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.forge.event.SystemMessageEvent
 import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import dev.erdragh.astralbot.minecraftHandler
-import dev.erdragh.astralbot.neoforge.event.CommandMessageEvent
-import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
 import dev.erdragh.astralbot.forge.event.CommandMessageEvent
 import net.minecraft.server.level.ServerPlayer
-import thedarkcolour.kotlinforforge.neoforge.forge.FORGE_BUS
-import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
+import thedarkcolour.kotlinforforge.forge.FORGE_BUS
+import thedarkcolour.kotlinforforge.forge.MOD_BUS
 import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.event.ServerChatEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
@@ -23,6 +21,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.config.ModConfig
+import net.minecraftforge.fml.event.config.ModConfigEvent
 
 @Mod("astralbot")
 object BotMod {
