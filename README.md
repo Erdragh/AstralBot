@@ -34,7 +34,7 @@ The following things will be configurable:
   2. (If possible) Minecraft user imitation (The Minecraft usernames and heads will be used for messages)
   3. (Only available if requiring linking for whitelist) Discord user imitation (The messages will be written under the linked Discord name)
   
-  Default: Minecraft user imitation (if webhook URL is set, otherwise no imitation)
+  Default: Minecraft user imitation (if webhook available is set, otherwise no imitation)
 - Managing FAQs through a command interface (default: `off`)
 - Database connection. Uses an SQLite database by default
 
