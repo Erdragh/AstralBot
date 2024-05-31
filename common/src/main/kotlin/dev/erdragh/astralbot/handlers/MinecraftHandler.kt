@@ -1,5 +1,10 @@
 package dev.erdragh.astralbot.handlers
 
+import club.minnced.discord.webhook.WebhookClient
+import club.minnced.discord.webhook.external.JDAWebhookClient
+import club.minnced.discord.webhook.send.WebhookEmbed
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder
+import club.minnced.discord.webhook.send.WebhookMessageBuilder
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
@@ -9,7 +14,10 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.requests.ErrorResponse
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.minecraft.ChatFormatting
 import net.minecraft.Util
 import net.minecraft.network.chat.*
@@ -21,6 +29,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
 
+
 /**
  * Wrapper class around the [MinecraftServer] to provide convenience
  * methods for fetching [GameProfile]s, sending Messages, acting
@@ -28,9 +37,43 @@ import kotlin.math.min
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
-    private val playerNames = HashSet<String>(server.maxPlayers);
+    private val playerNames = HashSet<String>(server.maxPlayers)
     private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it) }
+    private var webhookClient: WebhookClient? = null
 
+    /**
+     * Method that maybe creates a new webhook client if one wasn't configured before.
+     * Gets called when the config is reloaded.
+     */
+    fun updateWebhookClient() {
+        val url = AstralBotConfig.WEBHOOK_URL.get()
+        if (webhookClient == null || url != webhookClient?.url) {
+            webhookClient = url.let { if (it != "") WebhookClient.withUrl(it) else null }
+        }
+        if (webhookClient == null) {
+            textChannel?.retrieveWebhooks()?.submit()?.whenComplete { webhooks, error ->
+                if (error != null) {
+                    LOGGER.error("Failed to fetch webhooks for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
+                } else {
+                    if (webhooks.size > 1) {
+                        LOGGER.warn("Multiple webhooks available for channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will use the first one. If you want to use a specific one, set the webhook.url config option.")
+                        webhookClient = JDAWebhookClient.from(webhooks[0])
+                    } else if (webhooks.size == 1) {
+                        webhookClient = JDAWebhookClient.from(webhooks[0])
+                    } else {
+                        LOGGER.info("No webhook found in channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will try to create one.")
+                        textChannel!!.createWebhook("AstralBot Chat synchronization").submit().whenComplete { webhook, error ->
+                            if (error != null) {
+                                LOGGER.error("Failed to create webhook for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
+                            } else {
+                                webhookClient = JDAWebhookClient.from(webhook)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     companion object {
         private val numberFormat = DecimalFormat("###.##")
@@ -146,18 +189,45 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             }
         }
 
+        val messageSenderInfo = if(useWebhooks()) MessageSenderLookup.getMessageSenderInfo(player, AstralBotConfig.WEBHOOK_USE_LINKED.get()) else null
         val escape = { it: String -> it.replace("_", "\\_") }
-        textChannel?.sendMessage(
-            if (player != null)
-                AstralBotTextConfig.PLAYER_MESSAGE.get()
-                    .replace("{{message}}", formatComponentToMarkdown(message))
-                    .replace("{{fullName}}", escape(player.displayName?.string ?: player.name.string))
-                    .replace("{{name}}", escape(player.name.string))
-            else escape(message.string)
-        )
-            ?.addEmbeds(formattedEmbeds)
-            ?.setSuppressedNotifications(true)
-            ?.queue()
+        val content = if (messageSenderInfo != null) {
+            formatComponentToMarkdown(message)
+        } else if (player != null) {
+            AstralBotTextConfig.PLAYER_MESSAGE.get()
+                .replace("{{message}}", formatComponentToMarkdown(message))
+                .replace("{{fullName}}", escape(player.displayName?.string ?: player.name.string))
+                .replace("{{name}}", escape(player.name.string))
+        } else {
+            formatComponentToMarkdown(message)
+        }
+
+        if (!useWebhooks() || webhookClient == null || messageSenderInfo == null) {
+            val createdMessage = MessageCreateBuilder()
+                .addEmbeds(formattedEmbeds)
+                .setContent(content)
+                .setSuppressedNotifications(true)
+                .build()
+            textChannel?.sendMessage(createdMessage)?.queue()
+        } else {
+            val webhookMessage = WebhookMessageBuilder()
+                .addEmbeds(formattedEmbeds.map { embed ->
+                    WebhookEmbedBuilder().let { builder -> embed.title?.let { title -> builder.setTitle(WebhookEmbed.EmbedTitle(title, null)) }; builder }
+                        .setDescription(embed.description)
+                        .setColor(embed.colorRaw)
+                        .build()
+                })
+                .setContent(content)
+                .setUsername(
+                    AstralBotTextConfig.WEBHOOK_NAME_TEMPLATE.get()
+                        .replace("{{primary}}", messageSenderInfo.primaryName)
+                        .replace("{{secondary}}", messageSenderInfo.secondaryName ?: "Unlinked")
+                )
+                .setAvatarUrl(messageSenderInfo.avatar)
+                .build()
+
+            webhookClient!!.send(webhookMessage)
+        }
     }
 
     /**
@@ -226,24 +296,39 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             messageContents.append(formatEmbeds(message))
         }
 
-        val referencedAuthor = message.referencedMessage?.author?.id
+        val respondeeId = message.referencedMessage?.author?.id
+        val respondeeName = message.referencedMessage?.author?.effectiveName
 
         waitForSetup()
 
-        if (referencedAuthor != null) {
-            // This fetches the Member from the ID in a blocking manner
-            guild?.retrieveMemberById(referencedAuthor)?.submit()?.whenComplete { repliedMember, error ->
+        if (respondeeId != null) {
+            guild?.retrieveMemberById(respondeeId)?.submit()?.whenComplete { repliedMember, error ->
                 if (error != null) {
-                    LOGGER.error("Failed to get member with id: $referencedAuthor", error)
+                    if (error !is ErrorResponseException || error.errorResponse.code != ErrorResponse.UNKNOWN_USER.code) {
+                        // if the error is because the user was unknown, the log shouldn't be spammed.
+                        // This is becausane webhook messages will produce this error.
+                        LOGGER.error("Failed to get member with id: $respondeeId", error)
+                    }
+                    if (respondeeName != null) {
+                        message.member?.let {
+                            comp.append(formatMessageWithUsers(messageContents, it, TextComponent(respondeeName).withStyle(ChatFormatting.WHITE)))
+                            send(comp)
+                        }
+                    }
                     return@whenComplete
                 } else if (repliedMember == null) {
-                    LOGGER.error("Failed to get member with id: $referencedAuthor")
+                    LOGGER.error("Failed to get member with id: $respondeeId")
                     return@whenComplete
                 }
                 message.member?.let {
                     comp.append(formatMessageWithUsers(messageContents, it, repliedMember))
                     send(comp)
                 }
+            }
+        } else if (respondeeName != null) {
+            message.member?.let {
+                comp.append(formatMessageWithUsers(messageContents, it, TextComponent(respondeeName).withStyle(ChatFormatting.WHITE)))
+                send(comp)
             }
         } else {
             message.member?.let {
@@ -253,7 +338,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
     }
 
-    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Member?): MutableComponent {
+    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Component?): MutableComponent {
         val formatted = TextComponent("")
 
         val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
@@ -286,7 +371,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                     reply.append(formattedLiteral(value))
 
                     if (index + 1 < replyTemplateSplit.size) {
-                        reply.append(formattedUser(it))
+                        reply.append(it)
                     }
                 }
             }
@@ -312,6 +397,10 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         return formatted
+    }
+
+    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Member): MutableComponent {
+        return formatMessageWithUsers(message, author, formattedUser(replied))
     }
 
     /**
@@ -393,5 +482,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             )
         }
         return comp
+    }
+
+    private fun useWebhooks(): Boolean {
+        return AstralBotConfig.WEBHOOK_ENABLED.get() && webhookClient != null
     }
 }

@@ -3,7 +3,10 @@ package dev.erdragh.astralbot.config
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.discord.allCommands
 import net.minecraftforge.common.ForgeConfigSpec
+import java.net.URI
 import java.net.URL
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 /**
  * Config for the AstralBot mod. This uses Forge's config system
@@ -19,6 +22,30 @@ object AstralBotConfig {
      * look for a token in this config option.
      */
     val DISCORD_TOKEN: ForgeConfigSpec.ConfigValue<String>
+
+    /**
+     * Used for sending more appealing messages
+     */
+    val WEBHOOK_URL: ForgeConfigSpec.ConfigValue<String>
+    /**
+     * Whether the configured [WEBHOOK_URL] should actually be used,
+     * useful in case somebody wants to temporarily disable using
+     * the webhook without removing the URL
+     */
+    val WEBHOOK_ENABLED: ForgeConfigSpec.BooleanValue
+
+    /**
+     * URL template for getting avatars from Minecraft users
+     */
+    val WEBHOOK_MC_AVATAR_URL: ForgeConfigSpec.ConfigValue<String>
+
+    /**
+     * Whether the chat messages sent via the webhook should
+     * imitate the sender's Discord account or their Minecraft
+     * account. If this is on, the linked Discord account will
+     * be used.
+     */
+    val WEBHOOK_USE_LINKED: ForgeConfigSpec.BooleanValue
 
     /**
      * Whether the default whitelisting process is respected or ignored.
@@ -101,6 +128,15 @@ object AstralBotConfig {
         DISCORD_TOKEN = builder.comment("Discord token for the bot. Can also be supplied via DISCORD_TOKEN environment variable")
             .define("token", "")
 
+        WEBHOOK_URL = builder.comment("URL to the webhook where the messages will be sent from")
+            .define(listOf("webhook", "url"), "")
+        WEBHOOK_ENABLED = builder.comment("Whether to use the configured webhook for sending messages")
+            .define(listOf("webhook", "enabled"), true)
+        WEBHOOK_USE_LINKED = builder.comment("Whether to imitate user's linked Discord accounts when sending messages from MC to DC")
+            .define(listOf("webhook", "useLinked"), false)
+        WEBHOOK_MC_AVATAR_URL = builder.comment("API that returns images based on Minecraft users. {{uuid}} and {{name}} can be used")
+            .define(listOf("webhook", "mcAvatarUrl"), "https://mc-heads.net/head/{{uuid}}")
+
         REQUIRE_LINK_FOR_WHITELIST = builder.comment("Whether to require being linked to be whitelisted")
             .define("requireLinkForWhitelist", false)
         DISCORD_LINK = builder.comment("Link to the discord where your users can run the /link command")
@@ -136,15 +172,15 @@ object AstralBotConfig {
                 )
             ) {
                 if (it !is String) {
-                    LOGGER.warn("$it in URL blocklist is not a String")
+                    LOGGER.warn("$it in URI blocklist is not a String")
                     return@defineList false
                 }
                 // TODO: Replace with better way to check for URL
                 try {
-                    URL(it)
+                    URI(it)
                     return@defineList true
                 } catch (e: Exception) {
-                    LOGGER.warn("Failed to parse URL on blocklist: $it", e)
+                    LOGGER.warn("Failed to parse URI on blocklist: $it", e)
                     return@defineList false
                 }
             }
@@ -180,12 +216,12 @@ object AstralBotConfig {
     fun urlAllowed(url: String?): Boolean {
         if (url == null) return true
         try {
-            val parsedURL = URL(url)
+            val parsedURL = URI(url)
             for (blockedURL in URL_BLOCKLIST.get()) {
-                if (parsedURL.host == URL(blockedURL).host) return false
+                if (parsedURL.host == URI(blockedURL).host) return false
             }
         } catch (e: Exception) {
-            LOGGER.warn("URL $url", e)
+            LOGGER.warn("URI $url", e)
             return false
         }
         return true
