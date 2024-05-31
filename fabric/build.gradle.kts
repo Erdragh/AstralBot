@@ -81,6 +81,6 @@ publishMods {
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
-        requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
+        requires("fabric-language-kotlin", "forge-config-api-port", "fabric-api")
     }
 }
