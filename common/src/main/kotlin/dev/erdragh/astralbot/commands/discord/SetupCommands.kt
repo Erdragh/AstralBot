@@ -1,12 +1,9 @@
 package dev.erdragh.astralbot.commands.discord
 
-import dev.erdragh.astralbot.LOGGER
+import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.handlers.WhitelistHandler
-import dev.erdragh.astralbot.textChannel
-import dev.erdragh.astralbot.waitForSetup
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
@@ -34,6 +31,7 @@ object ReloadCommand : HandledSlashCommand {
             event.hook.setEphemeral(true).sendMessage(AstralBotTextConfig.GENERIC_ERROR.get()).queue()
             return
         }
+        minecraftHandler?.updateWebhookClient()
         CommandHandlingListener.updateCommands(guild) { msg ->
             event.hook.setEphemeral(true).sendMessage(msg).queue()
         }
@@ -84,6 +82,9 @@ object ChatSyncCommand : HandledSlashCommand {
 
             AstralBotConfig.DISCORD_GUILD.set(guild!!.idLong)
             AstralBotConfig.DISCORD_GUILD.save()
+
+            minecraftHandler?.updateWebhookClient()
+
             success = true
         }
         event.hook.setEphemeral(true)
