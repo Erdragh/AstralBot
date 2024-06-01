@@ -126,12 +126,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime * 1000))
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.averageTickTime))
             .replace(
                 "{{tps}}", numberFormat.format(
                     min(
                         20.0,
-                        1000.0 / (server.averageTickTime * 1000)
+                        1000.0 / (server.averageTickTime)
                     )
                 )
             )

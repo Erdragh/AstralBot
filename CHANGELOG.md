@@ -1,3 +1,6 @@
+# 1.5.2
+Fix tps command using wrong numbers for calculation
+
 # 1.5.1
 Hotfix for Versions 1.18.2 - 1.20.1 fixing missing classes
 
