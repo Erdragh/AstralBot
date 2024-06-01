@@ -1,3 +1,6 @@
+# 1.5.2
+Fix tps command using wrong numbers for calculation
+
 # 1.5.0
 - Introduce webhook chat sync, allowing for user imitation
   
