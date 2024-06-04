@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot
 
 import dev.erdragh.astralbot.commands.discord.CommandHandlingListener
+import dev.erdragh.astralbot.commands.discord.UserEventListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
@@ -127,7 +128,11 @@ fun startAstralbot(server: MinecraftServer) {
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MEMBERS
-        ).addEventListeners(CommandHandlingListener, minecraftHandler).build()
+        ).addEventListeners(
+            CommandHandlingListener,
+            UserEventListener,
+            minecraftHandler
+        ).build()
 
     setupJob = GlobalScope.async {
         launch {
