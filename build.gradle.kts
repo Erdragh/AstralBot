@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    // The shadow plugin is used by the fabric subproject to include dependencies
     // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
     // see: https://github.com/johnrengelman/shadow/issues/911
     id("io.github.goooler.shadow") version "8.1.7" apply false
