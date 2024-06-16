@@ -38,13 +38,16 @@ dependencies {
 }
 
 loom {
+//    serverOnlyMinecraftJar()
+//    splitEnvironmentSourceSets()
+//    configurations.testCompileClasspath.extendsFrom(configurations.minecraftServerLibraries)
+//    configurations.testRuntimeClasspath.extendsFrom(configurations.minecraftServerRuntimeLibraries)
+
     if (project(":common").file("src/main/resources/${modId}.accesswidener").exists())
         accessWidenerPath.set(project(":common").file("src/main/resources/${modId}.accesswidener"))
 
     @Suppress("UnstableApiUsage")
     mixin { defaultRefmapName.set("${modId}.refmap.json") }
-
-    splitEnvironmentSourceSets()
 
     mods {
         create("astralbot") {
