@@ -46,7 +46,7 @@ subprojects {
     }
 
     extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
         withSourcesJar()
     }
 
@@ -136,6 +136,11 @@ subprojects {
         }
     }
 
+    tasks.test {
+        // There are no tests and the Neo build fails
+        exclude("**/*")
+    }
+
     java {
         withSourcesJar()
         modularity.inferModulePath = true
@@ -195,7 +200,7 @@ subprojects {
             "credits" to credits
         )
 
-        filesMatching(listOf("pack.mcmeta", "*.mixins.json", "META-INF/mods.toml", "fabric.mod.json")) {
+        filesMatching(listOf("pack.mcmeta", "*.mixins.json", "META-INF/*.mods.toml", "fabric.mod.json")) {
             expand(expandProps)
         }
         inputs.properties(expandProps)
@@ -255,8 +260,8 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        targetCompatibility = JavaVersion.VERSION_17.majorVersion
-        sourceCompatibility = JavaVersion.VERSION_17.majorVersion
+        targetCompatibility = JavaVersion.VERSION_21.majorVersion
+        sourceCompatibility = JavaVersion.VERSION_21.majorVersion
     }
 
     // Publishing settings
@@ -292,7 +297,7 @@ subprojects {
                 // file. This allows me to keep all previous changes in the file
                 // without having to worry about them being included on new file
                 // uploads.
-                File("CHANGELOG.md")
+                File(rootDir, "CHANGELOG.md")
                     .readText(StandardCharsets.UTF_8)
                     .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
                     .trim()
@@ -305,7 +310,7 @@ subprojects {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 

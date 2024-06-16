@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.minecraft.client.resources.SkinManager
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.Item
 import net.neoforged.fml.config.ModConfig
 
 object BotMod : ModInitializer {
