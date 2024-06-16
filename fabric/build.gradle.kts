@@ -110,7 +110,7 @@ publishMods {
     val curseforgePublish: Provider<CurseforgeOptions> by extra
     val modrinthPublish: Provider<ModrinthOptions> by extra
 
-    changelog = extra.get("changelog").toString()
+    changelog = extra.get("changelog") as String
     type = extra.get("type") as ReleaseType
 
     curseforge("curseFabric") {
