@@ -44,13 +44,15 @@ loom {
     @Suppress("UnstableApiUsage")
     mixin { defaultRefmapName.set("${modId}.refmap.json") }
 
-    runs {
-        named("client") {
-            client()
-            configName = "Fabric Client"
-            ideConfigGenerated(true)
-            runDir("run")
+    splitEnvironmentSourceSets()
+
+    mods {
+        create("astralbot") {
+            sourceSet(sourceSets.main.get())
         }
+    }
+
+    runs {
         named("server") {
             server()
             configName = "Fabric Server"
