@@ -4,9 +4,6 @@ import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.discord.allCommands
 import net.neoforged.neoforge.common.ModConfigSpec
 import java.net.URI
-import java.net.URL
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 /**
  * Config for the AstralBot mod. This uses Forge's config system
