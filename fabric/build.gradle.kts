@@ -38,10 +38,7 @@ dependencies {
 }
 
 loom {
-//    serverOnlyMinecraftJar()
-//    splitEnvironmentSourceSets()
-//    configurations.testCompileClasspath.extendsFrom(configurations.minecraftServerLibraries)
-//    configurations.testRuntimeClasspath.extendsFrom(configurations.minecraftServerRuntimeLibraries)
+    serverOnlyMinecraftJar()
 
     if (project(":common").file("src/main/resources/${modId}.accesswidener").exists())
         accessWidenerPath.set(project(":common").file("src/main/resources/${modId}.accesswidener"))
