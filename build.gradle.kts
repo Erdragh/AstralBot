@@ -217,18 +217,25 @@ subprojects {
         apply(plugin = "io.github.goooler.shadow")
 
         dependencies {
-            implementation(project(":common"))
+            // This is runtimeLib, because NG doesn't add the common classes to the runtime classpath correctly
+            runtimeLib(project(":common")) {
+                isTransitive = false
+            }
+        }
+
+        // Include common classes in jar and shadowJar output
+        listOf(tasks.jar, tasks.named<ShadowJar>("shadowJar")).forEach {
+            it { from(project(":common").sourceSets.main.get().output) }
         }
 
         tasks.named<ShadowJar>("shadowJar") {
             // The shadowBotDep configuration was explicitly made to be shaded in, this is where that happens
-            configurations.clear()
             configurations = listOf(shadowBotDep)
 
             // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
             mergeServiceFiles()
 
-            // Forge restricts loading certain classes for security reasons.
+            // (Neo-)Forge restricts loading certain classes for security reasons.
             // Luckily, shadow can relocate them to a different package.
             relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
 
@@ -249,7 +256,7 @@ subprojects {
             relocate("com.iwebpp.crypto", "dev.erdragh.shadowed.com.iwebpp.crypto")
             relocate("com.neovisionaries.ws", "dev.erdragh.shadowed.com.neovisionaries.ws")
             relocate("org.json", "dev.erdragh.shadowed.org.json")
-            relocate("net.bytebuddy", "dev.erdragh.net.bytebuddy")
+            relocate("net.bytebuddy", "dev.erdragh.shadowed.net.bytebuddy")
 
             exclude("**/org/slf4j/**")
 

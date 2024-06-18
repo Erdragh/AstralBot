@@ -79,17 +79,7 @@ dependencies {
     includeBotDep.dependencies.forEach { jarJar(it) }
 }
 
-// NeoGradle compiles the game, but we don't want to add our common code to the game's code
-val notNeoTask: Spec<Task> = Spec { !it.name.startsWith("neo") }
-
 tasks {
-    withType<JavaCompile>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allSource) }
-    withType<KotlinCompile>().matching(notNeoTask).configureEach {
-        source(project(":common").sourceSets.main.get().allSource)
-    }
-
-    withType<Javadoc>().matching(notNeoTask).configureEach { source(project(":common").sourceSets.main.get().allJava) }
-
     shadowJar {
         archiveClassifier = null
     }
@@ -98,9 +88,13 @@ tasks {
         dependsOn(shadowJar)
     }
 
-    named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }
-
-    processResources { from(project(":common").sourceSets.main.get().resources) }
+    // Fixes IDE runs not processing common resources
+    processResources {
+        from(project(":common").sourceSets.main.get().resources)
+    }
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
 }
 
 publishing {

@@ -63,15 +63,6 @@ loom {
 }
 
 tasks {
-    withType<JavaCompile> {
-        source(project(":common").sourceSets.main.get().allSource)
-    }
-    withType<KotlinCompile> {
-        source(project(":common").sourceSets.main.get().allSource)
-    }
-
-    javadoc { source(project(":common").sourceSets.main.get().allJava) }
-
     jar {
         archiveClassifier.set("dev")
     }
@@ -84,10 +75,6 @@ tasks {
         inputFile.set(named<ShadowJar>("shadowJar").get().archiveFile)
         dependsOn("shadowJar")
     }
-
-    named("sourcesJar", Jar::class) { from(project(":common").sourceSets.main.get().allSource) }
-
-    processResources { from(project(":common").sourceSets.main.get().resources) }
 }
 
 publishing {
