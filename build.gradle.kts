@@ -18,6 +18,13 @@ plugins {
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
     // For publishing the mod
     id("me.modmuss50.mod-publish-plugin") version "0.5.1"
+
+    // NeoForge development
+    id("net.neoforged.gradle.userdev") version "7.0.145" apply false
+    // Fabric development
+    id("fabric-loom") version "1.6-SNAPSHOT" apply false
+    // Common development
+    id ("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT" apply false
 }
 
 val minecraftVersion: String by project

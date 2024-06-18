@@ -4,7 +4,7 @@ plugins {
     idea
     java
     `maven-publish`
-    id ("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
+    id ("org.spongepowered.gradle.vanilla")
 }
 
 val minecraftVersion: String by project

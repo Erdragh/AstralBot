@@ -8,7 +8,7 @@ plugins {
     java
     idea
     `maven-publish`
-    id("fabric-loom") version "1.6-SNAPSHOT"
+    id("fabric-loom")
     id("io.github.goooler.shadow")
     id("me.modmuss50.mod-publish-plugin")
 }
