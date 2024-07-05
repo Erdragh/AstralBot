@@ -7,7 +7,7 @@ import java.util.*
 plugins {
     // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
     // see: https://github.com/johnrengelman/shadow/issues/911
-    id("io.github.goooler.shadow") version "8.1.7" apply false
+    id("io.github.goooler.shadow") version "8.1.8" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
     kotlin("jvm") version "2.0.0"
@@ -15,14 +15,14 @@ plugins {
     id("org.jetbrains.dokka") version "1.9.10"
     java
     // Required for NeoGradle
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.7"
+    idea
     // For publishing the mod
-    id("me.modmuss50.mod-publish-plugin") version "0.5.1"
+    id("me.modmuss50.mod-publish-plugin") version "0.5.2"
 
     // NeoForge development
-    id("net.neoforged.gradle.userdev") version "7.0.145" apply false
+    id("net.neoforged.gradle.userdev") version "7.0.153" apply false
     // Fabric development
-    id("fabric-loom") version "1.6-SNAPSHOT" apply false
+    id("fabric-loom") version "1.7-SNAPSHOT" apply false
     // Common development
     id ("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT" apply false
 }
