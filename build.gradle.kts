@@ -93,9 +93,12 @@ subprojects {
     val runtimeLib by configurations.creating {
         isTransitive = true
     }
-    configurations.implementation.extendsFrom(configurations.named("shadowBotDep"))
-    configurations.implementation.extendsFrom(configurations.named("includeBotDep"))
-    configurations.implementation.extendsFrom(configurations.named("runtimeLib"))
+    // Configuration for depending on the common project
+    val commonDep by configurations.creating
+    configurations.implementation.extendsFrom(configurations.named(shadowBotDep.name))
+    configurations.implementation.extendsFrom(configurations.named(includeBotDep.name))
+    configurations.implementation.extendsFrom(configurations.named(runtimeLib.name))
+    configurations.implementation.extendsFrom(configurations.named(commonDep.name))
 
     dependencies {
         runtimeLib("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
@@ -216,7 +219,7 @@ subprojects {
 
         dependencies {
             // This is runtimeLib, because NG doesn't add the common classes to the runtime classpath correctly
-            runtimeLib(project(":common")) {
+            commonDep(project(":common")) {
                 isTransitive = false
             }
         }
