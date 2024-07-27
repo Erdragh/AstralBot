@@ -61,18 +61,18 @@ object AstralBotConfig {
     /**
      * The ID of the discord channel where the messages are synchronized
      */
-    val DISCORD_CHANNEL: ModConfigSpec.ConfigValue<Long>
+    val DISCORD_CHANNEL: ModConfigSpec.LongValue
 
     /**
      * The ID of the Discord Guild (server) where this bot will be active.
      * This is used to get the chat sync channel etc.
      */
-    val DISCORD_GUILD: ModConfigSpec.ConfigValue<Long>
+    val DISCORD_GUILD: ModConfigSpec.LongValue
 
     /**
      * The ID of the Discord role given to linked members
      */
-    val DISCORD_ROLE: ModConfigSpec.ConfigValue<Long>
+    val DISCORD_ROLE: ModConfigSpec.LongValue
 
     /**
      * If this is set to true the message sent into the Minecraft chat
@@ -139,11 +139,11 @@ object AstralBotConfig {
         DISCORD_LINK = builder.comment("Link to the discord where your users can run the /link command")
             .define("discordLink", "")
         DISCORD_CHANNEL = builder.comment("Channel ID where the chat messages are synced")
-            .define("discordChannel", 0L)
+            .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
-            .define("discordGuild", 0L)
+            .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
         DISCORD_ROLE = builder.comment("ID of the role given to linked users")
-            .define("discordRole", 0L)
+            .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
 
         CLICKABLE_MESSAGES =
             builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")
