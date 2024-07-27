@@ -9,7 +9,8 @@ object AstralBotTextConfig {
     val GENERIC_SUCCESS: ModConfigSpec.ConfigValue<String>
     val GENERIC_BLOCKED: ModConfigSpec.ConfigValue<String>
 
-    val FAQ_ERROR: ModConfigSpec.ConfigValue<String>
+    val FAQ_TOO_LONG: ModConfigSpec.ConfigValue<String>
+    val FAQ_NONE_AVAILABLE: ModConfigSpec.ConfigValue<String>
     val FAQ_NO_REGISTERED: ModConfigSpec.ConfigValue<String>
 
     val TICK_REPORT: ModConfigSpec.ConfigValue<String>
@@ -50,8 +51,10 @@ object AstralBotTextConfig {
         GENERIC_BLOCKED = builder.comment("Generic string that replaces blocked URLs/Links")
             .define("genericBlocked", "[BLOCKED]")
 
-        FAQ_ERROR = builder.comment("Message sent to Discord if an error ocurrs during FAQ loading")
-            .define(mutableListOf("faq", "error"), "Bot Error (Contact Bot Operator)")
+        FAQ_TOO_LONG = builder.comment("Message sent to Discord if an FAQ entry is too long. The id is accessible via {{id}}")
+            .define(mutableListOf("faq", "tooLong"), "FAQ for id `{{id}}` exceeds Discord's message length limit.")
+        FAQ_NONE_AVAILABLE = builder.comment("Message sent to Discord if there are no FAQs available")
+            .define(mutableListOf("faq", "noneAvailable"), "No FAQs available")
         FAQ_NO_REGISTERED =
             builder.comment(
                 """Message sent to Discord when there is no FAQ for the given id.
