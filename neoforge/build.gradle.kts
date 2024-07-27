@@ -1,66 +1,59 @@
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
-    `maven-publish`
     java
-    id("net.neoforged.gradle.userdev")
+    id("net.neoforged.moddev")
     id("io.github.goooler.shadow")
 }
 
 val modId: String by project
-
-jarJar.enable()
-
 val includeBotDep: Configuration by configurations.getting
 val shadowBotDep: Configuration by configurations.getting
 val runtimeLib: Configuration by configurations.getting
 
-// Automatically enable neoforge AccessTransformers if the file exists
-// This location is hardcoded in FML and can not be changed.
-// https://github.com/neoforged/FancyModLoader/blob/a952595eaaddd571fbc53f43847680b00894e0c1/loader/src/main/java/net/neoforged/fml/loading/moddiscovery/ModFile.java#L118
-val transformerFile = file("src/main/resources/META-INF/accesstransformer.cfg")
-if (transformerFile.exists())
-    minecraft.accessTransformers.file(transformerFile)
+val minecraftVersion: String by project
+val mcVersion = minecraftVersion
+val parchmentVersion: String by project
+val neoVersion: String by project
+val kotlinForgeVersion: String by project
 
-runs {
-    configureEach { modSource(project.sourceSets.main.get()) }
+neoForge {
+    version = neoVersion
 
-    create("client") {
-        systemProperty("neoforge.enabledGameTestNamespaces", modId)
+    parchment {
+        minecraftVersion = mcVersion
+        mappingsVersion = parchmentVersion
+    }
 
-        dependencies {
-            runtime(runtimeLib)
+    validateAccessTransformers = true
+
+    // Automatically enable neoforge AccessTransformers if the file exists
+    // This location is hardcoded in FML and can not be changed.
+    // https://github.com/neoforged/FancyModLoader/blob/a952595eaaddd571fbc53f43847680b00894e0c1/loader/src/main/java/net/neoforged/fml/loading/moddiscovery/ModFile.java#L118
+    val transformerFile = project.file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (transformerFile.exists())
+        accessTransformers.from(transformerFile)
+
+    mods {
+        create(modId) {
+            sourceSet(project.sourceSets.main.get())
         }
     }
 
-    create("server") {
-        systemProperty("neoforge.enabledGameTestNamespaces", modId)
-        programArgument("--nogui")
-        dependencies {
-            runtime(runtimeLib)
+    runs {
+        create("server") {
+            server()
+            systemProperty("neoforge.enabledGameTestNamespaces", modId)
+            programArgument("--nogui")
         }
-    }
 
-    create("gameTestServer") {
-        systemProperty("neoforge.enabledGameTestNamespaces", modId)
-        dependencies {
-            runtime(runtimeLib)
-        }
-    }
-
-    create("data") {
-        programArguments.addAll(
-            "--mod", modId,
-            "--all",
-            "--output", file("src/generated/resources").absolutePath,
-            "--existing", file("src/main/resources/").absolutePath
-        )
-        dependencies {
-            runtime(runtimeLib)
+        create("gameTestServer") {
+            type = "gameTestServer"
+            systemProperty("neoforge.enabledGameTestNamespaces", modId)
         }
     }
 }
@@ -68,45 +61,30 @@ runs {
 sourceSets.main.get().resources.srcDir("src/generated/resources")
 
 dependencies {
-    val minecraftVersion: String by project
-    val neoVersion: String by project
-    val kotlinForgeVersion: String by project
-
-    implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
     // Adds KFF as dependency and Kotlin libs
     implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForgeVersion")
 
-    includeBotDep.dependencies.forEach { jarJar(it) }
+    configurations.named("additionalRuntimeClasspath").extendsFrom(configurations.named("runtimeLib"))
+    configurations.named("jarJar").extendsFrom(configurations.named("includeBotDep"))
 }
 
 tasks {
-    shadowJar {
-        archiveClassifier = null
-    }
-
-    jarJar.configure {
-        dependsOn(shadowJar)
-    }
-
     // Fixes IDE runs not processing common resources
     processResources {
         from(project(":common").sourceSets.main.get().resources)
     }
     jar {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        archiveClassifier = "slim"
+        finalizedBy(shadowJar)
     }
-}
-
-publishing {
-    publications {
-        register("mavenJava", MavenPublication::class) {
-            artifactId = base.archivesName.get()
-            artifact(tasks.jar)
-        }
+    shadowJar {
+        dependsOn(jar)
+        from(jar)
+        archiveClassifier = null
     }
-
-    repositories {
-        maven("file://${System.getenv("local_maven")}")
+    withType<AbstractArchiveTask> {
+        println("archive task: ${this.name}")
     }
 }
 
@@ -125,7 +103,7 @@ publishMods {
     curseforge("curseNeo") {
         from(curseforgePublish)
         modLoaders.add(project.name)
-        file.set(tasks.jarJar.get().archiveFile)
+        file.set(tasks.shadowJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
@@ -135,7 +113,7 @@ publishMods {
     modrinth("modrinthNeo") {
         from(modrinthPublish)
         modLoaders.add(project.name)
-        file.set(tasks.jarJar.get().archiveFile)
+        file.set(tasks.shadowJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"

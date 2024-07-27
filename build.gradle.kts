@@ -17,14 +17,12 @@ plugins {
     // Required for NeoGradle
     idea
     // For publishing the mod
-    id("me.modmuss50.mod-publish-plugin") version "0.5.2"
+    id("me.modmuss50.mod-publish-plugin") version "0.6.2"
 
-    // NeoForge development
-    id("net.neoforged.gradle.userdev") version "7.0.153" apply false
+    // NeoForge and Common development
+    id("net.neoforged.moddev") version "1.0.15" apply false
     // Fabric development
     id("fabric-loom") version "1.7-SNAPSHOT" apply false
-    // Common development
-    id ("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT" apply false
 }
 
 val minecraftVersion: String by project
