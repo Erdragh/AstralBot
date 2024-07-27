@@ -78,11 +78,11 @@ private fun setupFromJDA(api: JDA) {
     LOGGER.info("Fetching required data from Discord")
     updatePresence(0)
     applicationId = api.retrieveApplicationInfo().submit().get().idLong
-    if (AstralBotConfig.DISCORD_GUILD.get() < 0) {
+    if (AstralBotConfig.DISCORD_GUILD.get() <= 0) {
         LOGGER.warn("No text channel for chat synchronization configured. Chat sync will not be enabled.")
         return
     }
-    if (AstralBotConfig.DISCORD_CHANNEL.get() < 0) {
+    if (AstralBotConfig.DISCORD_CHANNEL.get() <= 0) {
         LOGGER.warn("No text channel for chat synchronization configured. Chat sync will not be enabled.")
         return
     }

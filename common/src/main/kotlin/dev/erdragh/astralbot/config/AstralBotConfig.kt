@@ -139,11 +139,11 @@ object AstralBotConfig {
         DISCORD_LINK = builder.comment("Link to the discord where your users can run the /link command")
             .define("discordLink", "")
         DISCORD_CHANNEL = builder.comment("Channel ID where the chat messages are synced")
-            .define("discordChannel", (-1).toLong())
+            .define("discordChannel", 0L)
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
-            .define("discordGuild", (-1).toLong())
+            .define("discordGuild", 0L)
         DISCORD_ROLE = builder.comment("ID of the role given to linked users")
-            .define("discordRole", (-1).toLong())
+            .define("discordRole", 0L)
 
         CLICKABLE_MESSAGES =
             builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")
@@ -166,7 +166,8 @@ object AstralBotConfig {
                         "https://rule34.xxx",
                         "https://discord.gg"
                     )
-                )
+                ),
+                null
             ) {
                 if (it !is String) {
                     LOGGER.warn("$it in URI blocklist is not a String")
@@ -184,7 +185,9 @@ object AstralBotConfig {
 
         ENABLED_COMMANDS = builder.comment("Enabled Slash Commands")
             .defineList("enabledCommands",
-                allCommands.map { it.command.name }) {
+                allCommands.map { it.command.name },
+                null
+            ) {
                 if (it !is String) {
                     LOGGER.warn("$it in enabledCommands is not a String")
                     return@defineList false
