@@ -1,6 +1,9 @@
 # 1.5.3
 - Unlink users on leave
 - Update Dependencies
+- Show better error message if FAQ is too long
+- Limit the autocomplete suggestion return value length to fix no options showing up
+- Added the `/listfaq` command
 
 # 1.5.2
 Fix tps command using wrong numbers for calculation
