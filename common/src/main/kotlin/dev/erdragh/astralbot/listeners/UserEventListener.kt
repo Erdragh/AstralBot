@@ -1,4 +1,4 @@
-package dev.erdragh.astralbot.commands.discord
+package dev.erdragh.astralbot.listeners
 
 import dev.erdragh.astralbot.handlers.WhitelistHandler
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent

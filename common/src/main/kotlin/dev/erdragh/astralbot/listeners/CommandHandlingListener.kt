@@ -1,7 +1,9 @@
-package dev.erdragh.astralbot.commands.discord
+package dev.erdragh.astralbot.listeners
 
 import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.applicationId
+import dev.erdragh.astralbot.commands.discord.AutocompleteCommand
+import dev.erdragh.astralbot.commands.discord.getEnabledCommands
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
 import dev.erdragh.astralbot.waitForSetup

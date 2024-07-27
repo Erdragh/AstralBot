@@ -1,7 +1,7 @@
 package dev.erdragh.astralbot
 
-import dev.erdragh.astralbot.commands.discord.CommandHandlingListener
-import dev.erdragh.astralbot.commands.discord.UserEventListener
+import dev.erdragh.astralbot.listeners.CommandHandlingListener
+import dev.erdragh.astralbot.listeners.UserEventListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
@@ -16,7 +16,6 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
