@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot
 
-import dev.erdragh.astralbot.commands.discord.CommandHandlingListener
+import dev.erdragh.astralbot.listeners.CommandHandlingListener
+import dev.erdragh.astralbot.listeners.UserEventListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
@@ -18,6 +19,7 @@ import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.absolute
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
@@ -76,11 +78,11 @@ private fun setupFromJDA(api: JDA) {
     LOGGER.info("Fetching required data from Discord")
     updatePresence(0)
     applicationId = api.retrieveApplicationInfo().submit().get().idLong
-    if (AstralBotConfig.DISCORD_GUILD.get() < 0) {
+    if (AstralBotConfig.DISCORD_GUILD.get() <= 0) {
         LOGGER.warn("No text channel for chat synchronization configured. Chat sync will not be enabled.")
         return
     }
-    if (AstralBotConfig.DISCORD_CHANNEL.get() < 0) {
+    if (AstralBotConfig.DISCORD_CHANNEL.get() <= 0) {
         LOGGER.warn("No text channel for chat synchronization configured. Chat sync will not be enabled.")
         return
     }
@@ -108,7 +110,7 @@ fun startAstralbot(server: MinecraftServer) {
     startTimestamp = LocalDateTime.now()
     val env = System.getenv()
 
-    baseDirectory = File(server.serverDirectory, MODID)
+    baseDirectory = File(server.serverDirectory.absoluteFile, MODID)
     if (baseDirectory!!.mkdir()) {
         LOGGER.debug("Created $MODID directory")
     }
@@ -127,7 +129,11 @@ fun startAstralbot(server: MinecraftServer) {
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MEMBERS
-        ).addEventListeners(CommandHandlingListener, minecraftHandler).build()
+        ).addEventListeners(
+            CommandHandlingListener,
+            UserEventListener,
+            minecraftHandler
+        ).build()
 
     setupJob = GlobalScope.async {
         launch {

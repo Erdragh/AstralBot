@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.minecraft.network.chat.*
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import org.commonmark.parser.Parser
@@ -79,6 +80,7 @@ fun formatHoverText(text: Component): MessageEmbed {
 fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, player: Player?): MessageEmbed? {
     if (knownItems.contains(stack)) return null
     knownItems.add(stack)
+    // TODO check if context needs fixing
     val tooltip = stack.getTooltipLines(player, TooltipFlag.Default.NORMAL).map(::formatComponentToMarkdown)
     return EmbedBuilder()
         .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")

@@ -26,8 +26,8 @@ import net.minecraftforge.fml.event.config.ModConfigEvent
 @Mod("astralbot")
 object BotMod {
     init {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        ModLoadingContext.get().activeContainer.registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
+        ModLoadingContext.get().activeContainer.registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         MOD_BUS.addListener(::onConfigReloaded)
 
         FORGE_BUS.addListener(::onServerStart)

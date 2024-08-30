@@ -55,8 +55,11 @@ on the [Discord Developer Portal](https://discord.com/developers/applications) a
 to have the three privileged gateway intents: `PRESENCE`, `SERVER MEMBERS` and `MESSAGE CONTENT`.
 
 Copy the bot token and store it somewhere safe (like a Password Manager) and never show it to
-anybody else. To make sure the token gets read by the bot, it has to be in either an [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable)
-`DISCORD_TOKEN` where the running Minecraft server can access it or in the config file under the key `token`.
+anybody else.
+
+The bot can read the token from multiple sources, the easiest to configure being the `token` field in the
+main server config file (`astralbot-server.toml`). Alternatively, you can also provide it via an [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable)
+`DISCORD_TOKEN` where the running Minecraft server can access it.
 You could for example modify a `start.sh` script on a Unix-like system to `export` it or start the shell script with it set directly:
 
 `startmc.sh`:
