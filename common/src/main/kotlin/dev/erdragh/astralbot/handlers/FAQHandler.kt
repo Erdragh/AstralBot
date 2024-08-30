@@ -68,7 +68,7 @@ object FAQHandler {
     fun getFAQForId(id: String): String {
         if (!faqDirectory.exists() || !faqDirectory.isDirectory) {
             LOGGER.error("FAQ directory not specified as directory: ${faqDirectory.absolutePath}")
-            return AstralBotTextConfig.FAQ_ERROR.get()
+            return AstralBotTextConfig.GENERIC_ERROR.get()
         }
         val faqFiles = faqDirectory.listFiles { file -> file.name == "$id.md" }
         val faqFile = if (faqFiles?.isNotEmpty() == true) faqFiles[0] else null
@@ -81,8 +81,8 @@ object FAQHandler {
      * Used in the autocomplete implementation of the faq command.
      * @return a List of all available FAQ ids that start with the given [slug]
      */
-    fun suggestFAQIds(slug: String): List<String> {
-        return availableFAQIDs.filter { it.startsWith(slug, true) }
+    fun suggestFAQIds(slug: String?): List<String> {
+        return availableFAQIDs.filter { it.contains(slug ?: "", true) }
     }
 
     /**

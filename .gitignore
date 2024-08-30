@@ -6,6 +6,7 @@
 
 ### IntelliJ IDEA ###
 .idea
+.kotlin
 
 ### Eclipse ###
 .apt_generated
