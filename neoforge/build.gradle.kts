@@ -17,6 +17,7 @@ val runtimeLib: Configuration by configurations.getting
 
 val minecraftVersion: String by project
 val mcVersion = minecraftVersion
+val parchmentMinecraft: String by project
 val parchmentVersion: String by project
 val neoVersion: String by project
 val kotlinForgeVersion: String by project
@@ -25,7 +26,7 @@ neoForge {
     version = neoVersion
 
     parchment {
-        minecraftVersion = mcVersion
+        minecraftVersion = parchmentMinecraft
         mappingsVersion = parchmentVersion
     }
 

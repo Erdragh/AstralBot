@@ -8,13 +8,14 @@ val neoformVersion: String by project
 val minecraftVersion: String by project
 val mcVersion = minecraftVersion
 val parchmentVersion: String by project
+val parchmentMinecraft: String by project
 val modId: String by project
 
 neoForge {
     neoFormVersion = neoformVersion
 
     parchment {
-        minecraftVersion = mcVersion
+        minecraftVersion = parchmentMinecraft
         mappingsVersion = parchmentVersion
     }
 }
