@@ -269,6 +269,10 @@ subprojects {
             relocate("org.json", "dev.erdragh.shadowed.org.json")
             relocate("net.bytebuddy", "dev.erdragh.shadowed.net.bytebuddy")
 
+            relocate("com.google", "dev.erdragh.shadowed.com.google")
+            relocate("google", "dev.erdragh.shadowed.google")
+            relocate("javax", "dev.erdragh.shadowed.javax")
+
             exclude("**/org/slf4j/**")
 
             exclude("**/org/jetbrains/annotations/*")
