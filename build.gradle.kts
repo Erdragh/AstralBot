@@ -271,7 +271,7 @@ subprojects {
 
             relocate("com.google", "dev.erdragh.shadowed.com.google")
             relocate("google", "dev.erdragh.shadowed.google")
-            relocate("javax", "dev.erdragh.shadowed.javax")
+            relocate("javax.annotation", "dev.erdragh.shadowed.javax.annotation")
 
             exclude("**/org/slf4j/**")
 
