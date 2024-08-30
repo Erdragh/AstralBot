@@ -10,14 +10,14 @@ import net.fabricmc.loom.task.RemapJarTask
 plugins {
     // This is an Architectury repository, as such the relevant plugins are needed
     id("architectury-plugin") version "3.4-SNAPSHOT"
-    id("dev.architectury.loom") version "1.5-SNAPSHOT" apply false
+    id("dev.architectury.loom") version "1.7-SNAPSHOT" apply false
     // The shadow plugin is used by the fabric subproject to include dependencies
     // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
     // see: https://github.com/johnrengelman/shadow/issues/911
-    id("io.github.goooler.shadow") version "8.1.7" apply false
+    id("io.github.goooler.shadow") version "8.1.8" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.10"
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
@@ -267,7 +267,7 @@ subprojects {
             relocate("com.iwebpp.crypto", "dev.erdragh.shadowed.com.iwebpp.crypto")
             relocate("com.neovisionaries.ws", "dev.erdragh.shadowed.com.neovisionaries.ws")
             relocate("org.json", "dev.erdragh.shadowed.org.json")
-            relocate("net.bytebuddy", "dev.erdragh.net.bytebuddy")
+            relocate("net.bytebuddy", "dev.erdragh.shadowed.net.bytebuddy")
 
             exclude("**/org/slf4j/**")
 
@@ -330,7 +330,7 @@ subprojects {
                 // file. This allows me to keep all previous changes in the file
                 // without having to worry about them being included on new file
                 // uploads.
-                File("CHANGELOG.md")
+                File(rootDir, "CHANGELOG.md")
                     .readText(StandardCharsets.UTF_8)
                     .replace(Regex("[^^](#(#|\\n|.)+)|(^#.+)"), "")
                     .trim()

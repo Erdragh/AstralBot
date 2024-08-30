@@ -16,7 +16,8 @@ val allCommands = arrayOf(
     // Bot management commands
     ReloadCommand,
     // Utility Commands
-    FAQCommand,
+    FAQCommands,
+    ListFaqsCommand,
     // Player related commands
     LinkCommand,
     UnlinkCommand,

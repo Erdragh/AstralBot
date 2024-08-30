@@ -4,6 +4,7 @@ import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.WhitelistHandler
+import dev.erdragh.astralbot.listeners.CommandHandlingListener
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Role
