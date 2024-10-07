@@ -7,7 +7,7 @@ plugins {
     idea
     java
     id("net.neoforged.moddev")
-    id("io.github.goooler.shadow")
+    id("com.gradleup.shadow")
 }
 
 val modId: String by project

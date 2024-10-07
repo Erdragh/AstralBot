@@ -5,12 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    // I'm temporarily using a fork of the original plugin to resolve "Unsupported java classfile major version 65"
-    // see: https://github.com/johnrengelman/shadow/issues/911
-    id("io.github.goooler.shadow") version "8.1.8" apply false
+    id("com.gradleup.shadow") version "8.3.3" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.20"
     // For generating documentation based on comments in the code
     id("org.jetbrains.dokka") version "1.9.10"
     java
@@ -20,7 +18,7 @@ plugins {
     id("me.modmuss50.mod-publish-plugin") version "0.6.2"
 
     // NeoForge and Common development
-    id("net.neoforged.moddev") version "1.0.19" apply false
+    id("net.neoforged.moddev") version "2.0.34-beta" apply false
     // Fabric development
     id("fabric-loom") version "1.7-SNAPSHOT" apply false
 }
@@ -215,7 +213,7 @@ subprojects {
     }
 
     if (!isCommon) {
-        apply(plugin = "io.github.goooler.shadow")
+        apply(plugin = "com.gradleup.shadow")
 
         dependencies {
             // This is runtimeLib, because NG doesn't add the common classes to the runtime classpath correctly

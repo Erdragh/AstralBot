@@ -9,7 +9,7 @@ plugins {
     idea
     `maven-publish`
     id("fabric-loom")
-    id("io.github.goooler.shadow")
+    id("com.gradleup.shadow")
     id("me.modmuss50.mod-publish-plugin")
 }
 
