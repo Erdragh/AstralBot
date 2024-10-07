@@ -6,13 +6,12 @@ import org.jetbrains.kotlin.gradle.utils.extendsFrom
 plugins {
     idea
     java
-    id("net.neoforged.moddev")
-    id("com.gradleup.shadow")
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.moddev)
 }
 
 val modId: String by project
 val includeBotDep: Configuration by configurations.getting
-val shadowBotDep: Configuration by configurations.getting
 val runtimeLib: Configuration by configurations.getting
 
 val minecraftVersion: String by project
@@ -66,27 +65,14 @@ dependencies {
     // Adds KFF as dependency and Kotlin libs
     implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForgeVersion")
 
-    configurations.named("additionalRuntimeClasspath").extendsFrom(configurations.named("runtimeLib"))
-    configurations.named("jarJar").extendsFrom(configurations.named("includeBotDep"))
+    configurations.additionalRuntimeClasspath.extendsFrom(configurations.runtimeLib)
+    configurations.jarJar.extendsFrom(configurations.includeBotDep)
 }
 
 tasks {
     // Fixes IDE runs not processing common resources
     processResources {
         from(project(":common").sourceSets.main.get().resources)
-    }
-    jar {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        archiveClassifier = "slim"
-        finalizedBy(shadowJar)
-    }
-    shadowJar {
-        dependsOn(jar)
-        from(jar)
-        archiveClassifier = null
-    }
-    withType<AbstractArchiveTask> {
-        println("archive task: ${this.name}")
     }
 }
 
@@ -105,7 +91,7 @@ publishMods {
     curseforge("curseNeo") {
         from(curseforgePublish)
         modLoaders.add(project.name)
-        file.set(tasks.shadowJar.get().archiveFile)
+        file.set(tasks.jar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
@@ -115,7 +101,7 @@ publishMods {
     modrinth("modrinthNeo") {
         from(modrinthPublish)
         modLoaders.add(project.name)
-        file.set(tasks.shadowJar.get().archiveFile)
+        file.set(tasks.jar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$title $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"

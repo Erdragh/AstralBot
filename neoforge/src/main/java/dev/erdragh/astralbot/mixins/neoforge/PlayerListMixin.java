@@ -1,4 +1,4 @@
-package dev.erdragh.astralbot.mixins.forge;
+package dev.erdragh.astralbot.mixins.neoforge;
 
 import dev.erdragh.astralbot.neoforge.event.CommandMessageEvent;
 import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent;

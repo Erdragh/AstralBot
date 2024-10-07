@@ -1,22 +1,18 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
+    alias(libs.plugins.kotlin)
     idea
-    `maven-publish`
-    id("fabric-loom")
-    id("com.gradleup.shadow")
-    id("me.modmuss50.mod-publish-plugin")
+    alias(libs.plugins.loom)
+    alias(libs.plugins.publish)
 }
 
 val modId: String by project
 
 val includeBotDep: Configuration by configurations.getting
-val shadowBotDep: Configuration by configurations.getting
 
 dependencies {
     mappings(loom.officialMojangMappings())
@@ -44,7 +40,11 @@ loom {
         accessWidenerPath.set(project(":common").file("src/main/resources/${modId}.accesswidener"))
 
     @Suppress("UnstableApiUsage")
-    mixin { defaultRefmapName.set("${modId}.refmap.json") }
+    mixin {
+        // TODO: Somehow figure out a way to get loom to create a refmap for common mixins
+        // add(project(":common").sourceSets.main.get())
+        defaultRefmapName.set("${modId}.refmap.json")
+    }
 
     mods {
         create("astralbot") {
@@ -59,34 +59,6 @@ loom {
             ideConfigGenerated(true)
             runDir("run")
         }
-    }
-}
-
-tasks {
-    jar {
-        archiveClassifier.set("dev")
-    }
-
-    shadowJar {
-        archiveClassifier.set("dev-shadow")
-    }
-
-    remapJar {
-        inputFile.set(named<ShadowJar>("shadowJar").get().archiveFile)
-        dependsOn("shadowJar")
-    }
-}
-
-publishing {
-    publications {
-        register("mavenJava", MavenPublication::class) {
-            artifactId = base.archivesName.get()
-            from(components["java"])
-        }
-    }
-
-    repositories {
-        maven("file://${System.getenv("local_maven")}")
     }
 }
 

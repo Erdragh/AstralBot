@@ -1,26 +1,24 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    id("com.gradleup.shadow") version "8.3.3" apply false
     // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
     // the JVM, the Kotlin plugin is needed
-    kotlin("jvm") version "2.0.20"
+    alias(libs.plugins.kotlin)
     // For generating documentation based on comments in the code
-    id("org.jetbrains.dokka") version "1.9.10"
+    alias(libs.plugins.dokka)
     java
     // Required for NeoGradle
     idea
     // For publishing the mod
-    id("me.modmuss50.mod-publish-plugin") version "0.6.2"
+    alias(libs.plugins.publish)
 
     // NeoForge and Common development
-    id("net.neoforged.moddev") version "2.0.34-beta" apply false
+    alias(libs.plugins.moddev) apply false
     // Fabric development
-    id("fabric-loom") version "1.7-SNAPSHOT" apply false
+    alias(libs.plugins.loom) apply false
 }
 
 val minecraftVersion: String by project
@@ -31,9 +29,7 @@ repositories {
 
 subprojects {
     apply(plugin = "java")
-    apply(plugin = "kotlin")
-    apply(plugin = "org.jetbrains.dokka")
-    apply(plugin = "me.modmuss50.mod-publish-plugin")
+    apply(plugin = rootProject.libs.plugins.publish.get().pluginId)
 
     // Gets some values from the gradle.properties files in the
     // sub- and root projects
@@ -72,72 +68,60 @@ subprojects {
         }
     }
 
-    // Bot dependencies
-    val jdaVersion: String by project
-    val dcWebhooksVersion: String by project
-    val exposedVersion: String by project
-    val sqliteJDBCVersion: String by project
-    val commonmarkVersion: String by project
-
-    // Configuration for shaded dependencies, get relocated to dev.erdragh.astralbot.shadowed
-    val shadowBotDep by configurations.creating {
-        isTransitive = true
-    }
     // Configuration for JiJ-ed dependencies
-    val includeBotDep by configurations.creating {
+    val includeBotDep by configurations.registering {
         isTransitive = false
     }
     // Configuration for libraries that are needed at runtime
-    val runtimeLib by configurations.creating {
-        isTransitive = true
+    val runtimeLib by configurations.registering {
+        isTransitive = false
     }
     // Configuration for depending on the common project
     val commonDep by configurations.creating
-    configurations.implementation.extendsFrom(configurations.named(shadowBotDep.name))
     configurations.implementation.extendsFrom(configurations.named(includeBotDep.name))
     configurations.implementation.extendsFrom(configurations.named(runtimeLib.name))
     configurations.implementation.extendsFrom(configurations.named(commonDep.name))
 
     dependencies {
-        runtimeLib("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
-        includeBotDep("org.xerial:sqlite-jdbc:$sqliteJDBCVersion")
-
-        runtimeLib("org.commonmark:commonmark:$commonmarkVersion")
-        includeBotDep("org.commonmark:commonmark:$commonmarkVersion")
-
-
         arrayOf(
+            // Library to build a connection with the sqlite database
+            rootProject.libs.sqlite,
+            // Library used to parse and convert markdown
+            rootProject.libs.commonmark,
+
             // Library used to communicate with Discord, see https://jda.wiki
-            "net.dv8tion:JDA:$jdaVersion",
+            rootProject.jda.jda,
+                // JDA's dependencies
+                rootProject.jda.commons.collections,
+                rootProject.jda.trove4j,
+                rootProject.jda.jackson.annotations,
+                rootProject.jda.jackson.core,
+                rootProject.jda.jackson.databind,
+                rootProject.jda.websocket,
+                rootProject.jda.okhttp,
+                rootProject.jda.okio,
+                rootProject.jda.tink,
             // Library used for sending messages via Discord Webhooks
-            "club.minnced:discord-webhooks:$dcWebhooksVersion",
+            rootProject.dcwebhooks.webhooks,
+            rootProject.dcwebhooks.json,
 
             // Library to interact with the SQLite database,
             // see: https://github.com/JetBrains/Exposed
-            "org.jetbrains.exposed:exposed-core:$exposedVersion",
-            "org.jetbrains.exposed:exposed-dao:$exposedVersion",
-            "org.jetbrains.exposed:exposed-jdbc:$exposedVersion",
+            rootProject.exposed.core,
+            rootProject.exposed.dao,
+            rootProject.exposed.jdbc
         ).forEach {
-            implementation(it) {
-                exclude(module = "opus-java")
-                exclude(group = "org.slf4j")
-            }
             runtimeLib(it) {
                 exclude(module = "opus-java")
                 exclude(group = "org.slf4j")
                 exclude(group = "org.jetbrains.kotlin")
                 exclude(group = "org.jetbrains.kotlinx")
             }
-            shadowBotDep(it) {
-                // opus-java is for audio, which this bot doesn't need
+            includeBotDep(it) {
                 exclude(module = "opus-java")
-                // Kotlin would be included as a transitive dependency
-                // on JDA and Exposed, but is already provided by the
-                // respective Kotlin implementation of the mod loaders
+                exclude(group = "org.slf4j")
                 exclude(group = "org.jetbrains.kotlin")
                 exclude(group = "org.jetbrains.kotlinx")
-                // Minecraft already ships with a logging system
-                exclude(group = "org.slf4j")
             }
         }
     }
@@ -213,58 +197,16 @@ subprojects {
     }
 
     if (!isCommon) {
-        apply(plugin = "com.gradleup.shadow")
-
         dependencies {
-            // This is runtimeLib, because NG doesn't add the common classes to the runtime classpath correctly
             commonDep(project(":common")) {
                 isTransitive = false
             }
         }
 
-        // Include common classes in jar and shadowJar output
-        listOf(tasks.jar, tasks.named<ShadowJar>("shadowJar")).forEach {
-            it { from(project(":common").sourceSets.main.get().output) }
-        }
-
-        tasks.named<ShadowJar>("shadowJar") {
-            // The shadowBotDep configuration was explicitly made to be shaded in, this is where that happens
-            configurations = listOf(shadowBotDep)
-
-            // This transforms the service files to make relocated Exposed work (see: https://github.com/JetBrains/Exposed/issues/1353)
-            mergeServiceFiles()
-
-            // (Neo-)Forge restricts loading certain classes for security reasons.
-            // Luckily, shadow can relocate them to a different package.
-            relocate("org.apache.commons.collections4", "dev.erdragh.shadowed.org.apache.commons.collections4")
-
-            // Relocating Exposed somewhere different so other mods not doing that don't run into issues (e.g. Ledger)
-            relocate("org.jetbrains.exposed", "dev.erdragh.shadowed.org.jetbrains.exposed")
-
-            // Relocating jackson to prevent incompatibilities with other mods also bundling it (e.g. GroovyModLoader on Forge)
-            relocate("com.fasterxml.jackson", "dev.erdragh.shadowed.com.fasterxml.jackson")
-
-            // relocate discord interaction stuff to maybe allow other discord integrations mods to work
-            relocate("club.minnced.discord", "dev.erdragh.shadowed.club.minnced.discord")
-            relocate("net.dv8tion.jda", "dev.erdragh.shadowed.net.dv8tion.jda")
-
-            // relocate dependencies of discord stuff
-            relocate("okhttp3", "dev.erdragh.shadowed.okhttp3")
-            relocate("okio", "dev.erdragh.shadowed.okio")
-            relocate("gnu.trove", "dev.erdragh.shadowed.gnu.trove")
-            relocate("com.iwebpp.crypto", "dev.erdragh.shadowed.com.iwebpp.crypto")
-            relocate("com.neovisionaries.ws", "dev.erdragh.shadowed.com.neovisionaries.ws")
-            relocate("org.json", "dev.erdragh.shadowed.org.json")
-            relocate("net.bytebuddy", "dev.erdragh.shadowed.net.bytebuddy")
-
-            relocate("com.google", "dev.erdragh.shadowed.com.google")
-            relocate("google", "dev.erdragh.shadowed.google")
-            relocate("javax.annotation", "dev.erdragh.shadowed.javax.annotation")
-
-            exclude("**/org/slf4j/**")
-
-            exclude("**/org/jetbrains/annotations/*")
-            exclude("**/org/intellij/**")
+        tasks.jar {
+            dependsOn(project(":common").tasks.jar)
+            from(project(":common").sourceSets.main.get().output)
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
     }
 

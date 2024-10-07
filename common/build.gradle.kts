@@ -1,7 +1,8 @@
 plugins {
     idea
     java
-    id("net.neoforged.moddev")
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.moddev)
 }
 
 val neoformVersion: String by project
@@ -25,4 +26,5 @@ dependencies {
 
     api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forgeConfigAPIVersion")
     compileOnly("org.spongepowered:mixin:0.8.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
