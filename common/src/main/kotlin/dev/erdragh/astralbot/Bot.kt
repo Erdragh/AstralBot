@@ -155,6 +155,7 @@ fun startAstralbot(server: MinecraftServer) {
 fun stopAstralbot() {
     LOGGER.info("Shutting down AstralBot")
     shuttingDown.set(true)
+    minecraftHandler?.close()
     if (baseDirectory != null) FAQHandler.stop()
     if (jda != null) {
         jda!!.shutdown()
