@@ -4,8 +4,8 @@ import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 
 plugins {
     java
-    alias(libs.plugins.kotlin)
     idea
+    id("multiloader-loader")
     alias(libs.plugins.loom)
     alias(libs.plugins.publish)
 }
@@ -41,8 +41,6 @@ loom {
 
     @Suppress("UnstableApiUsage")
     mixin {
-        // TODO: Somehow figure out a way to get loom to create a refmap for common mixins
-        // add(project(":common").sourceSets.main.get())
         defaultRefmapName.set("${modId}.refmap.json")
     }
 

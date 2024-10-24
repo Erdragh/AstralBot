@@ -4,9 +4,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    // Since this mod/bot is written in Kotlin and expected to run on Minecraft and as such
-    // the JVM, the Kotlin plugin is needed
-    alias(libs.plugins.kotlin)
     // For generating documentation based on comments in the code
     alias(libs.plugins.dokka)
     java
@@ -39,16 +36,6 @@ subprojects {
     val modAuthor: String by project
     val isCommon = modLoader == rootProject.projects.common.name
 
-    base {
-        // This will be the final name of the exported JAR file
-        archivesName.set("$modId-$modLoader-$minecraftVersion")
-    }
-
-    extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
-        withSourcesJar()
-    }
-
     repositories {
         mavenCentral()
         maven(url = "https://maven.neoforged.net/releases/")
@@ -76,11 +63,8 @@ subprojects {
     val runtimeLib by configurations.registering {
         isTransitive = false
     }
-    // Configuration for depending on the common project
-    val commonDep by configurations.creating
     configurations.implementation.extendsFrom(configurations.named(includeBotDep.name))
     configurations.implementation.extendsFrom(configurations.named(runtimeLib.name))
-    configurations.implementation.extendsFrom(configurations.named(commonDep.name))
 
     dependencies {
         arrayOf(
@@ -91,16 +75,16 @@ subprojects {
 
             // Library used to communicate with Discord, see https://jda.wiki
             rootProject.jda.jda,
-                // JDA's dependencies
-                rootProject.jda.commons.collections,
-                rootProject.jda.trove4j,
-                rootProject.jda.jackson.annotations,
-                rootProject.jda.jackson.core,
-                rootProject.jda.jackson.databind,
-                rootProject.jda.websocket,
-                rootProject.jda.okhttp,
-                rootProject.jda.okio,
-                rootProject.jda.tink,
+            // JDA's dependencies
+            rootProject.jda.commons.collections,
+            rootProject.jda.trove4j,
+            rootProject.jda.jackson.annotations,
+            rootProject.jda.jackson.core,
+            rootProject.jda.jackson.databind,
+            rootProject.jda.websocket,
+            rootProject.jda.okhttp,
+            rootProject.jda.okio,
+            rootProject.jda.tink,
             // Library used for sending messages via Discord Webhooks
             rootProject.dcwebhooks.webhooks,
             rootProject.dcwebhooks.json,
@@ -196,20 +180,6 @@ subprojects {
         inputs.properties(expandProps)
     }
 
-    if (!isCommon) {
-        dependencies {
-            commonDep(project(":common")) {
-                isTransitive = false
-            }
-        }
-
-        tasks.jar {
-            dependsOn(project(":common").tasks.jar)
-            from(project(":common").sourceSets.main.get().output)
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-    }
-
     // Disables Gradle's custom module metadata from being published to maven. The
     // metadata includes mapped dependencies which are not reasonably consumable by
     // other mod developers.
@@ -266,10 +236,6 @@ subprojects {
             }
         }
     }
-}
-
-kotlin {
-    jvmToolchain(21)
 }
 
 

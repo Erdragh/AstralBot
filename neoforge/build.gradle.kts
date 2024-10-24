@@ -1,13 +1,15 @@
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
+import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
     idea
     java
-    alias(libs.plugins.kotlin)
+    id("multiloader-loader")
     alias(libs.plugins.moddev)
+    alias(libs.plugins.publish)
 }
 
 val modId: String by project
@@ -34,7 +36,7 @@ neoForge {
     // Automatically enable neoforge AccessTransformers if the file exists
     // This location is hardcoded in FML and can not be changed.
     // https://github.com/neoforged/FancyModLoader/blob/a952595eaaddd571fbc53f43847680b00894e0c1/loader/src/main/java/net/neoforged/fml/loading/moddiscovery/ModFile.java#L118
-    val transformerFile = project.file("src/main/resources/META-INF/accesstransformer.cfg")
+    val transformerFile = project(":common").file("src/main/resources/META-INF/accesstransformer.cfg")
     if (transformerFile.exists())
         accessTransformers.from(transformerFile)
 
@@ -48,13 +50,16 @@ neoForge {
     runs {
         create("server") {
             server()
-            systemProperty("neoforge.enabledGameTestNamespaces", modId)
             programArgument("--nogui")
         }
 
         create("gameTestServer") {
             type = "gameTestServer"
+        }
+
+        configureEach {
             systemProperty("neoforge.enabledGameTestNamespaces", modId)
+            ideName = "NeoForge ${name.capitalized()} (${project.path})"
         }
     }
 }
@@ -67,13 +72,6 @@ dependencies {
 
     configurations.additionalRuntimeClasspath.extendsFrom(configurations.runtimeLib)
     configurations.jarJar.extendsFrom(configurations.includeBotDep)
-}
-
-tasks {
-    // Fixes IDE runs not processing common resources
-    processResources {
-        from(project(":common").sourceSets.main.get().resources)
-    }
 }
 
 publishMods {
