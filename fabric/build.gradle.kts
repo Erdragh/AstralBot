@@ -3,68 +3,59 @@ import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 
 plugins {
-    java
-    alias(libs.plugins.kotlin)
-    idea
+    id("multiloader-loader")
     alias(libs.plugins.loom)
-    alias(libs.plugins.publish)
 }
 
 val modId: String by project
 
-val includeBotDep: Configuration by configurations.getting
+val botLib: Configuration by configurations.getting
 
 dependencies {
-    mappings(loom.officialMojangMappings())
-    val minecraftVersion: String by project
-    val fabricLoaderVersion: String by project
-    val fabricApiVersion: String by project
-    val fabricKotlinVersion: String by project
-    val forgeConfigAPIVersion: String by project
+    minecraft(libs.minecraft)
+    mappings(loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${libs.versions.parchmentMC.get()}:${libs.versions.parchment.get()}@zip")
+    })
+    modImplementation(libs.fabricLoader)
+    modImplementation(libs.fabricApi)
 
-    minecraft("com.mojang:minecraft:${minecraftVersion}")
+    modImplementation(libs.flk)
 
-    modImplementation(group = "net.fabricmc", name = "fabric-loader", version = fabricLoaderVersion)
-    modApi(group = "net.fabricmc.fabric-api", name = "fabric-api", version = "$fabricApiVersion+$minecraftVersion")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
+    modApi(libs.fcapi.fabric)
 
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
-
-    includeBotDep.dependencies.forEach { include(it) }
+    botLib.dependencies.forEach { include(it) }
 }
 
 loom {
-    serverOnlyMinecraftJar()
-
-    if (project(":common").file("src/main/resources/${modId}.accesswidener").exists())
-        accessWidenerPath.set(project(":common").file("src/main/resources/${modId}.accesswidener"))
-
-    @Suppress("UnstableApiUsage")
+    val aw = project(":common").file("src/main/resources/${modId}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
     mixin {
-        // TODO: Somehow figure out a way to get loom to create a refmap for common mixins
-        // add(project(":common").sourceSets.main.get())
         defaultRefmapName.set("${modId}.refmap.json")
     }
-
-    mods {
-        create("astralbot") {
-            sourceSet(sourceSets.main.get())
-        }
-    }
-
     runs {
+        named("client") {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            mkdir("runs/server")
+            runDir("runs/client")
+        }
         named("server") {
             server()
-            configName = "Fabric Server"
+            setConfigName("Fabric Server")
             ideConfigGenerated(true)
-            runDir("run")
+            mkdir("runs/server")
+            runDir("runs/server")
         }
     }
 }
 
 publishMods {
-    val minecraftVersion: String by project
-    val title: String by project
+    val minecraftVersion = libs.versions.minecraft.get()
+    val modName: String by project
     val version: String by project
 
     val titles: Map<String, String> by extra
@@ -79,7 +70,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
     }
@@ -89,7 +80,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port", "fabric-api")
     }

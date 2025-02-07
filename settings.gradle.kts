@@ -18,7 +18,9 @@ plugins {
 
 dependencyResolutionManagement {
     versionCatalogs {
-        register("libs")
+        register("libs") {
+            from(files("libs.versions.toml"))
+        }
         register("jda") {
             from(files("gradle/jda.versions.toml"))
         }

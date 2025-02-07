@@ -17,8 +17,8 @@ import net.neoforged.fml.config.ModConfig
 
 object BotMod : ModInitializer {
     override fun onInitialize() {
-        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
-        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
+        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
 
         NeoForgeModConfigEvents.reloading(MODID).register {
             // Updates the webhook client if the URL changed

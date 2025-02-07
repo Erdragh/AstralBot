@@ -1,30 +1,49 @@
 plugins {
-    idea
-    java
-    alias(libs.plugins.kotlin)
+    id("multiloader-common")
     alias(libs.plugins.moddev)
 }
 
-val neoformVersion: String by project
-val minecraftVersion: String by project
-val mcVersion = minecraftVersion
-val parchmentVersion: String by project
-val parchmentMinecraft: String by project
-val modId: String by project
-
 neoForge {
-    neoFormVersion = neoformVersion
-
+    neoFormVersion = libs.versions.neoForm.get()
+    // Automatically enable AccessTransformers if the file exists
+    val at = file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
     parchment {
-        minecraftVersion = parchmentMinecraft
-        mappingsVersion = parchmentVersion
+        minecraftVersion = libs.versions.parchmentMC
+        mappingsVersion = libs.versions.parchment
     }
 }
 
 dependencies {
-    val forgeConfigAPIVersion: String by project
+    api(libs.slf4j)
+    compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.mixin)
+    // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
+    compileOnly(libs.mixinExtras.common)
+    annotationProcessor(libs.mixinExtras.common)
 
-    api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:$forgeConfigAPIVersion")
-    compileOnly("org.spongepowered:mixin:0.8.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    api(libs.fcapi.common)
+}
+
+configurations {
+    create("commonJava") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+    create("commonKotlin") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+    create("commonResources") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+}
+
+artifacts {
+    add("commonJava", sourceSets.main.get().java.sourceDirectories.singleFile)
+    add("commonKotlin", sourceSets.main.get().kotlin.sourceDirectories.filter { !it.name.endsWith("java") }.singleFile)
+    add("commonResources", sourceSets.main.get().resources.sourceDirectories.singleFile)
 }

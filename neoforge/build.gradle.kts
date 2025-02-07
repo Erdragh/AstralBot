@@ -4,29 +4,19 @@ import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
 plugins {
-    idea
-    java
-    alias(libs.plugins.kotlin)
+    id("multiloader-loader")
     alias(libs.plugins.moddev)
 }
 
 val modId: String by project
-val includeBotDep: Configuration by configurations.getting
-val runtimeLib: Configuration by configurations.getting
-
-val minecraftVersion: String by project
-val mcVersion = minecraftVersion
-val parchmentMinecraft: String by project
-val parchmentVersion: String by project
-val neoVersion: String by project
-val kotlinForgeVersion: String by project
+val botLib: Configuration by configurations.getting
 
 neoForge {
-    version = neoVersion
+    version = libs.versions.neoforge.get()
 
     parchment {
-        minecraftVersion = parchmentMinecraft
-        mappingsVersion = parchmentVersion
+        minecraftVersion = libs.versions.parchmentMC.get()
+        mappingsVersion = libs.versions.parchment.get()
     }
 
     validateAccessTransformers = true
@@ -41,7 +31,6 @@ neoForge {
     mods {
         create(modId) {
             sourceSet(project.sourceSets.main.get())
-            sourceSet(project(":common").sourceSets.main.get())
         }
     }
 
@@ -63,22 +52,15 @@ sourceSets.main.get().resources.srcDir("src/generated/resources")
 
 dependencies {
     // Adds KFF as dependency and Kotlin libs
-    implementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForgeVersion")
+    implementation(libs.kff)
 
-    configurations.additionalRuntimeClasspath.extendsFrom(configurations.runtimeLib)
-    configurations.jarJar.extendsFrom(configurations.includeBotDep)
-}
-
-tasks {
-    // Fixes IDE runs not processing common resources
-    processResources {
-        from(project(":common").sourceSets.main.get().resources)
-    }
+    configurations.named("additionalRuntimeClasspath").extendsFrom(configurations.botLib)
+    configurations.jarJar.extendsFrom(configurations.botLib)
 }
 
 publishMods {
-    val minecraftVersion: String by project
-    val title: String by project
+    val minecraftVersion: String = libs.versions.minecraft.get()
+    val modName: String by project
     val version: String by project
 
     val titles: Map<String, String> by extra
@@ -93,7 +75,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.jar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("kotlin-for-forge")
     }
@@ -103,7 +85,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.jar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("kotlin-for-forge")
     }

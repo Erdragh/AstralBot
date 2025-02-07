@@ -31,7 +31,7 @@
     "fabric": "*",
     "minecraft": ">=${minecraft_version}",
     "java": ">=17",
-    "fabric-language-kotlin": ">=${fabric_kotlin_version}",
+    "fabric-language-kotlin": ">=${flk_version}",
     "forgeconfigapiport": ">=20.0.0"
   }
 }

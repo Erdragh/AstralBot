@@ -1,5 +1,6 @@
 package dev.erdragh.astralbot
 
+import com.mojang.logging.LogUtils
 import dev.erdragh.astralbot.listeners.CommandHandlingListener
 import dev.erdragh.astralbot.listeners.UserEventListener
 import dev.erdragh.astralbot.config.AstralBotConfig
@@ -13,8 +14,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
@@ -23,7 +22,7 @@ import kotlin.io.path.absolute
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
-val LOGGER: Logger = LoggerFactory.getLogger(MODID)
+val LOGGER = LogUtils.getLogger()
 
 private lateinit var startTimestamp: LocalDateTime
 var minecraftHandler: MinecraftHandler? = null
