@@ -1,5 +1,8 @@
+# 1.5.5
+Update JetBrains' Exposed to prevent issues with Ledger
+
 # 1.5.4
-Fix wrong jar being published for Forge
+Fix Forge jars published
 
 # 1.5.3
 - Unlink users on leave
