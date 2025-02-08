@@ -1,18 +1,46 @@
-architectury {
-    val enabledPlatforms: String by rootProject
-    common(enabledPlatforms.split(","))
+plugins {
+    id("multiloader-common")
+    alias(libs.plugins.moddev)
+}
+
+legacyForge {
+    mcpVersion = libs.versions.mcp.get()
+    // Automatically enable AccessTransformers if the file exists
+    val at = file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = libs.versions.parchmentMC.get()
+        mappingsVersion = libs.versions.parchment.get()
+    }
 }
 
 dependencies {
-    val fabricLoaderVersion: String by project
-    val forgeConfigAPIVersion: String by project
-    val nightConfig: String by project
-    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
-    // Do NOT use other classes from fabric loader
-    modImplementation("net.fabricmc:fabric-loader:${fabricLoaderVersion}")
+    api(libs.slf4j)
+    compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.mixin)
 
-    //api("fuzs.forgeconfigapiport:forgeconfigapiport-common:$forgeConfigAPIVersion")
-    api("com.electronwill.night-config:core:$nightConfig")
-    api("com.electronwill.night-config:toml:$nightConfig")
-    api("net.minecraftforge:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
+    api(libs.fcapi)
+}
+
+configurations {
+    create("commonJava") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+    create("commonKotlin") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+    create("commonResources") {
+        isCanBeResolved = false
+        isCanBeConsumed = true
+    }
+}
+
+artifacts {
+    add("commonJava", sourceSets.main.get().java.sourceDirectories.singleFile)
+    add("commonKotlin", sourceSets.main.get().kotlin.sourceDirectories.filter { !it.name.endsWith("java") }.singleFile)
+    add("commonResources", sourceSets.main.get().resources.sourceDirectories.singleFile)
 }
