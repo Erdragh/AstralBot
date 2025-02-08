@@ -4,6 +4,9 @@
 - Show better error message if FAQ is too long
 - Limit the autocomplete suggestion return value length to fix no options showing up
 - Added the `/listfaq` command
+- Fixed the config wrongly storing guild and role id
+- Fixed the config getting synced to the client (You may need to move the config from `world/serverconfig` to `config`)
+- Headpat command now outputs a GIF thanks to @femmeromantic
 
 # 1.5.2
 Fix tps command using wrong numbers for calculation
