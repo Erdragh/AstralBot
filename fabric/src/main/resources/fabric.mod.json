@@ -24,14 +24,14 @@
     ]
   },
   "mixins": [
-    "astralbot-common.mixins.json",
-    "astralbot.mixins.json"
+    "astralbot.mixins.json",
+    "astralbot.fabric.mixins.json"
   ],
   "depends": {
     "fabric": "*",
     "minecraft": ">=${minecraft_version}",
     "java": ">=17",
-    "fabric-language-kotlin": ">=${fabric_kotlin_version}",
-    "forgeconfigapiport": ">=4.2.11"
+    "fabric-language-kotlin": ">=${flk_version}",
+    "forgeconfigapiport": ">=${fcapi_version}"
   }
 }
