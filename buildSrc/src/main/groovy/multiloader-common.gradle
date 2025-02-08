@@ -1,0 +1,204 @@
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id "org.jetbrains.kotlin.jvm"
+    id "org.jetbrains.dokka"
+}
+
+base {
+    archivesName = "${modId}-${project.name}-${libs.versions.minecraft.get()}"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(libs.versions.java.get())
+    withSourcesJar()
+    withJavadocJar()
+}
+
+kotlin {
+    jvmToolchain(Integer.parseInt(libs.versions.java.get()))
+}
+
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepositories(
+                maven {
+                    name = 'ParchmentMC'
+                    url = 'https://maven.parchmentmc.org/'
+                },
+                maven {
+                    name = "Forge"
+                    url = 'https://maven.minecraftforge.net'
+                }
+        )
+        filter { includeGroup('org.parchmentmc.data') }
+    }
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+    }
+    maven {
+        name = "kotlinforforge"
+        url = uri("https://thedarkcolour.github.io/KotlinForForge/")
+    }
+    maven {
+        name = "Sponge / Mixin"
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
+    // Forge Config API port
+    maven {
+        name = "Fuzs Mod Resources"
+        setUrl("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
+    }
+}
+
+// Declare capabilities on the outgoing configurations.
+// Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring-additional-capabilities-for-a-local-component
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations."$variant".outgoing {
+        capability("$group:${base.archivesName.get()}:$version")
+        capability("$group:$modId-${project.name}-${libs.versions.minecraft.get()}:$version")
+        capability("$group:$modId:$version")
+    }
+    publishing.publications.configureEach {
+        suppressPomMetadataWarningsFor(variant)
+    }
+}
+
+sourcesJar {
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_${modId}" }
+    }
+}
+
+jar {
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_${modId}" }
+    }
+
+    manifest {
+        attributes([
+                'Specification-Title'   : modName,
+                'Specification-Vendor'  : modAuthor,
+                'Specification-Version' : project.jar.archiveVersion,
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.jar.archiveVersion,
+                'Implementation-Vendor' : modAuthor,
+                'Built-On-Minecraft'    : libs.versions.minecraft.get()
+        ])
+    }
+}
+
+tasks.withType(DokkaTaskPartial).configureEach {
+    dokkaSourceSets.configureEach {
+        includeNonPublic = false
+        skipDeprecated = false
+        reportUndocumented = false
+        jdkVersion = Integer.parseInt(libs.versions.java.get())
+        sourceRoots.from(sourceSets.main.allSource)
+    }
+}
+
+// Prevent the default javadoc task from running, as Dokka is
+// responsible for generating the docs now
+tasks.named("javadoc", Javadoc) {
+    enabled = false
+}
+
+// Make the javadoc jar take in the Dokka output
+tasks.named("javadocJar", Jar) {
+    dependsOn(tasks.named("dokkaJavadoc"))
+    from(tasks.named("dokkaJavadoc"))
+}
+
+processResources {
+    var expandProps = [
+            'version'                      : version,
+            'group'                        : project.group, //Else we target the task's group.
+            'minecraft_version'            : libs.versions.minecraft.get(),
+            'minecraft_version_range'      : libs.versions.minecraftRange.get(),
+            'fabric_version'               : libs.versions.fabricApi.get(),
+            'fabric_loader_version'        : libs.versions.fabricLoader.get(),
+            'flk_version'                  : libs.versions.flk.get(),
+            'mod_name'                     : modName,
+            'mod_author'                   : modAuthor,
+            'mod_id'                       : modId,
+            'license'                      : license,
+            'description'                  : project.description,
+            'forge_version'                : libs.versions.forge.get(),
+            'forge_range'                  : libs.versions.forgeRange.get(),
+            'kff_version'                  : libs.versions.kff.get(),
+            'kff_version_range'            : libs.versions.kffRange.get(),
+            'credits'                      : credits,
+            'java_version'                 : libs.versions.java.get(),
+            'fcapi_version'                : libs.versions.fcapi.get()
+    ]
+
+    filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/*mods.toml', '*.mixins.json']) {
+        expand expandProps
+    }
+    inputs.properties(expandProps)
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifactId base.archivesName.get()
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url System.getenv('local_maven_url')
+        }
+    }
+}
+
+
+configurations {
+    botLib {
+        transitive = false
+    }
+    implementation.extendsFrom(botLib)
+}
+
+dependencies {
+    [
+        // Library to build a connection with the sqlite database
+        libs.sqlite,
+        // Library used to parse and convert markdown
+        libs.commonmark,
+
+        // Library used to communicate with Discord, see https://jda.wiki
+        jda.jda,
+        // JDA's dependencies
+        jda.commons.collections,
+        jda.trove4j,
+        jda.jackson.annotations,
+        jda.jackson.core,
+        jda.jackson.databind,
+        jda.websocket,
+        jda.okhttp,
+        jda.okio,
+        jda.tink,
+        // Library used for sending messages via Discord Webhooks
+        dcwebhooks.webhooks,
+        dcwebhooks.json,
+
+        // Library to interact with the SQLite database,
+        // see: https://github.com/JetBrains/Exposed
+        exposed.core,
+        exposed.dao,
+        exposed.jdbc,
+    ].forEach {
+        botLib(it) {
+            exclude group: "org.slf4j"
+            exclude group: "org.jetbrains.kotlin"
+            exclude group: "org.jetbrains.kotlinx"
+            exclude module: "opus-java"
+        }
+    }
+}

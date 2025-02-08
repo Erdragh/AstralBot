@@ -1,0 +1,59 @@
+[versions]
+java = "17"
+kotlin = "2.1.10"
+moddev = "2.0.78"
+loom = "1.9-SNAPSHOT"
+dokka = "2.0.0"
+
+kotlinx-coroutines = "1.8.1"
+
+minecraft = "1.20.1"
+minecraftRange = "[1.20.1, 1.20.2)"
+
+# The version of ParchmentMC that is used, see https://parchmentmc.org/docs/getting-started#choose-a-version for new versions
+parchment = "2023.09.03"
+parchmentMC = "1.20.1"
+
+forge = "1.20.1-47.3.29"
+forgeRange = "[47.1, 48)"
+## This is the version of minecraft that the 'common' project uses, you can find a list of all versions here
+## https://projects.neoforged.net/neoforged/neoform
+mcp = "1.20.1"
+kff = "4.11.0"
+kffRange = "[4, )"
+
+slf4j = "2.0.9"
+
+fcapi = "8.0.1"
+
+fabricLoader = "0.16.10"
+fabricApi = "0.92.3+1.20.1"
+flk = "1.13.1+kotlin.2.1.10"
+publish = "0.8.4"
+
+sqlite = "3.49.0.0"
+commonmark = "0.24.0"
+
+mixin = "0.8.5"
+
+[libraries]
+minecraft = { group = "com.mojang", name = "minecraft", version.ref = "minecraft" }
+fabricLoader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabricLoader" }
+fabricApi = { group = "net.fabricmc.fabric-api", name = "fabric-api", version.ref = "fabricApi" }
+flk = { group = "net.fabricmc", name = "fabric-language-kotlin", version.ref = "flk" }
+kff = { group = "thedarkcolour", name = "kotlinforforge", version.ref = "kff" }
+mixin = { group = "org.spongepowered", name = "mixin", version.ref = "mixin" }
+sqlite = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite" }
+commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
+fcapi-fabric = { group = "fuzs.forgeconfigapiport", name = "forgeconfigapiport-fabric", version.ref = "fcapi" }
+fcapi-common = { group = "fuzs.forgeconfigapiport", name = "forgeconfigapiport-common", version.ref = "fcapi" }
+parchment = { group = "org.parchmentmc.data", name = "parchment-1.20.1", version.ref = "parchment" }
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+moddev = { id = "net.neoforged.moddev.legacyforge", version.ref = "moddev" }
+loom = { id = "fabric-loom", version.ref = "loom" }
+publish = { id = "me.modmuss50.mod-publish-plugin", version.ref = "publish" }

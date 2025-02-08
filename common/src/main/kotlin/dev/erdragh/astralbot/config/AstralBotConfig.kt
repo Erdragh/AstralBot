@@ -141,9 +141,9 @@ object AstralBotConfig {
         DISCORD_CHANNEL = builder.comment("Channel ID where the chat messages are synced")
             .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
         DISCORD_GUILD = builder.comment("Guild (server) ID where the chat messages etc. are synced")
-            .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
+            .defineInRange("discordGuild", 0L, 0L, Long.MAX_VALUE)
         DISCORD_ROLE = builder.comment("ID of the role given to linked users")
-            .defineInRange("discordChannel", 0L, 0L, Long.MAX_VALUE)
+            .defineInRange("discordRole", 0L, 0L, Long.MAX_VALUE)
 
         CLICKABLE_MESSAGES =
             builder.comment("Whether to make messages sent into the Minecraft chat open the Discord chat when clicked")

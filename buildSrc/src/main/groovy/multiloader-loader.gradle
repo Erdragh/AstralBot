@@ -1,0 +1,99 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+
+import java.nio.file.Files
+
+plugins {
+    id 'multiloader-common'
+    id "org.jetbrains.kotlin.jvm"
+    id "me.modmuss50.mod-publish-plugin"
+}
+
+configurations {
+    commonJava {
+        canBeResolved = true
+    }
+    commonKotlin {
+        canBeResolved = true
+    }
+    commonResources {
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    compileOnly(project(':common')) {
+        capabilities {
+            requireCapability "$group:$modId"
+        }
+    }
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonKotlin project(path: ':common', configuration: 'commonKotlin')
+    commonResources project(path: ':common', configuration: 'commonResources')
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+
+tasks.named('compileKotlin') {
+    dependsOn(configurations.commonKotlin)
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+    source(configurations.commonKotlin)
+}
+
+processResources {
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+tasks.named('sourcesJar', Jar) {
+    dependsOn(configurations.commonJava)
+    from(configurations.commonJava)
+    dependsOn(configurations.commonKotlin)
+    from(configurations.commonKotlin)
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+// Use dokka to generate javadoc for both Java and Kotlin sources
+// instead of using the builtin javadoc tools. This allows mixing
+// Kotlin and Java
+tasks.named("dokkaJavadoc", DokkaTask) {
+    dependsOn(configurations.commonJava)
+    dependsOn(configurations.commonKotlin)
+    dokkaSourceSets.configureEach {
+        sourceRoots.from(configurations.commonJava.singleFile, configurations.commonKotlin.singleFile)
+    }
+}
+
+
+// These titles get used based on subproject name
+ext.titles = [
+        "fabric" : "Fabric",
+        "neoforge" : "NeoForge",
+        "forge" : "Forge"
+]
+ext.curseforgePublish = publishMods.curseforgeOptions {
+    accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+    minecraftVersions.add(libs.versions.minecraft.get())
+    projectId = providers.environmentVariable("CURSEFORGE_ID")
+    embeds("sqlite-jdbc")
+}
+ext.modrinthPublish = publishMods.modrinthOptions {
+    accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+    minecraftVersions.add(libs.versions.minecraft.get())
+    projectId = providers.environmentVariable("MODRINTH_ID")
+    embeds("sqlite-jdbc")
+}
+
+// Only gets the lines for the latest version from the Changelog
+// file. This allows me to keep all previous changes in the file
+// without having to worry about them being included on new file
+// uploads.
+ext.changelog = Files.readString(rootDir.toPath().resolve("CHANGELOG.md"))
+        .replaceAll("[^^](#(#|\\n|.)+)|(^#.+)", "")
+        .trim()
+
+ext.type = publishMods.STABLE

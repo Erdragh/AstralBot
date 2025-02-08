@@ -1,11 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "dev.erdragh.astralbot.mixins.fabric",
+  "package": "dev.erdragh.astralbot.mixins.forge",
+  "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
-  "client": [
+  "server": [
+    "PlayerListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

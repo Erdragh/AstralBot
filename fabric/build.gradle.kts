@@ -1,43 +1,61 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import me.modmuss50.mpp.ReleaseType
 import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
 import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-architectury {
-    fabric()
+plugins {
+    id("multiloader-loader")
+    alias(libs.plugins.loom)
 }
 
-val common: Configuration by configurations.creating {
-    configurations.compileClasspath.get().extendsFrom(this)
-    configurations.runtimeClasspath.get().extendsFrom(this)
-    configurations["developmentFabric"].extendsFrom(this)
-}
+val modId: String by project
+
+val botLib: Configuration by configurations.getting
 
 dependencies {
-    common(project(":common", configuration = "namedElements")) {
-        isTransitive = false
+    minecraft(libs.minecraft)
+    mappings(loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${libs.versions.parchmentMC.get()}:${libs.versions.parchment.get()}@zip")
+    })
+    modImplementation(libs.fabricLoader)
+    modImplementation(libs.fabricApi)
+
+    modImplementation(libs.flk)
+
+    modApi(libs.fcapi.fabric)
+
+    botLib.dependencies.forEach { include(it) }
+}
+
+loom {
+    val aw = project(":common").file("src/main/resources/${modId}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
     }
-    shadowCommon(project(path = ":common", configuration = "transformProductionFabric")) {
-        isTransitive = false
+    mixin {
+        defaultRefmapName.set("${modId}.refmap.json")
     }
-
-    val minecraftVersion: String by project
-    val fabricLoaderVersion: String by project
-    val fabricApiVersion: String by project
-    val fabricKotlinVersion: String by project
-    val forgeConfigAPIVersion: String by project
-
-    modImplementation(group = "net.fabricmc", name = "fabric-loader", version = fabricLoaderVersion)
-    modApi(group = "net.fabricmc.fabric-api", name = "fabric-api", version = "$fabricApiVersion+$minecraftVersion")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${fabricKotlinVersion}")
-
-    modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:$forgeConfigAPIVersion")
+    runs {
+        named("client") {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            mkdir("runs/server")
+            runDir("runs/client")
+        }
+        named("server") {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            mkdir("runs/server")
+            runDir("runs/server")
+        }
+    }
 }
 
 publishMods {
-    val minecraftVersion: String by project
-    val title: String by project
+    val minecraftVersion = libs.versions.minecraft.get()
+    val modName: String by project
     val version: String by project
 
     val titles: Map<String, String> by extra
@@ -52,7 +70,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
     }
@@ -62,7 +80,7 @@ publishMods {
         modLoaders.add(project.name)
         file.set(tasks.remapJar.get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
-        displayName = "$title $version ${titles[project.name]} $minecraftVersion"
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
         requires("fabric-language-kotlin", "forge-config-api-port", "fabric-api")
     }
