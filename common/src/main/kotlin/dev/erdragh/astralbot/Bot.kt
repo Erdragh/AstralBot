@@ -1,11 +1,10 @@
 package dev.erdragh.astralbot
 
-import com.mojang.logging.LogUtils
-import dev.erdragh.astralbot.listeners.CommandHandlingListener
-import dev.erdragh.astralbot.listeners.UserEventListener
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
+import dev.erdragh.astralbot.listeners.CommandHandlingListener
+import dev.erdragh.astralbot.listeners.UserEventListener
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -14,6 +13,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.minecraft.server.MinecraftServer
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
@@ -22,7 +22,7 @@ import kotlin.io.path.absolute
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
-val LOGGER = LogUtils.getLogger()
+val LOGGER = LoggerFactory.getLogger(MODID)
 
 private lateinit var startTimestamp: LocalDateTime
 var minecraftHandler: MinecraftHandler? = null
@@ -90,6 +90,7 @@ private fun setupFromJDA(api: JDA) {
         LOGGER.warn("Configured Discord Guild (server) ID is not valid.")
         return
     }
+    LOGGER.info("Running with Guild '${g.name}' (${g.id})")
     val ch = g.getTextChannelById(AstralBotConfig.DISCORD_CHANNEL.get())
     if (ch == null) {
         LOGGER.warn("Configured Discord channel ID is not valid.")
@@ -97,6 +98,7 @@ private fun setupFromJDA(api: JDA) {
     }
     textChannel = ch
     guild = g
+    LOGGER.info("Chat sync configured in channel '${ch.name}' (${ch.id})")
 
     // Text channel was fetched, now the minecraftHandler can fetch its webhook stuff
     minecraftHandler?.updateWebhookClient()
