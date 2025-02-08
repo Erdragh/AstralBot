@@ -1,3 +1,6 @@
+# 1.5.4
+Fix wrong jar being published for Forge
+
 # 1.5.3
 - Unlink users on leave
 - Update Dependencies

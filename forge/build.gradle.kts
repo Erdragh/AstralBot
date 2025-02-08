@@ -80,7 +80,7 @@ publishMods {
     curseforge("curseForge") {
         from(curseforgePublish)
         modLoaders.add(project.name)
-        file.set(tasks.jar.get().archiveFile)
+        file.set(tasks.named<Jar>("reobfJar").get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
@@ -90,7 +90,7 @@ publishMods {
     modrinth("modrinthForge") {
         from(modrinthPublish)
         modLoaders.add(project.name)
-        file.set(tasks.jar.get().archiveFile)
+        file.set(tasks.named<Jar>("reobfJar").get().archiveFile)
         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
         this.version = "$version-mc$minecraftVersion-${project.name}"
