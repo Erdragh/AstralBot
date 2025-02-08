@@ -489,4 +489,8 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     private fun useWebhooks(): Boolean {
         return AstralBotConfig.WEBHOOK_ENABLED.get() && webhookClient != null
     }
+
+    fun close() {
+        webhookClient?.close()
+    }
 }

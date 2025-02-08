@@ -26,8 +26,8 @@ import thedarkcolour.kotlinforforge.forge.MOD_BUS
 @Mod("astralbot")
 class BotMod () {
     init {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotConfig.SPEC)
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         MOD_BUS.addListener(::onConfigReloaded)
 
         FORGE_BUS.addListener(::onServerStart)

@@ -16,8 +16,8 @@ import net.minecraftforge.fml.config.ModConfig
 
 object BotMod : ModInitializer {
     override fun onInitialize() {
-        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotConfig.SPEC)
-        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.SERVER, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
 
         ServerLifecycleEvents.SERVER_STARTED.register {
             LOGGER.info("Starting AstralBot on Fabric")

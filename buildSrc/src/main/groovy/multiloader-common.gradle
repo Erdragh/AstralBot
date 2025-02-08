@@ -42,7 +42,7 @@ repositories {
     }
     maven {
         name = "kotlinforforge"
-        url = uri("https://thedarkcolour.github.io/KotlinForForge/")
+        url = "https://thedarkcolour.github.io/KotlinForForge/"
     }
     maven {
         name = "Sponge / Mixin"
