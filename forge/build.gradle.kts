@@ -1,3 +1,6 @@
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.utils.extendsFrom
 
@@ -60,4 +63,37 @@ dependencies {
 
     configurations.named("additionalRuntimeClasspath").extendsFrom(configurations.botLib)
     configurations.jarJar.extendsFrom(configurations.botLib)
+}
+
+publishMods {
+    val minecraftVersion: String = libs.versions.minecraft.get()
+    val modName: String by project
+    val version: String by project
+
+    val titles: Map<String, String> by extra
+    val curseforgePublish: Provider<CurseforgeOptions> by extra
+    val modrinthPublish: Provider<ModrinthOptions> by extra
+
+    changelog = extra.get("changelog") as String
+    type = extra.get("type") as ReleaseType
+
+    curseforge("curseForge") {
+        from(curseforgePublish)
+        modLoaders.add(project.name)
+        file.set(tasks.jar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
+    }
+
+    modrinth("modrinthForge") {
+        from(modrinthPublish)
+        modLoaders.add(project.name)
+        file.set(tasks.jar.get().archiveFile)
+        additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+        displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+        this.version = "$version-mc$minecraftVersion-${project.name}"
+        requires("kotlin-for-forge")
+    }
 }
