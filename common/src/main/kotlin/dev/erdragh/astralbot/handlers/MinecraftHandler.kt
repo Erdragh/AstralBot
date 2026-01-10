@@ -241,12 +241,21 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     }
 
     /**
+     * Determines if a message should be forwarded to Minecraft chat.
+     * Always forwards human messages, only forwards bot messages if they're whitelisted.
+     */
+    private fun shouldForwardMessage(author: net.dv8tion.jda.api.entities.User): Boolean {
+        // Always forward human messages, only forward bot messages if they're whitelisted
+        return !author.isBot || AstralBotConfig.ALLOWED_BOT_IDS.get().contains(author.id)
+    }
+
+    /**
      * Event handler that gets fired when the bot receives a message
      * @param event the event which contains information about the message
      */
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        // Only send messages from the configured channel and only if the author isn't a bot
-        if (event.channel.idLong == textChannel?.idLong && !event.author.isBot) {
+        // Only send messages from the configured channel and only if we should forward the message
+        if (event.channel.idLong == textChannel?.idLong && shouldForwardMessage(event.author)) {
             sendDiscordToChat(event.message)
         }
     }

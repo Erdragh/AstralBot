@@ -1,0 +1,46 @@
+plugins {
+    id("multiloader-common")
+    alias(libs.plugins.moddev)
+}
+
+legacyForge {
+    mcpVersion = libs.versions.mcp.get()
+    // Automatically enable AccessTransformers if the file exists
+    def at = file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = libs.versions.parchmentMC.get()
+        mappingsVersion = libs.versions.parchment.get()
+    }
+}
+
+dependencies {
+    api(libs.slf4j)
+    compileOnly(libs.kotlinx.coroutines)
+    compileOnly(libs.mixin)
+
+    api(libs.fcapi)
+}
+
+configurations {
+    commonJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonKotlin {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    add("commonJava", sourceSets.main.java.srcDirs.first())
+    add("commonKotlin", sourceSets.main.kotlin.srcDirs.findAll { !it.name.endsWith("java") }.first())
+    add("commonResources", sourceSets.main.resources.srcDirs.first())
+}

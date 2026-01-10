@@ -117,6 +117,12 @@ object AstralBotConfig {
      */
     val ENABLE_AUTO_LINKS: ForgeConfigSpec.BooleanValue
 
+    /**
+     * List of Discord bot user IDs that are allowed to have their messages forwarded to Minecraft.
+     * To get a bot's ID: Enable Developer Mode in Discord → Right-click the bot → Copy User ID
+     */
+    val ALLOWED_BOT_IDS: ForgeConfigSpec.ConfigValue<List<String>>
+
     init {
         val builder = ForgeConfigSpec.Builder()
 
@@ -201,6 +207,10 @@ object AstralBotConfig {
             .define(listOf("markdown", "enabled"), true)
         ENABLE_AUTO_LINKS = builder.comment("Automatically convert detected URLs into clickable links")
             .define(listOf("markdown", "autoLinks"), true)
+
+        ALLOWED_BOT_IDS = builder.comment("List of Discord bot user IDs that are allowed to have their messages forwarded to Minecraft")
+            .comment("To get a bot's ID: Enable Developer Mode in Discord → Right-click the bot → Copy User ID")
+            .defineList("allowedBotIds", listOf<String>()) { it is String }
 
         SPEC = builder.build()
     }

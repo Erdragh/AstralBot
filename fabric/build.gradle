@@ -1,0 +1,89 @@
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
+
+plugins {
+    id("multiloader-loader")
+    alias(libs.plugins.loom)
+}
+
+def modId = project.modId
+
+def botLib = configurations.botLib
+
+dependencies {
+    minecraft(libs.minecraft)
+    mappings(loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${libs.versions.parchmentMC.get()}:${libs.versions.parchment.get()}@zip")
+    })
+    modImplementation(libs.fabricLoader)
+    modImplementation(libs.fabricApi)
+
+    modImplementation(libs.flk)
+
+    modApi(libs.fcapi) {
+        exclude(module: "fabric-loader")
+    }
+
+    botLib.dependencies.forEach { include(it) }
+}
+
+loom {
+    def aw = project(":common").file("src/main/resources/${modId}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
+    mixin {
+        defaultRefmapName.set("${modId}.refmap.json")
+    }
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            mkdir("runs/server")
+            runDir("runs/client")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            mkdir("runs/server")
+            runDir("runs/server")
+        }
+    }
+}
+
+// publishMods {
+//     def minecraftVersion = libs.versions.minecraft.get()
+//     def modName = project.modName
+//     def version = project.version
+
+//     def titles = project.findProperty("titles")
+//     def curseforgePublish = project.findProperty("curseforgePublish")
+//     def modrinthPublish = project.findProperty("modrinthPublish")
+
+//     changelog = project.findProperty("changelog") as String
+//     type = project.findProperty("type") as ReleaseType
+
+//     curseforge("curseFabric") {
+//         from(curseforgePublish)
+//         modLoaders.add(project.name)
+//         file.set(tasks.remapJar.get().archiveFile)
+//         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+//         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+//         this.version = "$version-mc$minecraftVersion-${project.name}"
+//         requires("fabric-language-kotlin", "forge-config-api-port-fabric", "fabric-api")
+//     }
+
+//     modrinth("modrinthFabric") {
+//         from(modrinthPublish)
+//         modLoaders.add(project.name)
+//         file.set(tasks.remapJar.get().archiveFile)
+//         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+//         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+//         this.version = "$version-mc$minecraftVersion-${project.name}"
+//         requires("fabric-language-kotlin", "forge-config-api-port", "fabric-api")
+//     }
+// }
