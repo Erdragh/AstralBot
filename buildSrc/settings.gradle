@@ -1,7 +1,8 @@
 dependencyResolutionManagement {
     versionCatalogs {
-        register("libs") {
+        libs {
             from(files("../libs.versions.toml"))
         }
     }
 }
+

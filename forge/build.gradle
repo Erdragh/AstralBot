@@ -1,0 +1,97 @@
+import me.modmuss50.mpp.ReleaseType
+import me.modmuss50.mpp.platforms.curseforge.CurseforgeOptions
+import me.modmuss50.mpp.platforms.modrinth.ModrinthOptions
+
+plugins {
+    id("multiloader-loader")
+    alias(libs.plugins.moddev)
+}
+
+def modId = project.modId
+
+mixin {
+    add(sourceSets.main, "${modId}.refmap.json")
+    config("${modId}.mixins.json")
+    config("${modId}.forge.mixins.json")
+}
+tasks.jar {
+    manifest {
+        attributes["MixinConfigs"] = "${modId}.mixins.json,${modId}.forge.mixins.json"
+    }
+}
+
+legacyForge {
+    version = libs.versions.forge.get()
+    // Automatically enable neoforge AccessTransformers if the file exists
+    def at = project(":common").file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = libs.versions.parchmentMC.get()
+        mappingsVersion = libs.versions.parchment.get()
+    }
+    runs {
+        configureEach {
+            systemProperty("forge.enabledGameTestNamespaces", modId)
+            ideName = "Forge ${name.capitalize()} (${project.path})" // Unify the run config names with fabric
+        }
+        client {
+            client()
+        }
+        data {
+            data()
+        }
+        server {
+            server()
+        }
+    }
+    mods {
+        register(modId) {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir("src/generated/resources") }
+
+dependencies {
+    implementation(libs.kff)
+    annotationProcessor(variantOf(libs.mixin) { classifier("processor") })
+
+    configurations.additionalRuntimeClasspath.extendsFrom(configurations.botLib)
+    configurations.jarJar.extendsFrom(configurations.botLib)
+}
+
+// publishMods {
+//     def minecraftVersion = libs.versions.minecraft.get()
+//     def modName = project.modName
+//     def version = project.version
+
+//     def titles = project.findProperty("titles")
+//     def curseforgePublish = project.findProperty("curseforgePublish")
+//     def modrinthPublish = project.findProperty("modrinthPublish")
+
+//     changelog = project.findProperty("changelog") as String
+//     type = project.findProperty("type") as ReleaseType
+
+//     curseforge("curseForge") {
+//         from(curseforgePublish)
+//         modLoaders.add(project.name)
+//         file.set(tasks.named("reobfJar").get().archiveFile)
+//         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+//         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+//         this.version = "$version-mc$minecraftVersion-${project.name}"
+//         requires("kotlin-for-forge")
+//     }
+
+//     modrinth("modrinthForge") {
+//         from(modrinthPublish)
+//         modLoaders.add(project.name)
+//         file.set(tasks.named("reobfJar").get().archiveFile)
+//         additionalFiles.plus(tasks.sourcesJar.get().archiveFile)
+//         displayName = "$modName $version ${titles[project.name]} $minecraftVersion"
+//         this.version = "$version-mc$minecraftVersion-${project.name}"
+//         requires("kotlin-for-forge")
+//     }
+// }
