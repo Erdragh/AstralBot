@@ -1,14 +1,17 @@
 plugins {
-    id("groovy-gradle-plugin")
-}
-
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:${libs.versions.dokka.get()}")
-    implementation("me.modmuss50:mod-publish-plugin:${libs.versions.publish.get()}")
+    `kotlin-dsl`
 }
 
 repositories {
     mavenCentral()
     gradlePluginPortal()
+}
+
+gradlePlugin {
+    plugins {
+        create("changelogExtractor") {
+            id = "dev.erdragh.changelog-extractor"
+            implementationClass = "dev.erdragh.changelog.ChangelogExtractorPlugin"
+        }
+    }
 }
