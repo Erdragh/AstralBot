@@ -129,7 +129,6 @@ fun startAstralbot(server: MinecraftServer) {
     minecraftHandler = MinecraftHandler(server)
 
     try {
-        TODO("Trying to test out what happens during a failure like this")
         jda = JDABuilder.createLight(
                 token,
                 GatewayIntent.MESSAGE_CONTENT,
