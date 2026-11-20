@@ -2,6 +2,7 @@ package dev.erdragh.astralbot.util
 
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
+import dev.erdragh.astralbot.multiplatform.Chat
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.minecraft.core.component.DataComponents
@@ -29,7 +30,7 @@ val urlPattern: Pattern = Pattern.compile(
 )
 
 fun formatMarkdownToComponent(md: String): MutableComponent {
-    if (!AstralBotConfig.ENABLE_MARKDOWN_PARSING.get()) return Component.literal(md)
+    if (!AstralBotConfig.ENABLE_MARKDOWN_PARSING.get()) return Chat.literal(md)
 
     val parser = Parser.builder().build()
     val parsed = parser.parse(md)

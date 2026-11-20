@@ -9,6 +9,7 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
+import dev.erdragh.astralbot.multiplatform.Chat
 import dev.erdragh.astralbot.util.*
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
@@ -260,10 +261,10 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param member the member which will be used to get the data
      */
     private fun formattedUser(member: Member): MutableComponent {
-        return Component.literal(member.effectiveName).withStyle {
+        return Chat.literal(member.effectiveName).withStyle {
             it
                 .withColor(member.colorRaw)
-                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("@${member.user.name}")))
+                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Chat.literal("@${member.user.name}")))
         }
     }
 
@@ -282,9 +283,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param send the function used to send the message into the Minecraft chat
      */
     private fun sendFormattedMessage(message: Message, send: (component: MutableComponent) -> Unit) {
-        val comp = Component.empty()
+        val comp = Chat.empty()
 
-        val messageContents = Component.empty()
+        val messageContents = Chat.empty()
         // This is the actual message content
         val actualMessage = formatMarkdownToComponent(message.contentDisplay)
         // If it's enabled in the config you can click on a message and get linked to said message
@@ -342,14 +343,14 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     }
 
     private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Component?): MutableComponent {
-        val formatted = Component.empty()
+        val formatted = Chat.empty()
 
         val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
 
-        val formattedLiteral = { contents: String -> Component.literal(contents).withStyle(ChatFormatting.GRAY) }
+        val formattedLiteral = { contents: String -> Chat.literal(contents).withStyle(ChatFormatting.GRAY) }
 
         val withMessage = { templatePart: String ->
-            val accumulator = Component.empty()
+            val accumulator = Chat.empty()
 
             val templateSplitMessage = templatePart.split("{{message}}")
 
@@ -365,9 +366,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
 
         val withReply = { templatePart: String ->
-            val accumulator = Component.empty()
+            val accumulator = Chat.empty()
 
-            val reply = Component.empty()
+            val reply = Chat.empty()
             replied?.let {
                 val replyTemplateSplit = AstralBotTextConfig.DISCORD_REPLY.get().split("{{replied}}")
                 for ((index, value) in replyTemplateSplit.withIndex()) {
@@ -421,7 +422,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param message the message of which the attachments and embeds are handled
      */
     private fun formatEmbeds(message: Message): MutableComponent {
-        val comp = Component.empty()
+        val comp = Chat.empty()
         // Adds a newline with space if there are embeds and the message isn't empty
         if (message.embeds.size + message.attachments.size + message.stickers.size > 0 && message.contentDisplay.isNotBlank()) comp.append(
             "\n ${AstralBotTextConfig.DISCORD_EMBEDS.get()} "
@@ -464,9 +465,9 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param url the url of the embed
      */
     private fun formatEmbed(name: String, url: String?): MutableComponent {
-        val comp = Component.empty()
+        val comp = Chat.empty()
         if (AstralBotConfig.urlAllowed(url)) {
-            val embedComponent = Component.literal(name)
+            val embedComponent = Chat.literal(name)
             if (AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                 embedComponent.withStyle { style ->
                     if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
@@ -480,7 +481,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             comp.append(embedComponent)
         } else {
             comp.append(
-                Component.literal(AstralBotTextConfig.GENERIC_BLOCKED.get())
+                Chat.literal(AstralBotTextConfig.GENERIC_BLOCKED.get())
                     .withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE)
             )
         }

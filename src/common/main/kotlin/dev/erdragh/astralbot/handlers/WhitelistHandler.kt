@@ -7,6 +7,7 @@ import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.WhitelistHandler.loginCodes
 import dev.erdragh.astralbot.handlers.WhitelistHandler.whitelistTemplate
+import dev.erdragh.astralbot.multiplatform.Chat
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
@@ -264,7 +265,7 @@ object WhitelistHandler {
         // by another means.
         val isDbWhitelisted = checkWhitelist(user.id) != null
 
-        if (isDbWhitelisted) return Optional.of(Component.literal(AstralBotTextConfig.WHITELIST_LINKED_NOT_ALLOWED.get().replace("{{name}}", user.name)))
+        if (isDbWhitelisted) return Optional.of(Chat.literal(AstralBotTextConfig.WHITELIST_LINKED_NOT_ALLOWED.get().replace("{{name}}", user.name)))
 
         val linkCode = getWhitelistCode(user.id) ?: return Optional.empty()
 
@@ -278,12 +279,12 @@ object WhitelistHandler {
 
         val discordLink = AstralBotConfig.DISCORD_LINK.get()
 
-        val component = Component.empty()
+        val component = Chat.empty()
         for (i in template.indices) {
             component.append(template[i])
             if (discordLink.isNotEmpty() && i + 1 < template.size) {
                 // TODO: Make this clickable. Using `withStyle` and a ClickEvent did not seem to work
-                component.append(Component.literal(discordLink).withStyle {it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, discordLink))})
+                component.append(Chat.literal(discordLink).withStyle {it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, discordLink))})
             }
         }
         return Optional.of(component)
