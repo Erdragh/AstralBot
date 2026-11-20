@@ -18,7 +18,7 @@ import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.io.path.absolute
+import dev.erdragh.astralbot.multiplatform.getAstralbotDirectory
 import kotlin.properties.Delegates
 
 const val MODID = "astralbot"
@@ -111,7 +111,7 @@ fun startAstralbot(server: MinecraftServer) {
     startTimestamp = LocalDateTime.now()
     val env = System.getenv()
 
-    baseDirectory = File(server.serverDirectory.absolute().toFile(), MODID)
+    baseDirectory = server.getAstralbotDirectory()
     if (baseDirectory!!.mkdir()) {
         LOGGER.debug("Created $MODID directory")
     }
