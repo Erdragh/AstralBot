@@ -91,9 +91,41 @@ cloche {
         dependsOn(remappedCommon)
     }
 
+
+    val common1182 = common("1.18.2:common") {
+        mixins.from("astralbot-common.mixins.json")
+        dependsOn(remappedCommon)
+    }
     val common1211 = common("1.21.1:common") {
         mixins.from("astralbot-common.mixins.json")
         dependsOn(remappedCommon)
+    }
+    val common261 = common("26.1:common") {
+        mixins.from("astralbot-common.mixins.json")
+        dependsOn(remappedCommon)
+    }
+
+    val fabric1182 = fabric("1.18.2:fabric") {
+        minecraftVersion = "1.18.2"
+        loaderVersion = libs.versions.fabricLoader
+
+        dependsOn(fabricCommon)
+        dependsOn(common1182)
+
+        dependencies {
+            modApi("net.minecraftforge:forgeconfigapiport-fabric:3.2.4")
+            fabricApi("0.77.0")
+
+            externalLibs.forEach {
+                include(it)
+            }
+        }
+
+        runs {
+            server {
+                runDir("run/1.18.2/fabric")
+            }
+        }
     }
 
     val fabric1211 = fabric("1.21.1:fabric") {
@@ -102,7 +134,6 @@ cloche {
 
         dependsOn(fabricCommon)
         dependsOn(common1211)
-        dependsOn(remappedCommon)
 
         dependencies {
             modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6")
@@ -120,25 +151,34 @@ cloche {
         }
     }
 
-//    val fabric261 = fabric("26.1:fabric") {
-//        minecraftVersion = "26.1-snapshot-3"
-//        loaderVersion = libs.versions.fabricLoader
-//
-//        dependsOn(fabricCommon)
-//
-//        runs {
-//            server {
-//                runDir("run/26.1/fabric")
-//            }
-//        }
-//    }
+    val fabric261 = fabric("26.1:fabric") {
+        minecraftVersion = "26.1.2"
+        loaderVersion = libs.versions.fabricLoader
+
+        dependsOn(fabricCommon)
+        dependsOn(common261)
+
+        dependencies {
+            modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.1.3")
+            fabricApi("0.155.3")
+
+            externalLibs.forEach {
+                include(it)
+            }
+        }
+
+        runs {
+            server {
+                runDir("run/26.1/fabric")
+            }
+        }
+    }
 
     val neoforge1211 = neoforge("1.21.1:neoforge") {
         minecraftVersion = "1.21.1"
         loaderVersion = "21.1.267"
 
         dependsOn(common1211)
-        dependsOn(remappedCommon)
 
         mixins.from("astralbot-neoforge.mixins.json")
 
@@ -173,6 +213,8 @@ cloche {
 
         mixins.from("astralbot-neoforge.mixins.json")
 
+        dependsOn(common261)
+
         dependencies {
             implementation("thedarkcolour:kfflang-neoforge:5.11.0")
             implementation("thedarkcolour:kffmod-neoforge:5.11.0")
@@ -198,7 +240,7 @@ cloche {
         }
     }
 
-    listOf(fabric1211).forEach {
+    listOf(fabric1182, fabric1211, fabric261).forEach {
         it.metadata {
             entrypoint("main") {
                 value = "dev.erdragh.astralbot.fabric.BotMod"
