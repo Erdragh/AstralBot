@@ -1,16 +1,16 @@
 [versions]
 java = "21"
-kotlin = "2.2.0"
-cloche = "0.17.6"
+kotlin = "2.4.21"
+cloche = "0.19.13"
 
-kotlinx-coroutines = "1.10.1"
+kotlinx-coroutines = "1.11.0"
 
-fabricLoader = "0.18.4"
+fabricLoader = "0.20.1"
 
-publish = "1.1.0"
+publish = "2.2.1"
 
-sqlite = "3.51.1.0"
-commonmark = "0.27.1"
+sqlite = "3.54.1.0"
+commonmark = "0.32.0"
 
 [libraries]
 fabricLoader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabricLoader" }
@@ -20,5 +20,6 @@ kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
 cloche = { id = "earth.terrarium.cloche", version.ref = "cloche" }
 publish = { id = "me.modmuss50.mod-publish-plugin", version.ref = "publish" }

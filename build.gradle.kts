@@ -4,6 +4,7 @@ import java.net.URI
 plugins {
     alias(libs.plugins.cloche)
     alias(libs.plugins.kotlin)
+    alias(libs.plugins.kapt)
     id("dev.erdragh.changelog-extractor")
     alias(libs.plugins.publish)
     // so we can enable soruce download
@@ -68,10 +69,6 @@ cloche {
     )
 
     common {
-        mappings {
-            official()
-        }
-
         dependencies {
             externalLibs.forEach {
                 implementation(it) {
@@ -81,14 +78,22 @@ cloche {
         }
     }
 
+    val remappedCommon = common("common:remapped") {
+        mappings {
+            official()
+        }
+    }
+
     val fabricCommon = common("common:fabric") {
         dependencies {
-            modImplementation("net.fabricmc:fabric-language-kotlin:1.13.4+kotlin.${libs.versions.kotlin.get()}")
+            modImplementation("net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.${libs.versions.kotlin.get()}")
         }
+        dependsOn(remappedCommon)
     }
 
     val common1211 = common("1.21.1:common") {
         mixins.from("astralbot-common.mixins.json")
+        dependsOn(remappedCommon)
     }
 
     val fabric1211 = fabric("1.21.1:fabric") {
@@ -97,10 +102,11 @@ cloche {
 
         dependsOn(fabricCommon)
         dependsOn(common1211)
+        dependsOn(remappedCommon)
 
         dependencies {
             modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6")
-            fabricApi("0.116.7")
+            fabricApi("0.116.18")
 
             externalLibs.forEach {
                 include(it)
@@ -114,11 +120,25 @@ cloche {
         }
     }
 
+//    val fabric261 = fabric("26.1:fabric") {
+//        minecraftVersion = "26.1-snapshot-3"
+//        loaderVersion = libs.versions.fabricLoader
+//
+//        dependsOn(fabricCommon)
+//
+//        runs {
+//            server {
+//                runDir("run/26.1/fabric")
+//            }
+//        }
+//    }
+
     val neoforge1211 = neoforge("1.21.1:neoforge") {
         minecraftVersion = "1.21.1"
-        loaderVersion = "21.1.218"
+        loaderVersion = "21.1.267"
 
         dependsOn(common1211)
+        dependsOn(remappedCommon)
 
         mixins.from("astralbot-neoforge.mixins.json")
 
@@ -147,6 +167,37 @@ cloche {
         }
     }
 
+    val neoforge261 = neoforge("26.1:neoforge") {
+        minecraftVersion = "26.1.2"
+        loaderVersion = "26.1.2.128"
+
+        mixins.from("astralbot-neoforge.mixins.json")
+
+        dependencies {
+            implementation("thedarkcolour:kfflang-neoforge:5.11.0")
+            implementation("thedarkcolour:kffmod-neoforge:5.11.0")
+            implementation("thedarkcolour:kfflib-neoforge:5.11.0")
+
+            legacyClasspath("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")
+            legacyClasspath("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
+            legacyClasspath(libs.kotlinx.coroutines)
+
+            externalLibs.forEach {
+                legacyClasspath(it) {
+                    exclude(group = "org.jetbrains.kotlin")
+                    exclude(group = "org.jetbrains.kotlinx")
+                }
+                include(it)
+            }
+        }
+
+        runs {
+            server {
+                runDir("run/26.1/neo")
+            }
+        }
+    }
+
     listOf(fabric1211).forEach {
         it.metadata {
             entrypoint("main") {
@@ -155,7 +206,7 @@ cloche {
             }
         }
     }
-    listOf(neoforge1211).forEach {
+    listOf(neoforge1211, neoforge261).forEach {
         it.metadata {
             modLoader = "kotlinforforge"
         }
@@ -168,4 +219,7 @@ idea {
         isDownloadSources = true
         isDownloadJavadoc = true
     }
+}
+dependencies {
+    testImplementation(kotlin("test"))
 }
