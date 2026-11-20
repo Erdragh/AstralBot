@@ -5,19 +5,25 @@ import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.baseDirectory
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
+import dev.erdragh.astralbot.handlers.WhitelistHandler.loginCodes
+import dev.erdragh.astralbot.handlers.WhitelistHandler.whitelistTemplate
 import net.dv8tion.jda.api.entities.User
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
 import java.sql.Connection
 import java.util.*
-import java.util.Random
 import kotlin.random.asKotlinRandom
 import kotlin.random.nextInt
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
+import kotlin.uuid.toKotlinUuid
 
 /**
  * This is a Handler for the whitelisting process for AstralBot.
@@ -59,7 +65,7 @@ object WhitelistHandler {
      */
     private object WhitelistedUser : Table() {
         val discordID: Column<Long> = long("discordID")
-        val minecraftID: Column<UUID> = uuid("minecraftID")
+        val minecraftID: Column<Uuid> = uuid("minecraftID")
         // Overwriting the primary key like this prevents linking
         // multiple times. This is prevented elsewhere too, but
         // redundancy is not a bad thing.
@@ -67,9 +73,9 @@ object WhitelistHandler {
     }
 
     init {
-        TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-        TransactionManager.defaultDatabase = db
-        transaction {
+        val manager = TransactionManager.managerFor(db)
+        manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
+        transaction(db) {
             // Creates the Table in the database file if it didn't exist beforehand.
             // Exposed will create the SQLite file if none is present.
             if (!SchemaUtils.listTables().contains(WhitelistedUser.javaClass.simpleName)) {
@@ -102,7 +108,7 @@ object WhitelistHandler {
      */
     fun getAllUsers(): Collection<Long> {
         var result: ArrayList<Long>? = null
-        transaction {
+        transaction(db) {
             val query = WhitelistedUser.selectAll()
             val r = ArrayList<Long>(query.count().toInt())
             query.iterator().forEach {
@@ -120,10 +126,10 @@ object WhitelistHandler {
      * @param id the Minecraft user ID of the account to get linked
      */
     fun whitelist(user: User, id: UUID) {
-        val removedID = transaction {
+        val removedID = transaction(db) {
             WhitelistedUser.insert {
                 it[discordID] = user.idLong
-                it[minecraftID] = id
+                it[minecraftID] = id.toKotlinUuid()
             }
             loginCodes.remove(getWhitelistCode(id))
         }
@@ -138,7 +144,7 @@ object WhitelistHandler {
      * will be removed
      */
     fun unWhitelist(user: User) {
-        transaction {
+        transaction(db) {
             val deletedCount = WhitelistedUser.deleteWhere {
                 discordID eq user.idLong
             }
@@ -154,8 +160,8 @@ object WhitelistHandler {
      */
     fun checkWhitelist(minecraftID: UUID): Long? {
         var result: Long? = null
-        transaction {
-            val query = WhitelistedUser.selectAll().where { WhitelistedUser.minecraftID eq minecraftID }
+        transaction(db) {
+            val query = WhitelistedUser.selectAll().where { WhitelistedUser.minecraftID eq minecraftID.toKotlinUuid() }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.discordID]
         }
         return result
@@ -168,12 +174,12 @@ object WhitelistHandler {
      * Minecraft ID otherwise.
      */
     fun checkWhitelist(discordID: Long): UUID? {
-        var result: UUID? = null
-        transaction {
+        var result: Uuid? = null
+        transaction(db) {
             val query = WhitelistedUser.selectAll().where { WhitelistedUser.discordID eq discordID }
             result = if (query.empty()) null else query.iterator().next()[WhitelistedUser.minecraftID]
         }
-        return result
+        return result?.toJavaUuid()
     }
 
     fun getOrGenerateWhitelistCode(minecraftID: UUID): Int {

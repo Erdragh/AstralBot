@@ -1,5 +1,5 @@
 [versions]
-exposed = "0.59.0"
+exposed = "1.6.1"
 
 [libraries]
 core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
