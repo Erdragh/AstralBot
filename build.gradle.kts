@@ -191,6 +191,9 @@ cloche {
             legacyClasspath("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
             legacyClasspath(libs.kotlinx.coroutines)
 
+            // forge api so I can use it from 1.18.2 too
+            modApi("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:21.1.6")
+
             externalLibs.forEach {
                 legacyClasspath(it) {
                     exclude(group = "org.jetbrains.kotlin")
@@ -223,6 +226,8 @@ cloche {
             legacyClasspath("org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}")
             legacyClasspath("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
             legacyClasspath(libs.kotlinx.coroutines)
+
+            modApi("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:26.1.3")
 
             externalLibs.forEach {
                 legacyClasspath(it) {
