@@ -9,7 +9,7 @@ import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.multiplatform.Chat
+import dev.erdragh.astralbot.multiplatform.*
 import dev.erdragh.astralbot.util.*
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
@@ -25,12 +25,10 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.level.ClientInformation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
 import java.text.DecimalFormat
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 import kotlin.math.min
 
 
@@ -41,8 +39,8 @@ import kotlin.math.min
  * @author Erdragh
  */
 class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() {
-    private val playerNames = HashSet<String>(server.maxPlayers)
-    private val notchPlayer = byName("Notch")?.let { ServerPlayer(this.server, this.server.allLevels.elementAt(0), it, ClientInformation.createDefault()) }
+    private val playerNames = HashSet<String>(server.getAstralMaxPlayerCount())
+    private val notchPlayer = server.defaultPlayer()
     private var webhookClient: WebhookClient? = null
 
     /**
@@ -57,7 +55,10 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         if (webhookClient == null) {
             textChannel?.retrieveWebhooks()?.submit()?.whenComplete { webhooks, error ->
                 if (error != null) {
-                    LOGGER.error("Failed to fetch webhooks for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
+                    LOGGER.error(
+                        "Failed to fetch webhooks for channel: ${textChannel!!.id} (${textChannel!!.name})",
+                        error
+                    )
                 } else {
                     if (webhooks.size > 1) {
                         LOGGER.warn("Multiple webhooks available for channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will use the first one. If you want to use a specific one, set the webhook.url config option.")
@@ -66,13 +67,17 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                         webhookClient = JDAWebhookClient.from(webhooks[0])
                     } else {
                         LOGGER.info("No webhook found in channel: ${textChannel!!.id} (${textChannel!!.name}). AstralBot will try to create one.")
-                        textChannel!!.createWebhook("AstralBot Chat synchronization").submit().whenComplete { webhook, error ->
-                            if (error != null) {
-                                LOGGER.error("Failed to create webhook for channel: ${textChannel!!.id} (${textChannel!!.name})", error)
-                            } else {
-                                webhookClient = JDAWebhookClient.from(webhook)
+                        textChannel!!.createWebhook("AstralBot Chat synchronization").submit()
+                            .whenComplete { webhook, error ->
+                                if (error != null) {
+                                    LOGGER.error(
+                                        "Failed to create webhook for channel: ${textChannel!!.id} (${textChannel!!.name})",
+                                        error
+                                    )
+                                } else {
+                                    webhookClient = JDAWebhookClient.from(webhook)
+                                }
                             }
-                        }
                     }
                 }
             }
@@ -128,12 +133,12 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     fun tickReport(): String {
         // Idea from the TPSCommand in Forge
-        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.currentSmoothedTickTime))
+        return AstralBotTextConfig.TICK_REPORT.get().replace("{{mspt}}", numberFormat.format(server.smoothTickTime()))
             .replace(
                 "{{tps}}", numberFormat.format(
                     min(
                         20.0,
-                        1000.0 / (server.currentSmoothedTickTime)
+                        1000.0 / (server.smoothTickTime())
                     )
                 )
             )
@@ -149,7 +154,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * - The [server]'s profile cache hasn't been initialized yet
      */
     fun byUUID(id: UUID): GameProfile? {
-        return server.profileCache?.get(id)?.getOrNull()
+        return server.getAstralPlayerByUUID(id)
     }
 
     /**
@@ -162,7 +167,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * - The [server]'s profile cache hasn't been initialized yet
      */
     fun byName(name: String): GameProfile? {
-        return server.profileCache?.get(name)?.getOrNull()
+        return server.getAstralPlayerByName(name)
     }
 
     /**
@@ -174,26 +179,22 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
     fun sendChatToDiscord(player: ServerPlayer?, message: Component) {
         if (shuttingDown.get()) return
 
-        val attachments = message.toFlatList().mapNotNull {
-            it.style.hoverEvent
-        }
 
         val formattedEmbeds: MutableList<MessageEmbed> = mutableListOf()
         val items: MutableList<ItemStack> = mutableListOf()
 
-        for (attachment in attachments) {
-            attachment.getValue(HoverEvent.Action.SHOW_TEXT)?.let {
-                formattedEmbeds.add(formatHoverText(it))
-            }
-            attachment.getValue(HoverEvent.Action.SHOW_ITEM)?.itemStack?.let {
-                formatHoverItems(it, items, notchPlayer)?.let(formattedEmbeds::add)
-            }
-            attachment.getValue(HoverEvent.Action.SHOW_ENTITY)?.let {
-                formatHoverEntity(it)?.let(formattedEmbeds::add)
-            }
-        }
+        Chat.handleHoverEvents(message, {
+            formattedEmbeds.add(formatHoverText(it))
+        }, {
+            Chat.formatHoverItems(it, items, notchPlayer)?.let(formattedEmbeds::add)
+        }, {
+            formatHoverEntity(it)?.let(formattedEmbeds::add)
+        })
 
-        val messageSenderInfo = if(useWebhooks()) MessageSenderLookup.getMessageSenderInfo(player, AstralBotConfig.WEBHOOK_USE_LINKED.get()) else null
+        val messageSenderInfo = if (useWebhooks()) MessageSenderLookup.getMessageSenderInfo(
+            player,
+            AstralBotConfig.WEBHOOK_USE_LINKED.get()
+        ) else null
         val escape = { it: String -> it.replace("_", "\\_") }
         val content = if (messageSenderInfo != null) {
             formatComponentToMarkdown(message)
@@ -216,7 +217,16 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         } else {
             val webhookMessage = WebhookMessageBuilder()
                 .addEmbeds(formattedEmbeds.map { embed ->
-                    WebhookEmbedBuilder().let { builder -> embed.title?.let { title -> builder.setTitle(WebhookEmbed.EmbedTitle(title, null)) }; builder }
+                    WebhookEmbedBuilder().let { builder ->
+                        embed.title?.let { title ->
+                            builder.setTitle(
+                                WebhookEmbed.EmbedTitle(
+                                    title,
+                                    null
+                                )
+                            )
+                        }; builder
+                    }
                         .setDescription(embed.description)
                         .setColor(embed.colorRaw)
                         .build()
@@ -240,7 +250,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendDiscordToChat(message: Message) {
         sendFormattedMessage(message) {
-            server.playerList.broadcastSystemMessage(DiscordMessageComponent(it), false)
+            server.broadcastMessageToAllPlayers(DiscordMessageComponent(it))
         }
     }
 
@@ -264,7 +274,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         return Chat.literal(member.effectiveName).withStyle {
             it
                 .withColor(member.colorRaw)
-                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Chat.literal("@${member.user.name}")))
+                .withHoverEvent(Chat.hoverEvent(HoverEvent.Action.SHOW_TEXT, Chat.literal("@${member.user.name}")))
         }
     }
 
@@ -291,7 +301,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         // If it's enabled in the config you can click on a message and get linked to said message
         // in the actual Discord client
         if (AstralBotConfig.CLICKABLE_MESSAGES.get()) {
-            actualMessage.withStyle { it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
+            actualMessage.withStyle { it.withClickEvent(Chat.clickEvent(ClickEvent.Action.OPEN_URL, message.jumpUrl)) }
         }
         messageContents.append(actualMessage)
 
@@ -315,7 +325,13 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                     }
                     if (respondeeName != null) {
                         message.member?.let {
-                            comp.append(formatMessageWithUsers(messageContents, it, Component.literal(respondeeName).withStyle(ChatFormatting.WHITE)))
+                            comp.append(
+                                formatMessageWithUsers(
+                                    messageContents,
+                                    it,
+                                    Chat.literal(respondeeName).withStyle(ChatFormatting.WHITE)
+                                )
+                            )
                             send(comp)
                         }
                     }
@@ -331,7 +347,13 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
             }
         } else if (respondeeName != null) {
             message.member?.let {
-                comp.append(formatMessageWithUsers(messageContents, it, Component.literal(respondeeName).withStyle(ChatFormatting.WHITE)))
+                comp.append(
+                    formatMessageWithUsers(
+                        messageContents,
+                        it,
+                        Chat.literal(respondeeName).withStyle(ChatFormatting.WHITE)
+                    )
+                )
                 send(comp)
             }
         } else {
@@ -342,7 +364,11 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
         }
     }
 
-    private fun formatMessageWithUsers(message: MutableComponent, author: Member, replied: Component?): MutableComponent {
+    private fun formatMessageWithUsers(
+        message: MutableComponent,
+        author: Member,
+        replied: Component?
+    ): MutableComponent {
         val formatted = Chat.empty()
 
         val templateSplitByUser = AstralBotTextConfig.DISCORD_MESSAGE.get().split("{{user}}")
@@ -473,8 +499,8 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
                     if (url != null && AstralBotConfig.CLICKABLE_EMBEDS.get()) {
                         style.withColor(ChatFormatting.BLUE)
                             .withUnderlined(true)
-                            .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
-                            .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.nullToEmpty(url)))
+                            .withClickEvent(Chat.clickEvent(ClickEvent.Action.OPEN_URL, url))
+                            .withHoverEvent(Chat.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.nullToEmpty(url)))
                     } else style
                 }
             }

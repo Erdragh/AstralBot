@@ -93,21 +93,23 @@ cloche {
 
 
     val common1182 = common("1.18.2:common") {
-        mixins.from("astralbot-common.mixins.json")
+        mixins.from("src/1.18.2/common/astralbot-common.mixins.json")
         dependsOn(remappedCommon)
     }
     val common1211 = common("1.21.1:common") {
-        mixins.from("astralbot-common.mixins.json")
+        mixins.from("src/1.21.1/common/astralbot-common.mixins.json")
         dependsOn(remappedCommon)
     }
     val common261 = common("26.1:common") {
-        mixins.from("astralbot-common.mixins.json")
+        // TODO: mixins.from("astralbot-common.mixins.json")
         dependsOn(remappedCommon)
     }
 
     val fabric1182 = fabric("1.18.2:fabric") {
         minecraftVersion = "1.18.2"
         loaderVersion = libs.versions.fabricLoader
+
+        mixins.from(file("src/1.18.2/fabric/astralbot-fabric.mixins.json"))
 
         dependsOn(fabricCommon)
         dependsOn(common1182)
@@ -180,7 +182,7 @@ cloche {
 
         dependsOn(common1211)
 
-        mixins.from("astralbot-neoforge.mixins.json")
+        mixins.from("src/1.21.1/neoforge/astralbot-neoforge.mixins.json")
 
         dependencies {
             implementation("thedarkcolour:kfflang-neoforge:5.11.0")

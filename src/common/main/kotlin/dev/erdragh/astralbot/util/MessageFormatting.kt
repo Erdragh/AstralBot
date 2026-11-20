@@ -5,20 +5,13 @@ import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.multiplatform.Chat
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.minecraft.core.component.DataComponents
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.TooltipFlag
 import org.commonmark.parser.Parser
 import java.awt.Color
 import java.util.regex.Pattern
-import kotlin.jvm.optionals.getOrNull
 
 // Pattern for recognizing a URL, based off RFC 3986
 // Source: https://stackoverflow.com/questions/5713558/detect-and-extract-url-from-a-string
@@ -40,7 +33,7 @@ fun formatMarkdownToComponent(md: String): MutableComponent {
 }
 
 fun formatComponentToMarkdown(comp: Component): String {
-    return comp.toFlatList()
+    return Chat.flatten(comp)
         .map {
             var formatted = it.string
 
@@ -50,10 +43,8 @@ fun formatComponentToMarkdown(comp: Component): String {
             if (it.style.isItalic) {
                 formatted = "_${formatted}_"
             }
-            it.style.clickEvent?.let { clickEvent ->
-                if (clickEvent.action == ClickEvent.Action.OPEN_URL) {
-                    formatted = "[$formatted](${clickEvent.value})"
-                }
+            Chat.getOpenedUrl(it)?.let { url ->
+                formatted = "[$formatted](${url})"
             }
 
             val matcher = urlPattern.matcher(formatted)
@@ -82,29 +73,10 @@ fun formatHoverText(text: Component): MessageEmbed {
         .build()
 }
 
-fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, player: Player?): MessageEmbed? {
-    if (knownItems.contains(stack)) return null
-    knownItems.add(stack)
-    // TODO check if context needs fixing
-    val tooltip = stack.getTooltipLines(Item.TooltipContext.EMPTY, player, TooltipFlag.NORMAL).map(::formatComponentToMarkdown)
-    return EmbedBuilder()
-        .setTitle("${tooltip[0]} ${if (stack.count > 1) "(${stack.count})" else ""}")
-        .setDescription(tooltip.drop(1).let {
-            if (stack.has(DataComponents.CUSTOM_NAME)) {
-                listOf(stack.item.description.string).plus(it)
-            } else it
-        }.joinToString("\n"))
-        .let { builder: EmbedBuilder ->
-            stack.rarity.color().color?.let { color -> builder.setColor(color) }
-            builder
-        }
-        .build()
-}
-
 fun formatHoverEntity(entity: HoverEvent.EntityTooltipInfo): MessageEmbed? {
     if (entity.type == EntityType.PLAYER) return null
     return EmbedBuilder()
-        .setTitle(entity.name.map(Component::getString).getOrNull())
+        .setTitle(Chat.entityName(entity))
         .setDescription(entity.type.description.string)
         .let { builder: EmbedBuilder ->
             val mobCategory = entity.type.category
