@@ -40,6 +40,9 @@ object AstralBotTextConfig {
     val UNLINK_UNLINKED: ForgeConfigSpec.ConfigValue<String>
     val UNLINK_NOPERMS: ForgeConfigSpec.ConfigValue<String>
 
+    val SERVER_STARTED: ForgeConfigSpec.ConfigValue<String>
+    val SERVER_STARTED_IN_LIMP_MODE: ForgeConfigSpec.ConfigValue<String>
+
     init {
         val builder = ForgeConfigSpec.Builder()
         val whitespaceRegex = Regex("\n[ \t]+")
@@ -168,6 +171,11 @@ object AstralBotTextConfig {
                 to unlink another user.
             """.replace(whitespaceRegex, "\n"))
                 .define(mutableListOf("unlink", "noPerms"), "You don't have the permissions to unlink other users")
+
+        SERVER_STARTED = builder.comment("The message the server sends upon startup")
+            .define("serverStarted", "Server started!")
+        SERVER_STARTED_IN_LIMP_MODE = builder.comment("The message the server sends upon startup in limpMode")
+            .define("serverStartedInLimpMode", "Server started in limp mode...")
 
         SPEC = builder.build()
     }

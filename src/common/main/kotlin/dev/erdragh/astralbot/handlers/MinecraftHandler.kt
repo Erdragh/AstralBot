@@ -259,6 +259,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      * @param event the event which contains information about the message
      */
     override fun onMessageReceived(event: MessageReceivedEvent) {
+        if (limpMode) return
         // Only send messages from the configured channel and only if the author isn't a bot
         if (event.channel.idLong == textChannel?.idLong && !event.author.isBot) {
             sendDiscordToChat(event.message)

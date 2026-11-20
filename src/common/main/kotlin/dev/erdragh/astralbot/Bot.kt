@@ -1,6 +1,7 @@
 package dev.erdragh.astralbot
 
 import dev.erdragh.astralbot.config.AstralBotConfig
+import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.handlers.FAQHandler
 import dev.erdragh.astralbot.handlers.MinecraftHandler
 import dev.erdragh.astralbot.listeners.CommandHandlingListener
@@ -36,6 +37,8 @@ var baseDirectory: File? = null
 
 private lateinit var setupJob: Job
 var shuttingDown = AtomicBoolean(false)
+
+var limpMode: Boolean = true
 
 /**
  * @return the time at which the AstralBot was started
@@ -103,7 +106,7 @@ private fun setupFromJDA(api: JDA) {
     // Text channel was fetched, now the minecraftHandler can fetch its webhook stuff
     minecraftHandler?.updateWebhookClient()
 
-    ch.sendMessage("Server Started!").queue()
+    ch.sendMessage(if (limpMode) AstralBotTextConfig.SERVER_STARTED_IN_LIMP_MODE.get() else AstralBotTextConfig.SERVER_STARTED.get()).queue()
 }
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -125,16 +128,30 @@ fun startAstralbot(server: MinecraftServer) {
 
     minecraftHandler = MinecraftHandler(server)
 
-    jda = JDABuilder.createLight(
+    try {
+        TODO("Trying to test out what happens during a failure like this")
+        jda = JDABuilder.createLight(
+                token,
+                GatewayIntent.MESSAGE_CONTENT,
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.GUILD_MEMBERS
+            ).addEventListeners(
+                CommandHandlingListener,
+                UserEventListener,
+                minecraftHandler
+            ).build()
+        limpMode = false
+    } catch (e: Throwable) {
+        LOGGER.error("Failed to build full JDA client, probably because of missing Gateway Intents. Astralbot will be in limp-mode (no chat sync and auto role updates on leave/etc.). *sad whimper*", e)
+        jda = JDABuilder.createLight(
             token,
-            GatewayIntent.MESSAGE_CONTENT,
-            GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.GUILD_MEMBERS
+            GatewayIntent.GUILD_MESSAGES
         ).addEventListeners(
             CommandHandlingListener,
             UserEventListener,
             minecraftHandler
         ).build()
+    }
 
     setupJob = GlobalScope.async {
         launch {

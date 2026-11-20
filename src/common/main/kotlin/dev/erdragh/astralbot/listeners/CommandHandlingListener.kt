@@ -6,6 +6,7 @@ import dev.erdragh.astralbot.commands.discord.AutocompleteCommand
 import dev.erdragh.astralbot.commands.discord.getEnabledCommands
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.guild
+import dev.erdragh.astralbot.limpMode
 import dev.erdragh.astralbot.waitForSetup
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
@@ -38,6 +39,8 @@ object CommandHandlingListener : ListenerAdapter() {
      * @param event the message event about the message sent
      */
     override fun onMessageReceived(event: MessageReceivedEvent) {
+        if (limpMode) return
+
         if (event.message.contentDisplay == "!reload") {
             guild?.retrieveOwner()?.submit()?.whenComplete { owner, error ->
                 if (error != null) {
