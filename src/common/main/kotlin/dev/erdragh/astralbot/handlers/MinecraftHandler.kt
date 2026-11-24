@@ -250,7 +250,7 @@ class MinecraftHandler(private val server: MinecraftServer) : ListenerAdapter() 
      */
     private fun sendDiscordToChat(message: Message) {
         sendFormattedMessage(message) {
-            server.broadcastMessageToAllPlayers(DiscordMessageComponent(it))
+            server.broadcastMessageToAllPlayers(Chat.wrapFromDiscord(it))
         }
     }
 

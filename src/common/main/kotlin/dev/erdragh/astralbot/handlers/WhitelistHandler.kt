@@ -284,7 +284,7 @@ object WhitelistHandler {
             component.append(template[i])
             if (discordLink.isNotEmpty() && i + 1 < template.size) {
                 // TODO: Make this clickable. Using `withStyle` and a ClickEvent did not seem to work
-                component.append(Chat.literal(discordLink).withStyle {it.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, discordLink))})
+                component.append(Chat.literal(discordLink).withStyle {it.withClickEvent(Chat.clickEvent(ClickEvent.Action.OPEN_URL, discordLink))})
             }
         }
         return Optional.of(component)

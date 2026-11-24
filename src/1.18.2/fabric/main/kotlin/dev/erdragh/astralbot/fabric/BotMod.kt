@@ -5,7 +5,7 @@ import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
 import dev.erdragh.astralbot.fabric.event.ServerMessageEvents
-import dev.erdragh.astralbot.handlers.DiscordMessageComponent
+import dev.erdragh.astralbot.multiplatform.Chat
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -32,7 +32,7 @@ object BotMod : ModInitializer {
             minecraftHandler?.sendChatToDiscord(player, message)
         }
         ServerMessageEvents.GAME_MESSAGE.register { _, message, _ ->
-            if (message !is DiscordMessageComponent) {
+            if (!Chat.isFromDiscord(message)) {
                 minecraftHandler?.sendChatToDiscord(null as ServerPlayer?, message)
             }
         }

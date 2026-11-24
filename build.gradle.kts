@@ -56,9 +56,11 @@ cloche {
         jda.okio,
         jda.tink,
         jda.trove4j,
+        jda.websocket,
         jda.jackson.core,
         jda.jackson.databind,
         jda.jackson.annotations,
+        jda.commons.collections,
         // Exposed
         exposed.core,
         exposed.dao,
@@ -86,7 +88,7 @@ cloche {
 
     val fabricCommon = common("common:fabric") {
         dependencies {
-            modImplementation("net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.${libs.versions.kotlin.get()}")
+            modImplementation("net.fabricmc:fabric-language-kotlin:1.13.14+kotlin.${libs.versions.kotlin.get()}")
         }
         dependsOn(remappedCommon)
     }

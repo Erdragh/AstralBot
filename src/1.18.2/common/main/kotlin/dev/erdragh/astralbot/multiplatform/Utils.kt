@@ -2,7 +2,6 @@ package dev.erdragh.astralbot.multiplatform
 
 import com.mojang.authlib.GameProfile
 import dev.erdragh.astralbot.MODID
-import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import net.minecraft.Util
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.ChatType
@@ -38,7 +37,7 @@ actual fun MinecraftServer.smoothTickTime(): Float {
 }
 
 actual fun MinecraftServer.broadcastMessageToAllPlayers(message: Component) {
-    this.playerList.broadcastMessage(DiscordMessageComponent(message), ChatType.SYSTEM, Util.NIL_UUID)
+    this.playerList.broadcastMessage(Chat.wrapFromDiscord(message), ChatType.SYSTEM, Util.NIL_UUID)
 }
 
 actual fun CommandSourceStack.astralSuccess(renderComponent: () -> MutableComponent) {

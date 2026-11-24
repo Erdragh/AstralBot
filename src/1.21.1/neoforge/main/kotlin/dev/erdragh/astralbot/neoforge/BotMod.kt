@@ -4,14 +4,13 @@ import dev.erdragh.astralbot.LOGGER
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import dev.erdragh.astralbot.minecraftHandler
 import dev.erdragh.astralbot.neoforge.event.CommandMessageEvent
 import dev.erdragh.astralbot.neoforge.event.SystemMessageEvent
 import dev.erdragh.astralbot.startAstralbot
 import dev.erdragh.astralbot.stopAstralbot
+import fuzs.forgeconfigapiport.neoforge.api.forge.v4.ForgeConfigRegistry
 import net.minecraft.server.level.ServerPlayer
-import net.neoforged.fml.ModLoadingContext
 import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
 import net.neoforged.fml.event.config.ModConfigEvent
@@ -26,8 +25,8 @@ import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 @Mod("astralbot")
 object BotMod {
     init {
-        ModLoadingContext.get().activeContainer.registerConfig(ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
-        ModLoadingContext.get().activeContainer.registerConfig(ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        ForgeConfigRegistry.INSTANCE.register(ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
+        ForgeConfigRegistry.INSTANCE.register(ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
         MOD_BUS.addListener(::onConfigReloaded)
 
         FORGE_BUS.addListener(::onServerStart)

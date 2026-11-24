@@ -4,8 +4,7 @@ import dev.erdragh.astralbot.*
 import dev.erdragh.astralbot.commands.minecraft.registerMinecraftCommands
 import dev.erdragh.astralbot.config.AstralBotConfig
 import dev.erdragh.astralbot.config.AstralBotTextConfig
-import dev.erdragh.astralbot.handlers.DiscordMessageComponent
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry
+import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
@@ -17,8 +16,8 @@ import net.neoforged.fml.config.ModConfig
 
 object BotMod : ModInitializer {
     override fun onInitialize() {
-        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
-        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotConfig.SPEC, "astralbot-server.toml")
+        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.COMMON, AstralBotTextConfig.SPEC, "astralbot-text.toml")
 
         NeoForgeModConfigEvents.reloading(MODID).register {
             // Updates the webhook client if the URL changed

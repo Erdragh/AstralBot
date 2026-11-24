@@ -22,5 +22,8 @@ expect object Chat {
     fun entityName(from: HoverEvent.EntityTooltipInfo): String?
 
     fun formatHoverItems(stack: ItemStack, knownItems: MutableList<ItemStack>, player: Player?): MessageEmbed?
+
+    fun wrapFromDiscord(component: Component): Component
+    fun isFromDiscord(component: Component): Boolean
 }
 

@@ -1,5 +1,6 @@
 package dev.erdragh.astralbot.multiplatform
 
+import dev.erdragh.astralbot.handlers.DiscordMessageComponent
 import dev.erdragh.astralbot.util.formatComponentToMarkdown
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -71,4 +72,10 @@ actual object Chat {
             }
             .build()
     }
+
+    actual fun wrapFromDiscord(component: Component): Component {
+        return DiscordMessageComponent(component)
+    }
+
+    actual fun isFromDiscord(component: Component) = component is DiscordMessageComponent
 }
