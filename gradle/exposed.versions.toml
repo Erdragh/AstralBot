@@ -1,7 +1,10 @@
 [versions]
-exposed = "0.59.0"
+exposed = "1.6.1"
 
 [libraries]
 core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+
+[bundles]
+exposed = ["core", "dao", "jdbc"]

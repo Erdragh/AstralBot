@@ -5,3 +5,6 @@ json = "20230618"
 [libraries]
 webhooks = { group = "club.minnced", name = "discord-webhooks", version.ref = "webhooks" }
 json = { group = "org.json", name = "json", version.ref = "json" }
+
+[bundles]
+dcwebhooks = ["webhooks", "json"]
