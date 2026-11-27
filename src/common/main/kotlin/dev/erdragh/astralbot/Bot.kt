@@ -129,6 +129,9 @@ fun startAstralbot(server: MinecraftServer) {
     minecraftHandler = MinecraftHandler(server)
 
     try {
+        if (AstralBotConfig.CRIPPLE.get()) {
+            error("Astralbot crippled via config.")
+        }
         jda = JDABuilder.createLight(
                 token,
                 GatewayIntent.MESSAGE_CONTENT,

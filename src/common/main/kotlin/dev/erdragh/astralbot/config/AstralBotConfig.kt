@@ -21,6 +21,11 @@ object AstralBotConfig {
     val DISCORD_TOKEN: ForgeConfigSpec.ConfigValue<String>
 
     /**
+     * Forces astralbot into limp mode
+     */
+    val CRIPPLE: ForgeConfigSpec.ConfigValue<Boolean>
+
+    /**
      * Used for sending more appealing messages
      */
     val WEBHOOK_URL: ForgeConfigSpec.ConfigValue<String>
@@ -124,6 +129,10 @@ object AstralBotConfig {
 
         DISCORD_TOKEN = builder.comment("Discord token for the bot. Can also be supplied via DISCORD_TOKEN environment variable")
             .define("token", "")
+
+
+        CRIPPLE = builder.comment("Forces astralbot into limp mode (no privileged intents)")
+            .define("cripple", false)
 
         WEBHOOK_URL = builder.comment("URL to the webhook where the messages will be sent from")
             .define(listOf("webhook", "url"), "")
